@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, RoundedBox, Text, OrbitControls, useGLTF, useAnimations, ContactShadows } from '@react-three/drei';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Environment, RoundedBox, Text, OrbitControls, useGLTF, useAnimations, ContactShadows, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
@@ -26,8 +26,98 @@ const createSynth = () => {
   }).toDestination();
 };
 
+// --- VIDEO SCREEN COMPONENT ---
+const VideoScreen: React.FC<{ width: number; height: number; depth: number; opacity?: number; rotationX?: number; rotationY?: number; rotationZ?: number }> = ({ width, height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0 }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+
+  useEffect(() => {
+    // Create video element following Codrops tutorial approach
+    const video = document.createElement('video');
+    video.src = '/animation.mp4';
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+
+    console.log('🎬 Creating video texture...');
+
+    // Create video texture with proper color space and orientation
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = true; // Fix upside-down video
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+
+    setVideoTexture(texture);
+
+    // Start video playback
+    const startVideo = async () => {
+      try {
+        await video.play();
+        console.log('🎬 Video playing successfully');
+      } catch (error) {
+        console.log('🎬 Video autoplay blocked, will play on user interaction');
+      }
+    };
+
+    // Play on user interaction
+    const handleInteraction = () => {
+      video.play().then(() => {
+        console.log('🎬 Video started on user interaction');
+      }).catch(err => {
+        console.error('🎬 Video play error:', err);
+      });
+    };
+
+    // Try autoplay first, then on click
+    video.addEventListener('loadeddata', startVideo);
+    document.addEventListener('click', handleInteraction, { once: true });
+
+    return () => {
+      video.pause();
+      video.src = '';
+      document.removeEventListener('click', handleInteraction);
+      texture.dispose();
+    };
+  }, []);
+
+  // Update texture on every frame
+  useFrame(() => {
+    if (videoTexture) {
+      videoTexture.needsUpdate = true;
+    }
+  });
+
+  return (
+    <group>
+      {/* Video plane with correct aspect ratio */}
+      <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2 + rotationX, rotationY, rotationZ]}>
+        <planeGeometry args={[width, depth]} />
+        {videoTexture ? (
+          <meshBasicMaterial
+            map={videoTexture}
+            side={THREE.FrontSide}
+            transparent
+            opacity={opacity}
+          />
+        ) : (
+          <meshStandardMaterial color="#374151" roughness={0.2} transparent opacity={opacity} />
+        )}
+      </mesh>
+
+      {/* Optional: Screen border */}
+      <RoundedBox args={[width, height, depth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+        <meshStandardMaterial color="#1f2937" roughness={0.2} transparent opacity={0.1} />
+      </RoundedBox>
+    </group>
+  );
+};
+
 // --- AVATAR COMPONENT ---
-// Attempts to load /model.glb. 
+// Attempts to load /model.glb.
 // Note: Ensure model.glb exists in your public/ folder.
 const AVATAR_URL = "/model.glb";
 
@@ -327,7 +417,12 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
     buttonWidth: 0.6,
     buttonHeight: 0.35,
     // Knob spacing (updated from user's preferred values)
-    knobSpacing: 0.89
+    knobSpacing: 0.89,
+    // Video controls (for development)
+    videoOpacity: 1.0,
+    videoRotationX: 0,
+    videoRotationY: 0,
+    videoRotationZ: 0
   });
 
   // Calculate stride based on adjustable values
@@ -417,6 +512,22 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
       setPositions(prev => ({ ...prev, avatarScale: value }));
       if (DEV_CONTROLS_ENABLED) console.log(`Avatar Scale: ${value}`);
     });
+    screenFolder.add(guiProxy, 'videoOpacity', 0, 1).step(0.01).name('Video Opacity').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, videoOpacity: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Video Opacity: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'videoRotationX', -Math.PI, Math.PI).step(0.01).name('Video Rotation X').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, videoRotationX: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation X: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'videoRotationY', -Math.PI, Math.PI).step(0.01).name('Video Rotation Y').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, videoRotationY: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation Y: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'videoRotationZ', -Math.PI, Math.PI).step(0.01).name('Video Rotation Z').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, videoRotationZ: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation Z: ${value}`);
+    });
     screenFolder.open();
 
     // Transport Buttons
@@ -464,6 +575,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
           console.log('Screen Section:', { x: positions.screenSectionX, z: positions.screenSectionZ, width: positions.screenWidth, depth: positions.screenDepth, height: positions.screenHeight });
           console.log('Logo Size:', { mainSize: positions.logoMainSize, subSize: positions.logoSubSize });
           console.log('Avatar Scale:', positions.avatarScale);
+          console.log('Video Opacity:', positions.videoOpacity);
           console.log('Transport Buttons:', { zOffset: positions.buttonsOffsetZ });
           console.log('=== END VALUES ===');
         }
@@ -561,11 +673,25 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
 
       {/* --- COLUMN 2: SCREEN (1.5/4 = 37.5%) --- */}
       <group position={[COL_SCREEN_X + positions.screenSectionX, 0, ROW_MAIN_Z + positions.screenSectionZ]}>
-        {/* Screen */}
+        {/* Video Screen */}
         <group position={[0, 0, -0.8]}>
-          <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
-            <meshStandardMaterial color="#d1fae5" roughness={0.2} />
-          </RoundedBox>
+          <Suspense fallback={
+            <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+              <meshStandardMaterial color="#d1fae5" roughness={0.2} />
+            </RoundedBox>
+          }>
+            <VideoScreen
+              width={positions.screenWidth}
+              height={positions.screenHeight}
+              depth={positions.screenDepth}
+              opacity={positions.videoOpacity}
+              rotationX={positions.videoRotationX}
+              rotationY={positions.videoRotationY}
+              rotationZ={positions.videoRotationZ}
+            />
+          </Suspense>
+
+          {/* Avatar on top of video screen */}
           <group position={[0, 0.15, 0]} scale={positions.avatarScale}>
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
