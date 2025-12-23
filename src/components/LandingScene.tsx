@@ -358,37 +358,57 @@ const MpcButton: React.FC<MpcButtonProps> = ({
   };
 
   const colors = buttonColors[variant];
-  const finalLedColor = ledColor || colors.led; // Use ledColor if provided, otherwise use variant's led
+  const finalLedColor = ledColor || colors.led;
+
+  // Animation state
+  const [isPressed, setIsPressed] = useState(false);
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame((state, delta) => {
+    if (groupRef.current) {
+      // Animate Y position: 0 (idle) to -0.02 (pressed)
+      const targetY = isPressed ? -0.02 : 0;
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, delta * 20);
+    }
+  });
 
   return (
-    <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }}>
-      <RoundedBox args={[width, 0.15, height]} radius={0.05} smoothness={4} position={[0, 0.1, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color={colors.base} roughness={0.3} metalness={0.05} />
-      </RoundedBox>
-
-      {/* Subtle LED indicator */}
-      <mesh position={[0, 0.18, -height / 2 + 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[width * 0.3, 0.02]} />
-        <meshStandardMaterial
-          color={finalLedColor} // Use finalLedColor here
-          emissive={isActive ? finalLedColor : '#000000'}
-          emissiveIntensity={isActive ? 0.3 : 0}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <Text
-        position={[0, 0.18, 0.05]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.12}
-        font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
-        color={colors.text}
-        anchorX="center"
-        anchorY="middle"
-        fontWeight="500"
+    <group position={position}>
+      <group
+        ref={groupRef}
+        onClick={(e) => { e.stopPropagation(); onClick?.(); }}
+        onPointerDown={(e) => { e.stopPropagation(); setIsPressed(true); }}
+        onPointerUp={() => setIsPressed(false)}
+        onPointerLeave={() => setIsPressed(false)}
       >
-        {label}
-      </Text>
+        <RoundedBox args={[width, 0.15, height]} radius={0.05} smoothness={4} position={[0, 0.1, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color={colors.base} roughness={0.3} metalness={0.05} />
+        </RoundedBox>
+
+        {/* Subtle LED indicator */}
+        <mesh position={[0, 0.18, -height / 2 + 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[width * 0.3, 0.02]} />
+          <meshStandardMaterial
+            color={finalLedColor}
+            emissive={isActive ? finalLedColor : '#000000'}
+            emissiveIntensity={isActive ? 0.3 : 0}
+            toneMapped={false}
+          />
+        </mesh>
+
+        <Text
+          position={[0, 0.18, 0.05]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.12}
+          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+          color={colors.text}
+          anchorX="center"
+          anchorY="middle"
+          fontWeight="500"
+        >
+          {label}
+        </Text>
+      </group>
     </group>
   );
 };
@@ -694,13 +714,47 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
   const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'];
 
   // --- AUDIO & STATE ---
+  // --- AUDIO & STATE ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
+  const [activeBtn, setActiveBtn] = useState<string | null>(null);
+  const [tapTimes, setTapTimes] = useState<number[]>([]);
 
   const handlePlay = () => setIsPlaying(!isPlaying);
-  const handleStop = () => setIsPlaying(false);
-  const handleTap = () => { }; // Todo
-  const handleNext = () => setKnobValues([Math.random(), Math.random(), Math.random(), Math.random()]);
+
+  const handleStop = () => {
+    setIsPlaying(false);
+    setActiveBtn('STOP');
+    setTimeout(() => setActiveBtn(null), 150);
+  };
+
+  const handleTap = () => {
+    setActiveBtn('TAP');
+    setTimeout(() => setActiveBtn(null), 150);
+
+    // Tap Tempo Logic
+    const now = Date.now();
+    const newTapTimes = [...tapTimes, now].filter(t => now - t < 2000); // Keep taps within last 2s
+    setTapTimes(newTapTimes);
+
+    if (newTapTimes.length >= 2) {
+      const intervals = [];
+      for (let i = 1; i < newTapTimes.length; i++) {
+        intervals.push(newTapTimes[i] - newTapTimes[i - 1]);
+      }
+      const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      const newBpm = Math.round(60000 / avgInterval);
+      if (newBpm > 40 && newBpm < 300) {
+        console.log('Tap Tempo:', newBpm);
+      }
+    }
+  };
+
+  const handleNext = () => {
+    setActiveBtn('NXT');
+    setTimeout(() => setActiveBtn(null), 150);
+    setKnobValues([Math.random(), Math.random(), Math.random(), Math.random()]);
+  };
 
   return (
     <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
@@ -790,10 +844,42 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
 
         {/* Transport Buttons */}
         <group position={[0, 0, positions.buttonsOffsetZ]}>
-          <MpcButton position={[-1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="TAP" ledColor="#fbbf24" onClick={handleTap} />
-          <MpcButton position={[-0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="NXT" ledColor="#9ca3af" onClick={handleNext} />
-          <MpcButton position={[0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="STOP" ledColor="#f87171" onClick={handleStop} isActive={!isPlaying} />
-          <MpcButton position={[1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="PLAY" ledColor="#4ade80" onClick={handlePlay} isActive={isPlaying} />
+          <MpcButton
+            position={[-1.5 * positions.buttonSpacing, 0, 0]}
+            width={positions.buttonWidth}
+            height={positions.buttonHeight}
+            label="TAP"
+            ledColor="#fbbf24"
+            onClick={handleTap}
+            isActive={activeBtn === 'TAP'}
+          />
+          <MpcButton
+            position={[-0.5 * positions.buttonSpacing, 0, 0]}
+            width={positions.buttonWidth}
+            height={positions.buttonHeight}
+            label="NXT"
+            ledColor="#9ca3af"
+            onClick={handleNext}
+            isActive={activeBtn === 'NXT'}
+          />
+          <MpcButton
+            position={[0.5 * positions.buttonSpacing, 0, 0]}
+            width={positions.buttonWidth}
+            height={positions.buttonHeight}
+            label="STOP"
+            ledColor="#f87171"
+            onClick={handleStop}
+            isActive={activeBtn === 'STOP'}
+          />
+          <MpcButton
+            position={[1.5 * positions.buttonSpacing, 0, 0]}
+            width={positions.buttonWidth}
+            height={positions.buttonHeight}
+            label="PLAY"
+            ledColor="#4ade80"
+            onClick={handlePlay}
+            isActive={isPlaying}
+          />
         </group>
       </group>
 
