@@ -9,6 +9,7 @@ import { useDrag } from '@use-gesture/react';
 
 // Development controls - never show in production
 const DEV_CONTROLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEV_CONTROLS === 'true';
+const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
 
 // Debug: Log environment variable status (only in development)
 if (import.meta.env.DEV) {
@@ -215,7 +216,7 @@ const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger,
       ref={meshRef}
       args={[size, height, size]}
       radius={0.03}
-      smoothness={4}
+      smoothness={2}
       position={position}
       onClick={(e) => { e.stopPropagation(); trigger(); }}
       castShadow receiveShadow
@@ -284,7 +285,7 @@ const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange
       {/* Static Ticks */}
       <group position={[0, 0.01, 0]}>
         {ticks.map((tick, i) => (
-          <mesh key={i} position={[tick.x, 0, tick.z]} rotation={[0, tick.rotation, 0]} receiveShadow>
+          <mesh key={i} position={[tick.x, 0, tick.z]} rotation={[0, tick.rotation, 0]}>
             <boxGeometry args={[0.02, 0.01, 0.06]} />
             <meshStandardMaterial color="#9ca3af" />
           </mesh>
@@ -380,7 +381,7 @@ const MpcButton: React.FC<MpcButtonProps> = ({
         onPointerUp={() => setIsPressed(false)}
         onPointerLeave={() => setIsPressed(false)}
       >
-        <RoundedBox args={[width, 0.15, height]} radius={0.05} smoothness={4} position={[0, 0.1, 0]} castShadow receiveShadow>
+        <RoundedBox args={[width, 0.15, height]} radius={0.05} smoothness={2} position={[0, 0.1, 0]} castShadow receiveShadow>
           <meshStandardMaterial color={colors.base} roughness={0.3} metalness={0.05} />
         </RoundedBox>
 
@@ -716,7 +717,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
   const [isPlaying, setIsPlaying] = useState(false);
   const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
-  const [tapTimes, setTapTimes] = useState<number[]>([]);
+  const [history, setHistory] = useState<number[][]>([]); // Knob history
 
   // Audio Effects Refs
   const effects = useRef<{
@@ -787,31 +788,20 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
     setTimeout(() => setActiveBtn(null), 150);
   };
 
-  const handleTap = () => {
-    setActiveBtn('TAP');
+  const handlePrev = () => {
+    setActiveBtn('PREV');
     setTimeout(() => setActiveBtn(null), 150);
-
-    // Tap Tempo Logic
-    const now = Date.now();
-    const newTapTimes = [...tapTimes, now].filter(t => now - t < 2000); // Keep taps within last 2s
-    setTapTimes(newTapTimes);
-
-    if (newTapTimes.length >= 2) {
-      const intervals = [];
-      for (let i = 1; i < newTapTimes.length; i++) {
-        intervals.push(newTapTimes[i] - newTapTimes[i - 1]);
-      }
-      const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-      const newBpm = Math.round(60000 / avgInterval);
-      if (newBpm > 40 && newBpm < 300) {
-        console.log('Tap Tempo:', newBpm);
-      }
+    if (history.length > 0) {
+      const previous = history[history.length - 1];
+      setKnobValues(previous);
+      setHistory(prev => prev.slice(0, -1));
     }
   };
 
   const handleNext = () => {
     setActiveBtn('NXT');
     setTimeout(() => setActiveBtn(null), 150);
+    setHistory(prev => [...prev, knobValues]); // Save current state
     setKnobValues([Math.random(), Math.random(), Math.random(), Math.random()]);
   };
 
@@ -900,15 +890,21 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
               <meshStandardMaterial color="#d1fae5" roughness={0.2} />
             </RoundedBox>
           }>
-            <VideoScreen
-              width={positions.screenWidth}
-              height={positions.screenHeight}
-              depth={positions.screenDepth}
-              opacity={positions.videoOpacity}
-              rotationX={positions.videoRotationX}
-              rotationY={positions.videoRotationY}
-              rotationZ={positions.videoRotationZ}
-            />
+            {VIDEO_ENABLED ? (
+              <VideoScreen
+                width={positions.screenWidth}
+                height={positions.screenHeight}
+                depth={positions.screenDepth}
+                opacity={positions.videoOpacity}
+                rotationX={positions.videoRotationX}
+                rotationY={positions.videoRotationY}
+                rotationZ={positions.videoRotationZ}
+              />
+            ) : (
+              <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+                <meshStandardMaterial color="#059669" roughness={0.2} />
+              </RoundedBox>
+            )}
           </Suspense>
 
           {/* Avatar on top of video screen */}
@@ -916,7 +912,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
             </Suspense>
-            <ContactShadows opacity={0.4} scale={2.5} blur={2} far={1} />
+            <ContactShadows opacity={0.4} scale={2.5} blur={2} far={1} resolution={128} color="#000000" />
           </group>
         </group>
 
@@ -926,10 +922,10 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
             position={[-1.5 * positions.buttonSpacing, 0, 0]}
             width={positions.buttonWidth}
             height={positions.buttonHeight}
-            label="TAP"
+            label="PREV"
             ledColor="#fbbf24"
-            onClick={handleTap}
-            isActive={activeBtn === 'TAP'}
+            onClick={handlePrev}
+            isActive={activeBtn === 'PREV'}
           />
           <MpcButton
             position={[-0.5 * positions.buttonSpacing, 0, 0]}
