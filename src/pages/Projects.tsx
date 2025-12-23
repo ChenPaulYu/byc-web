@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PROJECTS } from '../constants';
 import { Project } from '../types';
 import { ArrowUpRight, Github, FileText, Play } from 'lucide-react';
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   return (
-    <div className="group block mb-12">
+    <Link to={`/projects/${project.id}`} className="group block mb-12">
       <div className="relative overflow-hidden bg-neutral-50 aspect-video mb-4 rounded-sm">
          {/* Placeholder for actual project images - using grayscale for calm aesthetic */}
         <img 
@@ -36,10 +37,11 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 
       <div className="flex gap-4">
         {project.links.map((link, i) => (
-          <a 
-            key={i} 
-            href={link.url} 
+          <a
+            key={i}
+            href={link.url}
             className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-neutral-400 hover:text-black transition-colors"
+            onClick={(e) => e.stopPropagation()}
           >
             {link.icon === 'paper' && <FileText size={14} />}
             {link.icon === 'code' && <Github size={14} />}
@@ -48,7 +50,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           </a>
         ))}
       </div>
-    </div>
+    </Link>
   );
 };
 
