@@ -862,8 +862,15 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
 
             const handleTrigger = () => {
               if (isDrum) {
-                const player = effects.current?.players?.player(drumSamples[i - 12]);
-                player?.start();
+                if (effects.current?.players?.loaded) {
+                  const sampleName = drumSamples[i - 12];
+                  if (effects.current.players.has(sampleName)) {
+                    const player = effects.current.players.player(sampleName);
+                    player.stop();
+                    player.start();
+                    if (DEV_CONTROLS_ENABLED) console.log(`Triggered drum: ${sampleName}`);
+                  }
+                }
               } else {
                 synth.triggerAttackRelease(pad.note, "8n");
               }
