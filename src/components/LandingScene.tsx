@@ -162,14 +162,13 @@ const AvatarFallback: React.FC = () => (
 interface PadProps {
   position: [number, number, number];
   size: number;
-  note: string;
   triggerKey: string;
   color: string;
-  synth: Tone.PolySynth;
+  onTrigger: () => void;
   height?: number;
 }
 
-const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synth, height = 0.2 }) => {
+const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [active, setActive] = useState(false);
 
@@ -198,7 +197,7 @@ const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synt
 
   const trigger = () => {
     setActive(true);
-    if (Tone.context.state === 'running') synth.triggerAttackRelease(note, "8n");
+    if (Tone.context.state === 'running') onTrigger();
   };
 
   useEffect(() => {
@@ -209,7 +208,7 @@ const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synt
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerKey, note, synth]);
+  }, [triggerKey, onTrigger]);
 
   return (
     <RoundedBox
@@ -714,15 +713,75 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
   const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'];
 
   // --- AUDIO & STATE ---
-  // --- AUDIO & STATE ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
   const [tapTimes, setTapTimes] = useState<number[]>([]);
 
-  const handlePlay = () => setIsPlaying(!isPlaying);
+  // Audio Effects Refs
+  const effects = useRef<{
+    filter: Tone.Filter;
+    distortion: Tone.Distortion;
+    reverb: Tone.Reverb;
+    vol: Tone.Volume;
+    players?: Tone.Players;
+  } | null>(null);
+
+  // Initialize Audio Chain
+  useEffect(() => {
+    // Create effects
+    const vol = new Tone.Volume(0).toDestination();
+    const reverb = new Tone.Reverb(0.5).connect(vol);
+    const distortion = new Tone.Distortion(0).connect(reverb);
+    const filter = new Tone.Filter(20000, "lowpass").connect(distortion);
+
+    // Load Players (Drums + Loop)
+    const players = new Tone.Players({
+      kick: "/samples/SLS_CSP_kick_father.wav",
+      snare: "/samples/SLS_CSP_snare_acoustic_intro.wav",
+      hihat: "/samples/SLS_CSP_hihat_grit_closed.wav",
+      openhat: "/samples/SLS_CSP_hihat_grit_open.wav",
+      loop: "/samples/SLS_CSP_78_songstarter_soul_thief_Cmin.wav"
+    }, () => {
+      console.log("Samples loaded");
+      // Setup Loop
+      const loop = players.player("loop");
+      loop.loop = true;
+      loop.sync().start(0);
+      Tone.Transport.bpm.value = 78;
+    }).connect(filter);
+
+    effects.current = { filter, distortion, reverb, vol, players };
+
+    // Route synth through effects
+    synth.disconnect();
+    synth.connect(filter);
+
+    return () => {
+      synth.disconnect();
+      synth.toDestination();
+      filter.dispose();
+      distortion.dispose();
+      reverb.dispose();
+      vol.dispose();
+      players.dispose();
+    };
+  }, [synth]);
+
+  const handlePlay = async () => {
+    if (Tone.context.state !== 'running') await Tone.start();
+
+    if (isPlaying) {
+      Tone.Transport.stop();
+      setIsPlaying(false);
+    } else {
+      Tone.Transport.start();
+      setIsPlaying(true);
+    }
+  };
 
   const handleStop = () => {
+    Tone.Transport.stop();
     setIsPlaying(false);
     setActiveBtn('STOP');
     setTimeout(() => setActiveBtn(null), 150);
@@ -797,16 +856,28 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
             const x = (col - 1.5) * stride;
             const z = (row - 1.5) * stride;
 
+            // Determine trigger logic
+            const isDrum = i >= 12; // Bottom row
+            const drumSamples = ['kick', 'snare', 'hihat', 'openhat'];
+
+            const handleTrigger = () => {
+              if (isDrum) {
+                const player = effects.current?.players?.player(drumSamples[i - 12]);
+                player?.start();
+              } else {
+                synth.triggerAttackRelease(pad.note, "8n");
+              }
+            };
+
             return (
               <Pad
                 key={pad.key}
                 position={[x, 0.1, z]}
                 size={positions.padSize}
                 height={positions.padHeight}
-                note={pad.note}
                 triggerKey={pad.key}
                 color={colors[row]}
-                synth={synth}
+                onTrigger={handleTrigger}
               />
             );
           })}
