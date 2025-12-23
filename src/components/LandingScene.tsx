@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
 import * as dat from 'dat.gui';
+import { useDrag } from '@use-gesture/react';
 
 // Development controls - never show in production
 const DEV_CONTROLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEV_CONTROLS === 'true';
@@ -225,19 +226,95 @@ const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synt
   );
 };
 
-const Knob: React.FC<{ position: [number, number, number] }> = ({ position }) => (
-  <group position={position}>
-    <mesh castShadow receiveShadow position={[0, 0.12, 0]}>
-      <cylinderGeometry args={[0.25, 0.25, 0.25, 32]} />
-      <meshStandardMaterial color="#374151" roughness={0.3} metalness={0.6} />
-    </mesh>
-    {/* Indicator */}
-    <mesh position={[0, 0.25, 0.12]} rotation={[0, 0, 0]}>
-      <boxGeometry args={[0.04, 0.01, 0.08]} />
-      <meshStandardMaterial color="white" />
-    </mesh>
-  </group>
-);
+interface KnobProps {
+  position: [number, number, number];
+  value?: number;
+  onChange?: (val: number) => void;
+  onDragChange?: (dragging: boolean) => void;
+}
+
+const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange }) => {
+  const [hovered, setHover] = useState(false);
+
+  const bind = useDrag(({ delta: [_, dy], event, first, last }) => {
+    event.stopPropagation();
+    if (first) onDragChange?.(true);
+    if (last) onDragChange?.(false);
+
+    if (onChange) {
+      const newValue = Math.max(0, Math.min(1, value - dy * 0.005));
+      onChange(newValue);
+    }
+  });
+
+  const handleWheel = (e: any) => {
+    e.stopPropagation();
+    if (onChange) {
+      // Scroll up (negative deltaY) -> increase value
+      const sensitivity = 0.001;
+      const newValue = Math.max(0, Math.min(1, value - e.deltaY * sensitivity));
+      onChange(newValue);
+    }
+  };
+
+  const rotation = (value - 0.5) * 4.7;
+
+  // Generate ticks
+  const ticks = useMemo(() => {
+    return Array.from({ length: 11 }).map((_, i) => {
+      // Map 0..10 to -135..+135 degrees
+      const angleDeg = -135 + i * (270 / 10);
+      const angleRad = (angleDeg * Math.PI) / 180;
+      // 0 deg is Up (-Z), so we rotate from there
+      // x = sin(a) * r, z = -cos(a) * r
+      const radius = 0.32;
+      const x = Math.sin(angleRad) * radius;
+      const z = -Math.cos(angleRad) * radius;
+      return { x, z, rotation: -angleRad };
+    });
+  }, []);
+
+  return (
+    <group
+      position={position}
+      {...(bind() as any)}
+      onWheel={handleWheel}
+      onPointerOver={() => { document.body.style.cursor = 'ns-resize'; setHover(true); }}
+      onPointerOut={() => { document.body.style.cursor = 'auto'; setHover(false); }}
+    >
+      {/* Static Ticks */}
+      <group position={[0, 0.01, 0]}>
+        {ticks.map((tick, i) => (
+          <mesh key={i} position={[tick.x, 0, tick.z]} rotation={[0, tick.rotation, 0]} receiveShadow>
+            <boxGeometry args={[0.02, 0.01, 0.06]} />
+            <meshStandardMaterial color="#9ca3af" />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Knob Body */}
+      <mesh castShadow receiveShadow position={[0, 0.12, 0]} rotation={[0, rotation, 0]}>
+        <cylinderGeometry args={[0.25, 0.25, 0.25, 32]} />
+        <meshStandardMaterial
+          color={hovered ? "#4b5563" : "#374151"}
+          roughness={0.3}
+          metalness={0.6}
+        />
+
+        {/* Indicator Line - Positioned at -Z (Up/12 o'clock) */}
+        <mesh position={[0, 0.13, -0.12]}>
+          <boxGeometry args={[0.04, 0.01, 0.08]} />
+          <meshStandardMaterial color={hovered ? "#60a5fa" : "white"} />
+        </mesh>
+      </mesh>
+
+      {/* Larger Invisible Hit Area */}
+      <mesh position={[0, 0.12, 0]} visible={false}>
+        <cylinderGeometry args={[0.5, 0.5, 0.6, 16]} />
+      </mesh>
+    </group>
+  );
+};
 
 const JogWheel: React.FC<{ position: [number, number, number] }> = ({ position }) => (
   <group position={position}>
@@ -260,6 +337,7 @@ interface MpcButtonProps {
   variant?: 'primary' | 'secondary' | 'accent' | 'neutral';
   isActive?: boolean;
   ledColor?: string;
+  onClick?: () => void;
 }
 
 const MpcButton: React.FC<MpcButtonProps> = ({
@@ -269,7 +347,8 @@ const MpcButton: React.FC<MpcButtonProps> = ({
   label,
   variant = 'neutral',
   isActive = false,
-  ledColor
+  ledColor,
+  onClick
 }) => {
   const buttonColors = {
     primary: { base: '#f8fafc', text: '#1e293b', led: '#22c55e' },
@@ -282,7 +361,7 @@ const MpcButton: React.FC<MpcButtonProps> = ({
   const finalLedColor = ledColor || colors.led; // Use ledColor if provided, otherwise use variant's led
 
   return (
-    <group position={position}>
+    <group position={position} onClick={(e) => { e.stopPropagation(); onClick?.(); }}>
       <RoundedBox args={[width, 0.15, height]} radius={0.05} smoothness={4} position={[0, 0.1, 0]} castShadow receiveShadow>
         <meshStandardMaterial color={colors.base} roughness={0.3} metalness={0.05} />
       </RoundedBox>
@@ -314,7 +393,7 @@ const MpcButton: React.FC<MpcButtonProps> = ({
   );
 };
 
-const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
+const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) => void }> = ({ synth, onDragChange }) => {
   // --- LAYOUT CONFIG ---
   // [ PADS 4x4 ] [ SCREEN / AVATAR ] [ KNOBS ]
 
@@ -370,22 +449,22 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   const CONTAINER_DEPTH = 5.0;
 
   // Column widths (proportional to 2:1.5:0.5)
-  const COL_PADS_WIDTH = CONTAINER_WIDTH * (2/4);      // 4.5 units
-  const COL_SCREEN_WIDTH = CONTAINER_WIDTH * (1.5/4);  // 3.375 units
-  const COL_KNOBS_WIDTH = CONTAINER_WIDTH * (0.5/4);   // 1.125 units
+  const COL_PADS_WIDTH = CONTAINER_WIDTH * (2 / 4);      // 4.5 units
+  const COL_SCREEN_WIDTH = CONTAINER_WIDTH * (1.5 / 4);  // 3.375 units
+  const COL_KNOBS_WIDTH = CONTAINER_WIDTH * (0.5 / 4);   // 1.125 units
 
   // Row heights with proper alignment
   const ROW_LOGO_HEIGHT = CONTAINER_DEPTH * 0.2;       // 1 unit
   const ROW_MAIN_HEIGHT = CONTAINER_DEPTH * 0.8;       // 4 units
 
   // Column positions (centered from left)
-  const COL_PADS_X = -CONTAINER_WIDTH/2 + COL_PADS_WIDTH/2;
-  const COL_SCREEN_X = COL_PADS_X + COL_PADS_WIDTH/2 + COL_SCREEN_WIDTH/2;
-  const COL_KNOBS_X = COL_SCREEN_X + COL_SCREEN_WIDTH/2 + COL_KNOBS_WIDTH/2;
+  const COL_PADS_X = -CONTAINER_WIDTH / 2 + COL_PADS_WIDTH / 2;
+  const COL_SCREEN_X = COL_PADS_X + COL_PADS_WIDTH / 2 + COL_SCREEN_WIDTH / 2;
+  const COL_KNOBS_X = COL_SCREEN_X + COL_SCREEN_WIDTH / 2 + COL_KNOBS_WIDTH / 2;
 
   // Row positions (centered from back)
-  const ROW_LOGO_Z = -CONTAINER_DEPTH/2 + ROW_LOGO_HEIGHT/2;
-  const ROW_MAIN_Z = ROW_LOGO_Z + ROW_LOGO_HEIGHT/2 + ROW_MAIN_HEIGHT/2;
+  const ROW_LOGO_Z = -CONTAINER_DEPTH / 2 + ROW_LOGO_HEIGHT / 2;
+  const ROW_MAIN_Z = ROW_LOGO_Z + ROW_LOGO_HEIGHT / 2 + ROW_MAIN_HEIGHT / 2;
 
   // --- DAT.GUI CONTROLS ---
   const [positions, setPositions] = useState({
@@ -614,6 +693,15 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   // Colors for visualization
   const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'];
 
+  // --- AUDIO & STATE ---
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
+
+  const handlePlay = () => setIsPlaying(!isPlaying);
+  const handleStop = () => setIsPlaying(false);
+  const handleTap = () => { }; // Todo
+  const handleNext = () => setKnobValues([Math.random(), Math.random(), Math.random(), Math.random()]);
+
   return (
     <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
       {/* --- MPC CONTAINER (OUTER BOX) --- */}
@@ -702,10 +790,10 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
 
         {/* Transport Buttons */}
         <group position={[0, 0, positions.buttonsOffsetZ]}>
-          <MpcButton position={[-1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="TAP" ledColor="#fbbf24" />
-          <MpcButton position={[-0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="NXT" ledColor="#9ca3af" />
-          <MpcButton position={[0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="STOP" ledColor="#f87171" />
-          <MpcButton position={[1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="PLAY" ledColor="#4ade80" />
+          <MpcButton position={[-1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="TAP" ledColor="#fbbf24" onClick={handleTap} />
+          <MpcButton position={[-0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="NXT" ledColor="#9ca3af" onClick={handleNext} />
+          <MpcButton position={[0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="STOP" ledColor="#f87171" onClick={handleStop} isActive={!isPlaying} />
+          <MpcButton position={[1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="PLAY" ledColor="#4ade80" onClick={handlePlay} isActive={isPlaying} />
         </group>
       </group>
 
@@ -713,7 +801,16 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
       <group position={[COL_KNOBS_X, 0, ROW_MAIN_Z]}>
         {[-1.5, -0.5, 0.5, 1.5].map((multiplier, i) => (
           <group key={i} position={[0, 0, multiplier * positions.knobSpacing]}>
-            <Knob position={[0, 0, 0]} />
+            <Knob
+              position={[0, 0, 0]}
+              value={knobValues[i]}
+              onChange={(val) => {
+                const newValues = [...knobValues];
+                newValues[i] = val;
+                setKnobValues(newValues);
+              }}
+              onDragChange={onDragChange}
+            />
           </group>
         ))}
       </group>
@@ -725,6 +822,7 @@ const LandingScene: React.FC = () => {
   const navigate = useNavigate();
   const synth = useMemo(() => createSynth(), []);
   const [started, setStarted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
@@ -798,6 +896,7 @@ const LandingScene: React.FC = () => {
         <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
         <OrbitControls
+          enabled={!isDragging}
           enablePan={false}
           enableZoom={false} // Disable zoom to keep layout fixed like screenshot
           minPolarAngle={Math.PI / 4}
@@ -807,7 +906,7 @@ const LandingScene: React.FC = () => {
           maxAzimuthAngle={Math.PI / 8}
         />
 
-        <MPC synth={synth} />
+        <MPC synth={synth} onDragChange={setIsDragging} />
 
         <Environment preset="city" />
         {/* Floor Shadow */}
