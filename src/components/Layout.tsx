@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from './NavBar';
-import WaveformWidget from './WaveformWidget';
+import EyeWidget from './EyeWidget';
 import ChatbotModal from './ChatbotModal';
 
 interface LayoutProps {
@@ -39,9 +39,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </footer>
       )}
 
-      {/* Waveform Easter Egg Widget - shown on all pages except home */}
+      {/* Eye Easter Egg Widget - shown on all pages except home */}
       {!isHome && (
-        <WaveformWidget
+        <EyeWidget
           onEasterEggTrigger={handleEasterEgg}
           onNormalClick={handleNormalClick}
         />
