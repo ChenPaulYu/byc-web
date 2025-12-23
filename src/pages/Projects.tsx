@@ -1,47 +1,63 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PROJECTS } from '../constants';
 import { Project } from '../types';
 import { ArrowUpRight, Github, FileText, Play } from 'lucide-react';
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if clicking the card itself, not the links
+    if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.project-card-content')) {
+      navigate(`/projects/${project.id}`);
+    }
+  };
+
   return (
-    <Link to={`/projects/${project.id}`} className="group block mb-12">
-      <div className="relative overflow-hidden bg-neutral-50 aspect-video mb-4 rounded-sm">
-         {/* Placeholder for actual project images - using grayscale for calm aesthetic */}
-        <img 
-          src={project.image} 
-          alt={project.title} 
-          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out grayscale hover:grayscale-0"
-        />
-      </div>
-      
-      <div className="flex justify-between items-baseline mb-2">
-        <h3 className="text-xl font-bold text-neutral-900 group-hover:text-blue-600 transition-colors">
-          {project.title}
-        </h3>
-        <span className="text-xs font-mono text-neutral-400">{project.year}</span>
-      </div>
-      
-      <p className="text-neutral-600 leading-relaxed mb-4 text-sm">
-        {project.description}
-      </p>
+    <div
+      onClick={handleCardClick}
+      className="group block mb-12 cursor-pointer"
+    >
+      <div className="project-card-content">
+        <div className="relative overflow-hidden bg-neutral-50 aspect-video mb-4 rounded-sm">
+           {/* Placeholder for actual project images - using grayscale for calm aesthetic */}
+          <img
+            src={project.image}
+            alt={project.title}
+            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out grayscale hover:grayscale-0"
+          />
+        </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {project.tags.map(tag => (
-          <span key={tag} className="px-2 py-1 bg-neutral-100 text-neutral-500 text-xs rounded-sm">
-            {tag}
-          </span>
-        ))}
+        <div className="flex justify-between items-baseline mb-2">
+          <h3 className="text-xl font-bold text-neutral-900 group-hover:text-blue-600 transition-colors">
+            {project.title}
+          </h3>
+          <span className="text-xs font-mono text-neutral-400">{project.year}</span>
+        </div>
+
+        <p className="text-neutral-600 leading-relaxed mb-4 text-sm">
+          {project.description}
+        </p>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.tags.map(tag => (
+            <span key={tag} className="px-2 py-1 bg-neutral-100 text-neutral-500 text-xs rounded-sm">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-4">
+      {/* Project links - prevent card click when clicking links */}
+      <div className="flex gap-4" onClick={(e) => e.stopPropagation()}>
         {project.links.map((link, i) => (
           <a
             key={i}
             href={link.url}
             className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-neutral-400 hover:text-black transition-colors"
-            onClick={(e) => e.stopPropagation()}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             {link.icon === 'paper' && <FileText size={14} />}
             {link.icon === 'code' && <Github size={14} />}
@@ -50,7 +66,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           </a>
         ))}
       </div>
-    </Link>
+    </div>
   );
 };
 
