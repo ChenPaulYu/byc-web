@@ -4,6 +4,19 @@ import { Environment, RoundedBox, Text, OrbitControls, useGLTF, useAnimations, C
 import * as THREE from 'three';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
+import * as dat from 'dat.gui';
+
+// Development controls - never show in production
+const DEV_CONTROLS_ENABLED = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEV_CONTROLS === 'true';
+
+// Debug: Log environment variable status (only in development)
+if (import.meta.env.DEV) {
+  console.log('🔧 Dev Controls Status:', {
+    isDev: import.meta.env.DEV,
+    envVar: import.meta.env.VITE_ENABLE_DEV_CONTROLS,
+    enabled: DEV_CONTROLS_ENABLED
+  });
+}
 
 // --- SYNTH SETUP ---
 const createSynth = () => {
@@ -62,9 +75,10 @@ interface PadProps {
   triggerKey: string;
   color: string;
   synth: Tone.PolySynth;
+  height?: number;
 }
 
-const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synth }) => {
+const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synth, height = 0.2 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [active, setActive] = useState(false);
 
@@ -109,7 +123,7 @@ const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synt
   return (
     <RoundedBox
       ref={meshRef}
-      args={[size, 0.2, size]}
+      args={[size, height, size]}
       radius={0.03}
       smoothness={4}
       position={position}
@@ -123,13 +137,13 @@ const Pad: React.FC<PadProps> = ({ position, size, note, triggerKey, color, synt
 
 const Knob: React.FC<{ position: [number, number, number] }> = ({ position }) => (
   <group position={position}>
-    <mesh castShadow receiveShadow position={[0, 0.15, 0]}>
-      <cylinderGeometry args={[0.3, 0.3, 0.3, 32]} />
+    <mesh castShadow receiveShadow position={[0, 0.12, 0]}>
+      <cylinderGeometry args={[0.25, 0.25, 0.25, 32]} />
       <meshStandardMaterial color="#374151" roughness={0.3} metalness={0.6} />
     </mesh>
     {/* Indicator */}
-    <mesh position={[0, 0.31, 0.15]} rotation={[0, 0, 0]}>
-      <boxGeometry args={[0.05, 0.01, 0.1]} />
+    <mesh position={[0, 0.25, 0.12]} rotation={[0, 0, 0]}>
+      <boxGeometry args={[0.04, 0.01, 0.08]} />
       <meshStandardMaterial color="white" />
     </mesh>
   </group>
@@ -214,9 +228,224 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   // --- LAYOUT CONFIG ---
   // [ PADS 4x4 ] [ SCREEN / AVATAR ] [ KNOBS ]
 
-  const padSize = 0.95;
-  const padSpacing = 0.13;
-  const stride = padSize + padSpacing;
+  // --- LAYOUT GRID SYSTEM ---
+  // MPC Container: 9 units wide, 5 units deep
+  // Columns: Pads(4.5) | Screen(3.375) | Knobs(1.125) = 9 total
+  // Rows: Logo+Knobs(1) | Pads+Screen+Buttons(4) = 5 total
+  // Alignment Rules:
+  // - Screen + Buttons section height = Pads section height
+  // - Logo + Knobs section height aligned
+
+  const CONTAINER_WIDTH = 9.0;
+  const CONTAINER_DEPTH = 5.0;
+
+  // Column widths (proportional to 2:1.5:0.5)
+  const COL_PADS_WIDTH = CONTAINER_WIDTH * (2/4);      // 4.5 units
+  const COL_SCREEN_WIDTH = CONTAINER_WIDTH * (1.5/4);  // 3.375 units
+  const COL_KNOBS_WIDTH = CONTAINER_WIDTH * (0.5/4);   // 1.125 units
+
+  // Row heights with proper alignment
+  const ROW_LOGO_HEIGHT = CONTAINER_DEPTH * 0.2;       // 1 unit
+  const ROW_MAIN_HEIGHT = CONTAINER_DEPTH * 0.8;       // 4 units
+
+  // Column positions (centered from left)
+  const COL_PADS_X = -CONTAINER_WIDTH/2 + COL_PADS_WIDTH/2;
+  const COL_SCREEN_X = COL_PADS_X + COL_PADS_WIDTH/2 + COL_SCREEN_WIDTH/2;
+  const COL_KNOBS_X = COL_SCREEN_X + COL_SCREEN_WIDTH/2 + COL_KNOBS_WIDTH/2;
+
+  // Row positions (centered from back)
+  const ROW_LOGO_Z = -CONTAINER_DEPTH/2 + ROW_LOGO_HEIGHT/2;
+  const ROW_MAIN_Z = ROW_LOGO_Z + ROW_LOGO_HEIGHT/2 + ROW_MAIN_HEIGHT/2;
+
+  // --- DAT.GUI CONTROLS ---
+  const [positions, setPositions] = useState({
+    // Container (updated from user's preferred values)
+    containerX: 0,
+    containerZ: 0,
+    // Pad section positioning (updated from user's preferred values)
+    padsSectionX: 0,
+    padsSectionZ: -0.39,
+    // Pad sizing (updated from user's preferred values)
+    padSize: 0.87,
+    padSpacing: 0.15,
+    padHeight: 0.2,
+    // Screen section positioning (updated from user's preferred values)
+    screenSectionX: 0,
+    screenSectionZ: 0,
+    // Logo sizing (updated from user's preferred values)
+    logoMainSize: 0.17,
+    logoSubSize: 0.069,
+    // Screen size (updated from user's preferred values)
+    screenWidth: 3.4,
+    screenDepth: 3.4,
+    screenHeight: 0.17,
+    // Avatar scale (updated from user's preferred values)
+    avatarScale: 0.78,
+    // Transport buttons (updated from user's preferred values)
+    buttonsOffsetZ: 1.4,
+    buttonSpacing: 0.87,
+    buttonWidth: 0.6,
+    buttonHeight: 0.35,
+    // Knob spacing (updated from user's preferred values)
+    knobSpacing: 0.89
+  });
+
+  // Calculate stride based on adjustable values
+  const stride = positions.padSize + positions.padSpacing;
+
+  useEffect(() => {
+    // Only create dat.gui in development mode with dev controls enabled
+    if (!DEV_CONTROLS_ENABLED) return;
+
+    const gui = new dat.GUI();
+
+    // Create a proxy object to prevent direct mutation
+    const guiProxy = { ...positions };
+
+    // Container Controls
+    const containerFolder = gui.addFolder('Container');
+    containerFolder.add(guiProxy, 'containerX', -3, 3).step(0.01).name('Container X').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, containerX: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Container X: ${value}`);
+    });
+    containerFolder.add(guiProxy, 'containerZ', -3, 3).step(0.01).name('Container Z').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, containerZ: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Container Z: ${value}`);
+    });
+    containerFolder.open();
+
+    // Pad Section Controls
+    const padFolder = gui.addFolder('Pads Section');
+    padFolder.add(guiProxy, 'padsSectionX', -3, 3).step(0.01).name('Section X').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, padsSectionX: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Pads Section X: ${value}`);
+    });
+    padFolder.add(guiProxy, 'padsSectionZ', -3, 3).step(0.01).name('Section Z').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, padsSectionZ: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Pads Section Z: ${value}`);
+    });
+    padFolder.add(guiProxy, 'padSize', 0.3, 2).step(0.01).name('Pad Size').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, padSize: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Pad Size: ${value}`);
+    });
+    padFolder.add(guiProxy, 'padSpacing', 0.05, 0.5).step(0.01).name('Pad Spacing').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, padSpacing: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Pad Spacing: ${value}`);
+    });
+    padFolder.add(guiProxy, 'padHeight', 0.1, 0.5).step(0.01).name('Pad Height').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, padHeight: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Pad Height: ${value}`);
+    });
+    padFolder.open();
+
+    // Logo Controls
+    const logoFolder = gui.addFolder('Logo');
+    logoFolder.add(guiProxy, 'logoMainSize', 0.1, 0.5).step(0.001).name('Main Text Size').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, logoMainSize: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Logo Main Size: ${value}`);
+    });
+    logoFolder.add(guiProxy, 'logoSubSize', 0.05, 0.2).step(0.001).name('Sub Text Size').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, logoSubSize: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Logo Sub Size: ${value}`);
+    });
+    logoFolder.open();
+
+    // Screen Section Controls
+    const screenFolder = gui.addFolder('Screen Section');
+    screenFolder.add(guiProxy, 'screenSectionX', -3, 3).step(0.01).name('Section X').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, screenSectionX: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Screen Section X: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'screenSectionZ', -3, 3).step(0.01).name('Section Z').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, screenSectionZ: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Screen Section Z: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'screenWidth', 0.5, 5).step(0.1).name('Screen Width').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, screenWidth: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Screen Width: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'screenDepth', 0.5, 4).step(0.1).name('Screen Depth').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, screenDepth: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Screen Depth: ${value}`);
+    });
+    screenFolder.add(guiProxy, 'screenHeight', 0.05, 0.5).step(0.01).name('Screen Height').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, screenHeight: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Screen Height: ${value}`);
+    });
+    // Bezel controls removed per user request
+    screenFolder.add(guiProxy, 'avatarScale', 0.1, 2).step(0.01).name('Avatar Scale').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, avatarScale: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Avatar Scale: ${value}`);
+    });
+    screenFolder.open();
+
+    // Transport Buttons
+    const buttonsFolder = gui.addFolder('Transport Buttons');
+    buttonsFolder.add(guiProxy, 'buttonsOffsetZ', 0, 2).step(0.01).name('Z Offset').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, buttonsOffsetZ: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Buttons Z Offset: ${value}`);
+    });
+    buttonsFolder.add(guiProxy, 'buttonSpacing', 0.2, 1).step(0.01).name('Button Spacing').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, buttonSpacing: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Button Spacing: ${value}`);
+    });
+    buttonsFolder.add(guiProxy, 'buttonWidth', 0.3, 1).step(0.01).name('Button Width').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, buttonWidth: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Button Width: ${value}`);
+    });
+    buttonsFolder.add(guiProxy, 'buttonHeight', 0.2, 0.6).step(0.01).name('Button Height').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, buttonHeight: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Button Height: ${value}`);
+    });
+    buttonsFolder.open();
+
+    // Knobs
+    const knobsFolder = gui.addFolder('Knobs');
+    knobsFolder.add(guiProxy, 'knobSpacing', 0.2, 1).step(0.01).name('Knob Spacing').onChange((value: number) => {
+      setPositions(prev => ({ ...prev, knobSpacing: value }));
+      if (DEV_CONTROLS_ENABLED) console.log(`Knob Spacing: ${value}`);
+    });
+    knobsFolder.open();
+
+    // Log Current Values Button
+    const logButton = {
+      logCurrentValues: () => {
+        if (DEV_CONTROLS_ENABLED) {
+          console.log('=== CURRENT MPC LAYOUT VALUES ===');
+          console.log('Container:', { x: positions.containerX, z: positions.containerZ });
+          console.log('Grid System:', {
+            containerWidth: CONTAINER_WIDTH,
+            containerDepth: CONTAINER_DEPTH,
+            columnWidths: { pads: COL_PADS_WIDTH, screen: COL_SCREEN_WIDTH, knobs: COL_KNOBS_WIDTH },
+            columnPositions: { pads: COL_PADS_X, screen: COL_SCREEN_X, knobs: COL_KNOBS_X },
+            rowPositions: { logo: ROW_LOGO_Z, main: ROW_MAIN_Z }
+          });
+          console.log('Pads Section:', { x: positions.padsSectionX, z: positions.padsSectionZ, size: positions.padSize, spacing: positions.padSpacing, height: positions.padHeight });
+          console.log('Screen Section:', { x: positions.screenSectionX, z: positions.screenSectionZ, width: positions.screenWidth, depth: positions.screenDepth, height: positions.screenHeight });
+          console.log('Logo Size:', { mainSize: positions.logoMainSize, subSize: positions.logoSubSize });
+          console.log('Avatar Scale:', positions.avatarScale);
+          console.log('Transport Buttons:', { zOffset: positions.buttonsOffsetZ });
+          console.log('=== END VALUES ===');
+        }
+      }
+    };
+    gui.add(logButton, 'logCurrentValues').name('📋 Log All Values');
+
+    return () => gui.destroy();
+  }, []);
+
+  // Debug: Log current state values on every render (dev only)
+  useEffect(() => {
+    if (DEV_CONTROLS_ENABLED) {
+      console.log('🔄 Layout Update - Current State:', {
+        padSize: positions.padSize,
+        padSpacing: positions.padSpacing,
+        screenWidth: positions.screenWidth,
+        screenDepth: positions.screenDepth,
+        avatarScale: positions.avatarScale
+      });
+    }
+  }, [positions]);
 
   // Key mappings matching the UI text: 1-4, Q-R, A-F, Z-V
   const padLayout = [
@@ -234,46 +463,43 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'];
 
   return (
-    <group position={[0, -1, 0]}>
-      {/* --- CHASSIS --- */}
-      {/* Reduced depth to 6.0 to remove empty space on top/bottom */}
-      <RoundedBox args={[11.5, 1, 6.0]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
+    <group position={[positions.containerX, -1, positions.containerZ]}>
+      {/* --- MPC CONTAINER (OUTER BOX) --- */}
+      <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#f3f4f6" roughness={0.5} metalness={0.1} />
       </RoundedBox>
 
-      {/* --- COLUMN 1: LOGO + PADS (LEFT) --- */}
-      <group position={[-3.5, 0, 0]}>
-        {/* Logo at Top of Column 1 */}
-        <group position={[-0.5, 0.01, -2.2]} rotation={[-Math.PI / 2, 0, 0]}>
-          <Text
-            fontSize={0.3}
-            font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
-            color="#ef4444" // Red
-            anchorX="right"
-            position={[-0.1, 0, 0]}
-            fontWeight="800"
-            letterSpacing={-0.05}
-          >
-            BYC
-          </Text>
-          <Text
-            fontSize={0.12}
-            font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
-            color="#6b7280" // Gray
-            anchorX="left"
-            position={[0, -0.05, 0]}
-            letterSpacing={0.2}
-          >
-            PROFESSIONAL
-          </Text>
-        </group>
+      {/* --- LOGO ROW (TOP RIGHT) --- */}
+      <group position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>
+        <Text
+          fontSize={positions.logoMainSize}
+          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+          color="#ef4444"
+          anchorX="center"
+          position={[0, 0, 0]}
+          fontWeight="800"
+          letterSpacing={-0.05}
+        >
+          BYC
+        </Text>
+        <Text
+          fontSize={positions.logoSubSize}
+          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
+          color="#6b7280"
+          anchorX="center"
+          position={[0, -0.25, 0]}
+          letterSpacing={0.2}
+        >
+          PROFESSIONAL
+        </Text>
+      </group>
 
-        {/* Pads Below Logo */}
-        <group position={[0, 0, 0.5]}>
+      {/* --- COLUMN 1: PADS (2/4 = 50%) --- */}
+      <group position={[COL_PADS_X + positions.padsSectionX, 0, ROW_MAIN_Z + positions.padsSectionZ]}>
+        <group position={[0, 0, 0]}>
           {padLayout.map((pad, i) => {
-            const row = Math.floor(i / 4); // 0 to 3
-            const col = i % 4;             // 0 to 4
-
+            const row = Math.floor(i / 4);
+            const col = i % 4;
             const x = (col - 1.5) * stride;
             const z = (row - 1.5) * stride;
 
@@ -281,7 +507,8 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
               <Pad
                 key={pad.key}
                 position={[x, 0.1, z]}
-                size={padSize}
+                size={positions.padSize}
+                height={positions.padHeight}
                 note={pad.note}
                 triggerKey={pad.key}
                 color={colors[row]}
@@ -292,47 +519,34 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
         </group>
       </group>
 
-      {/* --- COLUMN 2: SCREEN + BUTTONS (CENTER) --- */}
-      <group position={[1.5, 0, 0]}>
-        {/* Screen at Top of Column 2 */}
-        <group position={[0, 0, -0.5]}>
-          {/* The Screen Base */}
-          <RoundedBox args={[4.2, 0.2, 3.2]} radius={0.1} position={[0, 0.1, 0]} receiveShadow>
-            <meshStandardMaterial color="#d1fae5" roughness={0.2} /> {/* Light Green Surface */}
+      {/* --- COLUMN 2: SCREEN (1.5/4 = 37.5%) --- */}
+      <group position={[COL_SCREEN_X + positions.screenSectionX, 0, ROW_MAIN_Z + positions.screenSectionZ]}>
+        {/* Screen */}
+        <group position={[0, 0, -0.8]}>
+          <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+            <meshStandardMaterial color="#d1fae5" roughness={0.2} />
           </RoundedBox>
-
-          {/* Screen Frame/Bezel */}
-          <group position={[0, 0.05, 0]}>
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-              <planeGeometry args={[4.4, 3.4]} />
-              <meshStandardMaterial color="#374151" />
-            </mesh>
-          </group>
-
-          {/* AVATAR STANDING ON SCREEN */}
-          <group position={[0, 0.2, 0]}>
+          <group position={[0, 0.15, 0]} scale={positions.avatarScale}>
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
             </Suspense>
-            {/* Subtle shadow for avatar */}
-            <ContactShadows opacity={0.4} scale={4} blur={2} far={1} />
+            <ContactShadows opacity={0.4} scale={2.5} blur={2} far={1} />
           </group>
         </group>
 
-        {/* Transport Buttons Below Screen */}
-        <group position={[0, 0, 1.8]}>
-          <MpcButton position={[-1.5, 0, 0]} width={0.8} height={0.5} label="TAP" ledColor="#fbbf24" />
-          <MpcButton position={[-0.5, 0, 0]} width={0.8} height={0.5} label="NXT" ledColor="#9ca3af" />
-          <MpcButton position={[0.5, 0, 0]} width={0.8} height={0.5} label="STOP" ledColor="#f87171" />
-          <MpcButton position={[1.5, 0, 0]} width={0.8} height={0.5} label="PLAY" ledColor="#4ade80" />
+        {/* Transport Buttons */}
+        <group position={[0, 0, positions.buttonsOffsetZ]}>
+          <MpcButton position={[-1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="TAP" ledColor="#fbbf24" />
+          <MpcButton position={[-0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="NXT" ledColor="#9ca3af" />
+          <MpcButton position={[0.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="STOP" ledColor="#f87171" />
+          <MpcButton position={[1.5 * positions.buttonSpacing, 0, 0]} width={positions.buttonWidth} height={positions.buttonHeight} label="PLAY" ledColor="#4ade80" />
         </group>
       </group>
 
-      {/* --- COLUMN 3: KNOBS (RIGHT) --- */}
-      <group position={[4.8, 0, 0]}>
-        {/* Knobs centered vertically in the column */}
-        {[-1.2, -0.4, 0.4, 1.2].map((z, i) => (
-          <group key={i} position={[0, 0, z]}>
+      {/* --- COLUMN 3: KNOBS (0.5/4 = 12.5%) --- */}
+      <group position={[COL_KNOBS_X, 0, ROW_MAIN_Z]}>
+        {[-1.5, -0.5, 0.5, 1.5].map((multiplier, i) => (
+          <group key={i} position={[0, 0, multiplier * positions.knobSpacing]}>
             <Knob position={[0, 0, 0]} />
           </group>
         ))}
@@ -346,6 +560,31 @@ const LandingScene: React.FC = () => {
   const synth = useMemo(() => createSynth(), []);
   const [started, setStarted] = useState(false);
 
+  // Responsive camera positioning
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
+
+  useEffect(() => {
+    const updateCameraPosition = () => {
+      const { innerWidth, innerHeight } = window;
+      const aspectRatio = innerWidth / innerHeight;
+
+      if (aspectRatio < 0.8) {
+        // Mobile portrait - zoom out more
+        setCameraPosition([0, 18, 18]);
+      } else if (aspectRatio < 1.2) {
+        // Tablet or small desktop
+        setCameraPosition([0, 15, 15]);
+      } else {
+        // Standard desktop
+        setCameraPosition([0, 12, 12]);
+      }
+    };
+
+    updateCameraPosition();
+    window.addEventListener('resize', updateCameraPosition);
+    return () => window.removeEventListener('resize', updateCameraPosition);
+  }, []);
+
   const handleStart = async () => {
     if (!started) {
       await Tone.start();
@@ -355,7 +594,7 @@ const LandingScene: React.FC = () => {
 
   return (
     <div className="w-full h-screen relative bg-[#f9fafb]" onClick={handleStart}>
-      <Canvas shadows camera={{ position: [0, 12, 12], fov: 35 }}>
+      <Canvas shadows camera={{ position: cameraPosition, fov: 35 }}>
         <color attach="background" args={['#f9fafb']} />
 
         <ambientLight intensity={0.7} />

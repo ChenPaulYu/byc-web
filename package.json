@@ -9,14 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
+    "@types/dat.gui": "0.7.13",
+    "dat.gui": "0.7.9",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.11.0",
     "three": "^0.182.0",
-    "tone": "^15.1.22",
-    "@react-three/fiber": "^9.4.2",
-    "lucide-react": "^0.562.0",
-    "@react-three/drei": "^10.7.7"
+    "tone": "^15.1.22"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
