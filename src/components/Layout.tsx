@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from './NavBar';
 import EyeWidget from './EyeWidget';
-import ChatbotModal from './ChatbotModal';
+import Chatbot from './Chatbot';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -47,10 +47,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Chatbot Modal */}
-      <ChatbotModal
+      {/* Chatbot - expandable widget */}
+      <Chatbot
         isOpen={isChatbotOpen}
-        onClose={() => setIsChatbotOpen(false)}
+        onToggle={() => setIsChatbotOpen(!isChatbotOpen)}
         mode={chatbotMode}
       />
     </div>
