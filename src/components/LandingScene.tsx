@@ -228,6 +228,46 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   // --- LAYOUT CONFIG ---
   // [ PADS 4x4 ] [ SCREEN / AVATAR ] [ KNOBS ]
 
+  // --- RESPONSIVE 3D SCALING ---
+  const [responsiveScale, setResponsiveScale] = useState(1);
+
+  useEffect(() => {
+    const updateResponsiveScale = () => {
+      const { innerWidth, innerHeight } = window;
+      const aspectRatio = innerWidth / innerHeight;
+
+      // Scale based on viewport size while maintaining MPC proportions
+      let scale = 1;
+
+      if (innerWidth < 480) {
+        // Mobile phones
+        scale = 0.5;
+      } else if (innerWidth < 768) {
+        // Large phones / small tablets
+        scale = 0.65;
+      } else if (innerWidth < 1024) {
+        // Tablets
+        scale = 0.8;
+      } else if (innerWidth > 1920) {
+        // Large desktops
+        scale = 1.2;
+      } else {
+        // Standard desktop (1024-1920px)
+        scale = 1.0;
+      }
+
+      // Further adjust for very wide or narrow screens
+      if (aspectRatio > 2.5) scale *= 0.8; // Ultra-wide
+      if (aspectRatio < 0.6) scale *= 0.7; // Portrait mobile
+
+      setResponsiveScale(scale);
+    };
+
+    updateResponsiveScale();
+    window.addEventListener('resize', updateResponsiveScale);
+    return () => window.removeEventListener('resize', updateResponsiveScale);
+  }, []);
+
   // --- LAYOUT GRID SYSTEM ---
   // MPC Container: 9 units wide, 5 units deep
   // Columns: Pads(4.5) | Screen(3.375) | Knobs(1.125) = 9 total
@@ -463,7 +503,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth }> = ({ synth }) => {
   const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'];
 
   return (
-    <group position={[positions.containerX, -1, positions.containerZ]}>
+    <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
       {/* --- MPC CONTAINER (OUTER BOX) --- */}
       <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#f3f4f6" roughness={0.5} metalness={0.1} />
@@ -568,15 +608,33 @@ const LandingScene: React.FC = () => {
       const { innerWidth, innerHeight } = window;
       const aspectRatio = innerWidth / innerHeight;
 
-      if (aspectRatio < 0.8) {
-        // Mobile portrait - zoom out more
-        setCameraPosition([0, 18, 18]);
-      } else if (aspectRatio < 1.2) {
-        // Tablet or small desktop
-        setCameraPosition([0, 15, 15]);
+      // Base camera distance, adjusted by device type
+      let cameraDistance = 12;
+
+      if (innerWidth < 480) {
+        // Mobile phones - closer view since MPC is scaled down
+        cameraDistance = 10;
+      } else if (innerWidth < 768) {
+        // Large phones / small tablets
+        cameraDistance = 11;
+      } else if (innerWidth < 1024) {
+        // Tablets
+        cameraDistance = 12;
       } else {
-        // Standard desktop
-        setCameraPosition([0, 12, 12]);
+        // Desktop
+        cameraDistance = 12;
+      }
+
+      // Adjust for extreme aspect ratios
+      if (aspectRatio < 0.8) {
+        // Portrait - move camera back and up
+        setCameraPosition([0, cameraDistance + 4, cameraDistance + 2]);
+      } else if (aspectRatio > 2.0) {
+        // Ultra-wide - adjust position
+        setCameraPosition([0, cameraDistance, cameraDistance + 1]);
+      } else {
+        // Standard landscape
+        setCameraPosition([0, cameraDistance, cameraDistance]);
       }
     };
 
@@ -593,8 +651,13 @@ const LandingScene: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen relative bg-[#f9fafb]" onClick={handleStart}>
-      <Canvas shadows camera={{ position: cameraPosition, fov: 35 }}>
+    <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden" onClick={handleStart}>
+      <Canvas
+        shadows
+        camera={{ position: cameraPosition, fov: 35 }}
+        dpr={[1, 2]} // Limit pixel ratio for performance
+        performance={{ min: 0.5 }} // Allow frame rate to drop for performance
+      >
         <color attach="background" args={['#f9fafb']} />
 
         <ambientLight intensity={0.7} />
@@ -604,7 +667,7 @@ const LandingScene: React.FC = () => {
           penumbra={1}
           intensity={1}
           castShadow
-          shadow-mapSize={[2048, 2048]}
+          shadow-mapSize={window.innerWidth < 768 ? [1024, 1024] : [2048, 2048]} // Lower shadow resolution on mobile
         />
         <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
@@ -625,32 +688,52 @@ const LandingScene: React.FC = () => {
         <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={40} blur={2} far={4.5} />
       </Canvas>
 
-      {/* --- UI OVERLAY --- */}
-      <div className="absolute inset-0 pointer-events-none p-12 flex flex-col justify-between">
+      {/* --- RESPONSIVE UI OVERLAY --- */}
+      <div className="absolute inset-0 pointer-events-none p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-between">
 
         {/* Header: Top Left */}
-        <header>
-          <h1 className="text-5xl font-bold font-sans tracking-tight text-neutral-900 mb-2">Bo-Yu Chen</h1>
-          <p className="text-neutral-500 font-mono text-sm tracking-wide">Researcher // Engineer // Creator</p>
+        <header className="z-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sans tracking-tight text-neutral-900 mb-1 sm:mb-2">
+            Bo-Yu Chen
+          </h1>
+          <p className="text-neutral-500 font-mono text-xs sm:text-sm md:text-base tracking-wide">
+            Researcher // Engineer // Creator
+          </p>
         </header>
 
         {/* Footer Area */}
-        <div className="flex items-end justify-between w-full mt-auto">
-          {/* Left Spacer */}
-          <div className="w-1/3"></div>
+        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between w-full mt-auto gap-4 sm:gap-0">
+          {/* Mobile: Center everything, Desktop: Left Spacer */}
+          <div className="hidden sm:block sm:w-1/3"></div>
 
           {/* Center: Keyboard Guide */}
-          <div className="w-1/3 text-center pb-4">
-            <p className="text-neutral-300 text-xs font-mono tracking-widest uppercase">
-              Keyboard: 1-4, Q-R, A-F, Z-V
+          <div className="w-full sm:w-1/3 text-center pb-2 sm:pb-4">
+            <p className="text-neutral-300 text-xs sm:text-xs md:text-sm font-mono tracking-widest uppercase">
+              <span className="hidden sm:inline">Keyboard: 1-4, Q-R, A-F, Z-V</span>
+              <span className="sm:hidden">Tap pads to play</span>
             </p>
           </div>
 
           {/* Right: Navigation */}
-          <nav className="w-1/3 pointer-events-auto flex flex-col items-end gap-4">
-            <button onClick={() => navigate('/about')} className="text-xl text-neutral-800 hover:text-black transition-colors font-normal">About</button>
-            <button onClick={() => navigate('/projects')} className="text-xl text-neutral-800 hover:text-black transition-colors font-normal">Projects</button>
-            <button onClick={() => navigate('/cv')} className="text-xl text-neutral-800 hover:text-black transition-colors font-normal">CV</button>
+          <nav className="w-full sm:w-1/3 pointer-events-auto flex flex-row sm:flex-col items-center sm:items-end gap-4 sm:gap-4 justify-center sm:justify-end">
+            <button
+              onClick={() => navigate('/about')}
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+            >
+              About
+            </button>
+            <button
+              onClick={() => navigate('/projects')}
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+            >
+              Projects
+            </button>
+            <button
+              onClick={() => navigate('/cv')}
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+            >
+              CV
+            </button>
           </nav>
         </div>
       </div>
