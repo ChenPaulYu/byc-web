@@ -10,7 +10,7 @@ const EyeWidget: React.FC<EyeWidgetProps> = ({
   onNormalClick,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
   const [rotationProgress, setRotationProgress] = useState(0);
   const [stareProgress, setStareProgress] = useState(0);
   const [isTriggered, setIsTriggered] = useState(false);

@@ -236,16 +236,19 @@ interface KnobProps {
 const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange }) => {
   const [hovered, setHover] = useState(false);
 
-  const bind = useDrag(({ delta: [_, dy], event, first, last }) => {
-    event.stopPropagation();
-    if (first) onDragChange?.(true);
-    if (last) onDragChange?.(false);
+  const bind = useDrag(
+    ({ delta: [_, dy], event, first, last }) => {
+      event?.stopPropagation();
+      if (first) onDragChange?.(true);
+      if (last) onDragChange?.(false);
 
-    if (onChange) {
-      const newValue = Math.max(0, Math.min(1, value - dy * 0.005));
-      onChange(newValue);
-    }
-  });
+      if (onChange) {
+        const newValue = Math.max(0, Math.min(1, value - dy * 0.005));
+        onChange(newValue);
+      }
+    },
+    { eventOptions: { passive: false } }
+  );
 
   const handleWheel = (e: any) => {
     e.stopPropagation();
