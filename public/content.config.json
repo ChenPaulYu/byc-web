@@ -1,0 +1,74 @@
+{
+  "site": {
+    "title": "Bo-Yu Chen",
+    "description": "Researcher // Engineer // Creator",
+    "author": "Bo-Yu Chen",
+    "url": "https://your-site.com"
+  },
+  "about": {
+    "source": "about.md",
+    "social": {
+      "email": "your.email@example.com",
+      "github": "https://github.com/yourusername",
+      "linkedin": "https://linkedin.com/in/yourusername",
+      "twitter": "https://twitter.com/yourusername"
+    }
+  },
+  "projects": [
+    {
+      "slug": "fluebricks",
+      "enabled": true
+    },
+    {
+      "slug": "djtransgan",
+      "enabled": true
+    },
+    {
+      "slug": "tmc-cl1",
+      "enabled": true
+    },
+    {
+      "slug": "taptap",
+      "enabled": true
+    }
+  ],
+  "blog": [
+    {
+      "slug": "on-instrument-design",
+      "enabled": true
+    },
+    {
+      "slug": "ai-music-reflections",
+      "enabled": true
+    },
+    {
+      "slug": "web-audio-api-learnings",
+      "enabled": true
+    },
+    {
+      "slug": "ddsp-breakthrough",
+      "enabled": true
+    },
+    {
+      "slug": "3d-printing-acoustics",
+      "enabled": true
+    },
+    {
+      "slug": "creative-constraints",
+      "enabled": true
+    },
+    {
+      "slug": "gan-training-tricks",
+      "enabled": true
+    },
+    {
+      "slug": "tokyo-remote-work",
+      "enabled": true
+    },
+    {
+      "slug": "loop-based-composition",
+      "enabled": true
+    }
+  ],
+  "news": []
+}
