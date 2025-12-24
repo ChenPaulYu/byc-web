@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import EyeWidget from '../components/EyeWidget';
+import NavBar from '../components/NavBar';
 
 const Chat: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -56,14 +56,23 @@ const Chat: React.FC = () => {
   };
 
   const handleEasterEgg = () => {
-    setMode('critical');
-    setMessages(prev => [
-      ...prev,
-      {
-        role: 'assistant',
-        content: '👁️ You unlocked critical mode. Now you get the real answers.'
-      }
-    ]);
+    // Screen shake effect
+    document.body.style.animation = 'shake 0.5s';
+    setTimeout(() => {
+      document.body.style.animation = '';
+    }, 500);
+
+    // Immediate transition - shock effect
+    setTimeout(() => {
+      setMode('critical');
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: '👁️ You unlocked critical mode. Now you get the real answers.'
+        }
+      ]);
+    }, 300);
   };
 
   const handleEyeClick = () => {
@@ -72,53 +81,23 @@ const Chat: React.FC = () => {
 
   const isCritical = mode === 'critical';
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
 
   return (
     <div className={`min-h-screen flex flex-col ${
       isCritical ? 'bg-red-950' : 'bg-neutral-50'
     }`}>
-      {/* Header */}
-      <header className={`border-b ${
-        isCritical ? 'bg-red-950/30 border-red-900/20' : 'bg-neutral-50 border-neutral-200/50'
-      }`}>
-        <div className="max-w-3xl mx-auto px-8 py-5">
-          <div className="flex items-center justify-between">
-            <Link
-              to="/"
-              className={`p-1.5 rounded-full transition-opacity hover:opacity-60 ${
-                isCritical ? 'text-red-300/60' : 'text-neutral-400'
-              }`}
-              title="Back to home"
-            >
-              <ArrowLeft size={16} />
-            </Link>
-            {isCritical && (
-              <div className="flex items-center gap-2 text-red-400 text-xs opacity-40">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Navbar */}
+      <NavBar />
 
       {/* Main chat area */}
-      <main className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-6">
+      <main className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-6 pt-20">
         {/* Greeting - only show when no messages */}
         {messages.length === 0 && (
           <div className="pt-16 pb-12 text-center">
             <h2 className={`text-3xl mb-2 ${
               isCritical ? 'text-red-200' : 'text-neutral-800'
             }`} style={{ fontFamily: 'serif' }}>
-              ≋ {getGreeting()}
+              ≋ Start conversation with BYC
             </h2>
           </div>
         )}
@@ -222,10 +201,12 @@ const Chat: React.FC = () => {
       </main>
 
       {/* Eye widget - only on this page */}
-      <EyeWidget
-        onEasterEggTrigger={handleEasterEgg}
-        onNormalClick={handleEyeClick}
-      />
+      <div className="eye-widget-container">
+        <EyeWidget
+          onEasterEggTrigger={handleEasterEgg}
+          onNormalClick={handleEyeClick}
+        />
+      </div>
 
       {/* CSS Animations */}
       <style>{`
@@ -242,6 +223,19 @@ const Chat: React.FC = () => {
 
         .animate-fade-in-up {
           animation: fade-in-up 0.4s ease-out forwards;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translate(0, 0); }
+          10% { transform: translate(-10px, -5px); }
+          20% { transform: translate(10px, 5px); }
+          30% { transform: translate(-10px, 5px); }
+          40% { transform: translate(10px, -5px); }
+          50% { transform: translate(-10px, -5px); }
+          60% { transform: translate(10px, 5px); }
+          70% { transform: translate(-10px, 5px); }
+          80% { transform: translate(10px, -5px); }
+          90% { transform: translate(-5px, 5px); }
         }
       `}</style>
     </div>

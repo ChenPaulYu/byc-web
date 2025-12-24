@@ -1125,6 +1125,12 @@ const LandingScene: React.FC = () => {
             >
               CV
             </button>
+            <button
+              onClick={() => navigate('/chat')}
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+            >
+              Chat
+            </button>
           </nav>
         </div>
       </div>

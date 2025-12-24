@@ -170,56 +170,50 @@ const EyeWidget: React.FC<EyeWidgetProps> = ({
       // Use the maximum progress from either mechanic
       const maxProgress = Math.max(rotationProgress, stareProgress);
 
-      // Color based on combined progress
-      let eyeWhiteColor = '#ffffff';
-      let irisColor = '#4a5568'; // Gray
-      let pupilColor = '#1a202c';
-      let glowColor = '#cbd5e0';
+      // Subtle color transitions - calm neutrals to deep red
+      let eyeWhiteColor = '#fafaf9'; // Warm off-white
+      let irisColor = '#737373'; // Neutral gray
+      let pupilColor = '#262626';
 
-      if (maxProgress >= 0.33 && maxProgress < 0.66) {
-        irisColor = '#9333ea'; // Purple
-        glowColor = '#a855f7';
-      } else if (maxProgress >= 0.66) {
-        irisColor = '#dc2626'; // Red
-        glowColor = '#ef4444';
-        eyeWhiteColor = '#fee2e2'; // Slightly red white
+      // Very subtle progression - only change at high progress
+      if (maxProgress >= 0.7) {
+        irisColor = '#7c2d12'; // Deep brown-red
+        eyeWhiteColor = '#fef2f2'; // Barely tinted
       }
 
-      // Pupil size increases with progress
+      // Minimal pupil size change
       const basePupilRadius = 8;
-      const pupilRadius = basePupilRadius + maxProgress * 8;
+      const pupilRadius = basePupilRadius + maxProgress * 4;
 
-      // Draw eye white
+      // Draw eye white (no border)
       ctx.fillStyle = eyeWhiteColor;
       ctx.beginPath();
       ctx.ellipse(centerX, centerY, eyeRadiusX, eyeRadiusY, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw iris with glow
-      const irisRadius = 15 + maxProgress * 5;
-      ctx.shadowBlur = 10 + maxProgress * 20;
-      ctx.shadowColor = glowColor;
+      // Draw iris - no glow, just solid color
+      const irisRadius = 15 + maxProgress * 3;
+      ctx.shadowBlur = 0;
       ctx.fillStyle = irisColor;
       ctx.beginPath();
       ctx.arc(pupilX, pupilY, irisRadius, 0, Math.PI * 2);
       ctx.fill();
 
       // Draw pupil
-      ctx.shadowBlur = 0;
       ctx.fillStyle = pupilColor;
       ctx.beginPath();
       ctx.arc(pupilX, pupilY, pupilRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw shine on pupil
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      // Subtle shine
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.beginPath();
-      ctx.arc(pupilX - 3, pupilY - 3, pupilRadius * 0.3, 0, Math.PI * 2);
+      ctx.arc(pupilX - 2, pupilY - 2, pupilRadius * 0.25, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw eye outline
-      ctx.strokeStyle = '#2d3748';
-      ctx.lineWidth = 2;
+      // Minimal outline
+      ctx.strokeStyle = '#d4d4d4';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.ellipse(centerX, centerY, eyeRadiusX, eyeRadiusY, 0, 0, Math.PI * 2);
       ctx.stroke();
@@ -239,27 +233,19 @@ const EyeWidget: React.FC<EyeWidgetProps> = ({
   const triggerEasterEgg = () => {
     setIsTriggered(true);
 
-    // Screen shake
-    document.body.style.animation = 'shake 0.5s';
-    setTimeout(() => {
-      document.body.style.animation = '';
-    }, 500);
+    // Trigger callback immediately (no shake)
+    onEasterEggTrigger();
 
-    // Trigger callback
+    // Reset after delay
     setTimeout(() => {
-      onEasterEggTrigger();
-
-      // Reset after delay
-      setTimeout(() => {
-        setIsTriggered(false);
-        setRotationProgress(0);
-        setStareProgress(0);
-        totalRotation.current = 0;
-        rotationDirection.current = 0;
-        lastAngle.current = null;
-        stareStartTime.current = Date.now();
-      }, 2000);
-    }, 500);
+      setIsTriggered(false);
+      setRotationProgress(0);
+      setStareProgress(0);
+      totalRotation.current = 0;
+      rotationDirection.current = 0;
+      lastAngle.current = null;
+      stareStartTime.current = Date.now();
+    }, 1500);
   };
 
   const handleClick = () => {
@@ -280,64 +266,41 @@ const EyeWidget: React.FC<EyeWidgetProps> = ({
         }
       `}</style>
 
-      <div
-        className="fixed bottom-6 right-6 z-50"
-        style={{
-          animation: isTriggered ? 'shake 0.3s infinite' : 'none',
-        }}
-      >
+      <div className="fixed bottom-6 right-6 z-50">
         <canvas
           ref={canvasRef}
           width={width}
           height={height}
           onClick={handleClick}
-          className="cursor-pointer rounded-lg bg-white border-2 border-neutral-200 shadow-lg"
+          className="cursor-pointer rounded-2xl bg-neutral-50 border border-neutral-200/50 shadow-sm transition-all duration-300"
           style={{
-            filter: `brightness(${1 + Math.max(rotationProgress, stareProgress) * 0.2})`,
+            opacity: isTriggered ? 0.6 : 1,
           }}
         />
 
-        {/* Instructions */}
+        {/* Subtle instructions - only show initially */}
         {rotationProgress === 0 && stareProgress === 0 && !isTriggered && (
-          <div className="absolute -top-14 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <p className="text-xs text-neutral-500 text-center">
-              👁️ Two secrets...<br />
-              <span className="text-[10px]">Rotate around or stare at me</span>
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            <p className="text-[10px] text-neutral-400 text-center">
+              Two secrets hidden
             </p>
           </div>
         )}
 
-        {/* Progress indicator - show whichever is higher */}
+        {/* Minimal progress indicator */}
         {(rotationProgress > 0 || stareProgress > 0) && Math.max(rotationProgress, stareProgress) < 1 && !isTriggered && (
-          <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-center">
-            <div className="w-24 h-2 bg-neutral-200 rounded-full overflow-hidden mb-1">
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-center">
+            <div className="w-16 h-0.5 bg-neutral-200 rounded-full overflow-hidden mb-1">
               <div
-                className="h-full transition-all"
+                className="h-full transition-all duration-300"
                 style={{
                   width: `${Math.max(rotationProgress, stareProgress) * 100}%`,
-                  backgroundColor:
-                    Math.max(rotationProgress, stareProgress) < 0.33
-                      ? '#9ca3af'
-                      : Math.max(rotationProgress, stareProgress) < 0.66
-                      ? '#9333ea'
-                      : '#dc2626',
+                  backgroundColor: '#737373',
                 }}
               />
             </div>
-            <p className="text-[10px] text-neutral-500">
-              {rotationProgress > stareProgress ? '🔄' : '👁️'} {Math.round(Math.max(rotationProgress, stareProgress) * 100)}%
-            </p>
-          </div>
-        )}
-
-        {/* Success message */}
-        {isTriggered && (
-          <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <p className="text-sm font-bold text-red-600 animate-pulse">
-              👁️ YOU SAW THROUGH ME!
-            </p>
-            <p className="text-xs text-center text-neutral-600">
-              Initiating...
+            <p className="text-[10px] text-neutral-400">
+              {Math.round(Math.max(rotationProgress, stareProgress) * 100)}%
             </p>
           </div>
         )}
