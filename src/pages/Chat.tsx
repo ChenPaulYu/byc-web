@@ -72,36 +72,34 @@ const Chat: React.FC = () => {
 
   const isCritical = mode === 'critical';
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${
-      isCritical ? 'bg-red-950' : 'bg-white'
+      isCritical ? 'bg-red-950' : 'bg-neutral-50'
     }`}>
       {/* Header */}
-      <header className={`${
-        isCritical ? 'bg-red-950/30' : 'bg-white'
+      <header className={`border-b ${
+        isCritical ? 'bg-red-950/30 border-red-900/20' : 'bg-neutral-50 border-neutral-200/50'
       }`}>
-        <div className="max-w-3xl mx-auto px-8 py-6">
+        <div className="max-w-3xl mx-auto px-8 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link
-                to="/"
-                className={`p-1 rounded-full transition-opacity hover:opacity-60 ${
-                  isCritical ? 'text-red-300' : 'text-neutral-400'
-                }`}
-                title="Back to home"
-              >
-                <ArrowLeft size={16} />
-              </Link>
-              <div>
-                <h1 className={`text-base font-normal ${
-                  isCritical ? 'text-red-200' : 'text-neutral-700'
-                }`}>
-                  {isCritical ? 'Unfiltered' : 'Conversation'}
-                </h1>
-              </div>
-            </div>
+            <Link
+              to="/"
+              className={`p-1.5 rounded-full transition-opacity hover:opacity-60 ${
+                isCritical ? 'text-red-300/60' : 'text-neutral-400'
+              }`}
+              title="Back to home"
+            >
+              <ArrowLeft size={16} />
+            </Link>
             {isCritical && (
-              <div className="flex items-center gap-2 text-red-400 text-xs opacity-60">
+              <div className="flex items-center gap-2 text-red-400 text-xs opacity-40">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
@@ -113,20 +111,37 @@ const Chat: React.FC = () => {
       </header>
 
       {/* Main chat area */}
-      <main className="flex-1 flex flex-col max-w-3xl w-full mx-auto px-8">
-        {/* Input at top */}
-        <div className="pt-8 pb-6">
-          <div className="flex gap-3 items-center">
+      <main className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-6">
+        {/* Greeting - only show when no messages */}
+        {messages.length === 0 && (
+          <div className="pt-16 pb-12 text-center">
+            <h2 className={`text-3xl mb-2 ${
+              isCritical ? 'text-red-200' : 'text-neutral-800'
+            }`} style={{ fontFamily: 'serif' }}>
+              {isCritical ? '✦' : '✸'} {getGreeting()}
+            </h2>
+          </div>
+        )}
+
+        {/* Input - at top if messages exist, centered if empty */}
+        <div className={`${messages.length === 0 ? 'mb-auto' : 'pt-6 pb-4'}`}>
+          <div className={`relative ${
+            isCritical
+              ? 'bg-red-900/20 border border-red-800/30'
+              : 'bg-white border border-neutral-200'
+          } rounded-2xl shadow-sm transition-all duration-200 focus-within:shadow-md ${
+            isCritical ? 'focus-within:border-red-700' : 'focus-within:border-neutral-400'
+          }`}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isCritical ? "Ask anything..." : "Type a message..."}
-              className={`flex-1 px-0 py-2 bg-transparent border-0 border-b focus:outline-none transition-all duration-300 ${
+              placeholder={isCritical ? "Ask me anything..." : "How can I help you today?"}
+              className={`w-full px-5 py-4 bg-transparent focus:outline-none ${
                 isCritical
-                  ? 'text-red-100 placeholder-red-400/50 border-red-900/30 focus:border-red-800'
-                  : 'text-neutral-900 placeholder-neutral-400/60 border-neutral-200 focus:border-neutral-400'
+                  ? 'text-red-100 placeholder-red-400/40'
+                  : 'text-neutral-900 placeholder-neutral-400'
               }`}
               style={{ fontSize: '15px' }}
               autoFocus
@@ -134,90 +149,62 @@ const Chat: React.FC = () => {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className={`text-sm transition-all duration-200 disabled:opacity-30 hover:opacity-60 ${
-                isCritical ? 'text-red-300' : 'text-neutral-500'
+              className={`absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full transition-all duration-200 disabled:opacity-30 flex items-center justify-center ${
+                input.trim() && !isLoading
+                  ? isCritical
+                    ? 'bg-red-700 hover:bg-red-600 text-white'
+                    : 'bg-neutral-800 hover:bg-neutral-700 text-white'
+                  : 'bg-transparent'
               }`}
             >
-              →
+              <span className="text-lg">↑</span>
             </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 pb-12 space-y-8 overflow-y-auto">
-          {messages.length === 0 && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-sm">
-                <p className={`text-sm mb-8 ${
-                  isCritical ? 'text-red-300/60' : 'text-neutral-500'
-                }`}>
-                  {isCritical
-                    ? 'You found the unfiltered mode.'
-                    : 'Start a conversation.'}
-                </p>
-                <div className="space-y-3">
-                  {isCritical ? (
-                    <>
-                      <button
-                        onClick={() => setInput("What do you really think about GANs for music?")}
-                        className="block w-full py-3 text-sm bg-red-900/20 text-red-200 hover:bg-red-900/30 text-left transition-all duration-300"
-                      >
-                        What do you really think about GANs?
-                      </button>
-                      <button
-                        onClick={() => setInput("What's the hardest part of your research?")}
-                        className="block w-full py-3 text-sm bg-red-900/20 text-red-200 hover:bg-red-900/30 text-left transition-all duration-300"
-                      >
-                        What's the hardest part of your research?
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => setInput("Tell me about FlueBricks")}
-                        className="block w-full py-3 text-sm bg-neutral-50 text-neutral-600 hover:bg-neutral-100 text-left transition-all duration-300"
-                      >
-                        Tell me about FlueBricks
-                      </button>
-                      <button
-                        onClick={() => setInput("What's your research focus?")}
-                        className="block w-full py-3 text-sm bg-neutral-50 text-neutral-600 hover:bg-neutral-100 text-left transition-all duration-300"
-                      >
-                        What's your research focus?
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
+        <div className="flex-1 pb-12 space-y-6 overflow-y-auto">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`animate-fade-in-up ${msg.role === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[80%]'}`}
+              className={`animate-fade-in-up ${
+                msg.role === 'user' ? 'flex justify-end' : ''
+              }`}
               style={{ animationDelay: `${idx * 0.05}s` }}
             >
-              <div
-                className={`py-2 ${
-                  msg.role === 'user'
-                    ? isCritical
-                      ? 'text-red-100/90'
-                      : 'text-neutral-700'
-                    : isCritical
-                    ? 'text-red-200/80'
-                    : 'text-neutral-600'
-                }`}
-                style={{ lineHeight: '1.7', fontSize: '15px' }}
-              >
-                {msg.content}
-              </div>
+              {msg.role === 'user' ? (
+                // User message: subtle beige box
+                <div
+                  className={`max-w-[75%] px-5 py-3 rounded-3xl ${
+                    isCritical
+                      ? 'bg-red-900/30 text-red-100'
+                      : 'bg-neutral-200/60 text-neutral-800'
+                  }`}
+                  style={{ lineHeight: '1.6', fontSize: '15px' }}
+                >
+                  {msg.content}
+                </div>
+              ) : (
+                // Assistant message: no box, just text (like Claude)
+                <div
+                  className={`max-w-full ${
+                    isCritical ? 'text-red-200/90' : 'text-neutral-700'
+                  }`}
+                  style={{
+                    lineHeight: '1.7',
+                    fontSize: '15px',
+                    fontFamily: 'Georgia, serif'
+                  }}
+                >
+                  {msg.content}
+                </div>
+              )}
             </div>
           ))}
 
           {isLoading && (
-            <div className="mr-auto max-w-[80%] animate-fade-in-up">
-              <div className={`py-2 text-sm ${
+            <div className="animate-fade-in-up">
+              <div className={`text-sm ${
                 isCritical ? 'text-red-300/40' : 'text-neutral-400'
               }`}>
                 <div className="flex gap-1">
