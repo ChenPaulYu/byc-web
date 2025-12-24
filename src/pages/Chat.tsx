@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import EyeWidget from '../components/EyeWidget';
@@ -11,6 +11,7 @@ const Chat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'normal' | 'critical'>(initialMode);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // If critical mode is triggered via URL, show a welcome message
@@ -21,6 +22,11 @@ const Chat: React.FC = () => {
       }]);
     }
   }, [initialMode]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -125,7 +131,7 @@ const Chat: React.FC = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={isCritical ? "Ask anything..." : "Ask me about my work..."}
-              className={`flex-1 px-4 py-3 border focus:outline-none focus:ring-1 ${
+              className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${
                 isCritical
                   ? 'bg-red-900 border-red-800 text-red-100 placeholder-red-400 focus:ring-red-600 focus:border-red-600'
                   : 'bg-white border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:ring-neutral-900 focus:border-neutral-900'
@@ -135,7 +141,7 @@ const Chat: React.FC = () => {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className={`px-6 py-3 font-medium border transition disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`px-6 py-3 font-medium rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 ${
                 isCritical
                   ? 'bg-red-900 border-red-800 text-red-100 hover:bg-red-800'
                   : 'bg-neutral-900 border-neutral-900 text-white hover:bg-neutral-800'
@@ -170,13 +176,13 @@ const Chat: React.FC = () => {
                     <>
                       <button
                         onClick={() => setInput("What do you really think about GANs for music?")}
-                        className="block w-full px-4 py-3 text-sm border border-red-800 bg-red-900 text-red-100 hover:bg-red-800 text-left transition"
+                        className="block w-full px-4 py-3 text-sm border border-red-800 rounded-lg bg-red-900 text-red-100 hover:bg-red-800 hover:scale-[1.02] text-left transition-all duration-200"
                       >
                         What do you really think about GANs?
                       </button>
                       <button
                         onClick={() => setInput("What's the hardest part of your research?")}
-                        className="block w-full px-4 py-3 text-sm border border-red-800 bg-red-900 text-red-100 hover:bg-red-800 text-left transition"
+                        className="block w-full px-4 py-3 text-sm border border-red-800 rounded-lg bg-red-900 text-red-100 hover:bg-red-800 hover:scale-[1.02] text-left transition-all duration-200"
                       >
                         What's the hardest part of your research?
                       </button>
@@ -185,13 +191,13 @@ const Chat: React.FC = () => {
                     <>
                       <button
                         onClick={() => setInput("Tell me about FlueBricks")}
-                        className="block w-full px-4 py-3 text-sm border border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900 text-left transition"
+                        className="block w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg bg-white text-neutral-700 hover:border-neutral-900 hover:scale-[1.02] text-left transition-all duration-200"
                       >
                         Tell me about FlueBricks
                       </button>
                       <button
                         onClick={() => setInput("What's your research focus?")}
-                        className="block w-full px-4 py-3 text-sm border border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900 text-left transition"
+                        className="block w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg bg-white text-neutral-700 hover:border-neutral-900 hover:scale-[1.02] text-left transition-all duration-200"
                       >
                         What's your research focus?
                       </button>
@@ -205,10 +211,11 @@ const Chat: React.FC = () => {
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
+              style={{ animationDelay: `${idx * 0.1}s` }}
             >
               <div
-                className={`max-w-[85%] px-4 py-3 ${
+                className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm ${
                   msg.role === 'user'
                     ? isCritical
                       ? 'bg-red-900 text-red-50 border border-red-800'
@@ -225,13 +232,13 @@ const Chat: React.FC = () => {
           ))}
 
           {isLoading && (
-            <div className="flex justify-start">
-              <div className={`px-4 py-3 ${
+            <div className="flex justify-start animate-fade-in-up">
+              <div className={`px-4 py-3 rounded-2xl shadow-sm ${
                 isCritical
                   ? 'bg-red-900/50 text-red-100 border border-red-800'
                   : 'bg-neutral-100 text-neutral-900 border border-neutral-200'
               }`}>
-                <div className="flex gap-1">
+                <div className="flex gap-1 text-sm">
                   <span className="animate-bounce">●</span>
                   <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>●</span>
                   <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>●</span>
@@ -239,6 +246,9 @@ const Chat: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} />
         </div>
       </main>
 
@@ -247,6 +257,24 @@ const Chat: React.FC = () => {
         onEasterEggTrigger={handleEasterEgg}
         onNormalClick={handleEyeClick}
       />
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in-up {
+          animation: fade-in-up 0.4s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };
