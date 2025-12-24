@@ -1058,12 +1058,18 @@ const LandingScene: React.FC = () => {
         <OrbitControls
           enabled={!isDragging}
           enablePan={false}
-          enableZoom={false} // Disable zoom to keep layout fixed like screenshot
+          enableZoom={true}
+          minDistance={8}
+          maxDistance={20}
           minPolarAngle={Math.PI / 4}
           maxPolarAngle={Math.PI / 2.5}
           // Fix azimuth to give that slightly angled front view
           minAzimuthAngle={-Math.PI / 8}
           maxAzimuthAngle={Math.PI / 8}
+          zoomSpeed={0.8}
+          // Enable touch zoom with pinch gestures
+          enableDamping={true}
+          dampingFactor={0.05}
         />
 
         <MPC synth={synth} onDragChange={setIsDragging} />
@@ -1100,34 +1106,34 @@ const LandingScene: React.FC = () => {
           </div>
 
           {/* Right: Navigation */}
-          <nav className="w-full sm:w-1/3 pointer-events-auto flex flex-row sm:flex-col items-center sm:items-end gap-4 sm:gap-4 justify-center sm:justify-end">
+          <nav className="w-full sm:w-1/3 pointer-events-auto flex flex-wrap sm:flex-col items-center sm:items-end gap-3 sm:gap-4 justify-center sm:justify-end">
             <button
               onClick={() => navigate('/about')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               About
             </button>
             <button
               onClick={() => navigate('/projects')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               Projects
             </button>
             <button
               onClick={() => navigate('/blog')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               Blog
             </button>
             <button
               onClick={() => navigate('/cv')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               CV
             </button>
             <button
               onClick={() => navigate('/chat')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-2 sm:px-0"
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               Chat
             </button>
