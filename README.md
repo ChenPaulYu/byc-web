@@ -1,85 +1,60 @@
-# Bo-Yu Chen | Creative Technologist Portfolio
+# byc-web
 
-This is the personal website and portfolio of Bo-Yu Chen, a Creative Technologist specializing in AI Music, HCI, and Web Audio.
+Personal portfolio website for Bo-Yu Chen — Creative Technologist, Researcher, Engineer.
 
-## 🚀 Features
+## Features
 
-- **Interactive 3D Landing Scene**: A custom-built MPC-style interface using React Three Fiber and Three.js.
-- **Web Audio Integration**: Playable pads with synthesized sounds using Tone.js.
-- **Responsive Design**: Clean, minimal aesthetic built with Tailwind CSS.
-- **Project Showcase**: Filterable list of research, engineering, and creative projects.
-- **Modern Tech Stack**: Built with React 19, Vite, and TypeScript.
+- **Interactive MPC Controller** - 3D music production interface built with React Three Fiber
+- **Markdown Blog System** - Write posts in markdown with frontmatter support
+- **Project Showcase** - Display projects with detailed case studies
+- **Chat Interface** - AI-powered chat with Easter egg mechanics
+- **Minimal Design** - Calm, poetic aesthetic inspired by Bear Blog
 
-## 📁 Project Structure
+## Tech Stack
 
-The codebase is organized following modern web development best practices:
+- **React 19** + TypeScript
+- **Vite** - Fast build tool
+- **React Three Fiber** - 3D graphics with Three.js
+- **Tailwind CSS** - Utility-first styling
+- **Tone.js** - Web Audio framework
+- **React Router** - Client-side routing
 
-```text
-.
-├── public/                # Static assets (3D models, videos, metadata)
-│   ├── model.glb          # 3D Avatar model
-│   ├── animation.mp4      # Background/Landing animation
-│   └── metadata.json      # Site metadata
-├── src/                   # Source code
-│   ├── components/        # Reusable UI components
-│   │   ├── LandingScene.tsx # Main 3D interactive scene
-│   │   ├── Layout.tsx     # Main page wrapper
-│   │   └── NavBar.tsx     # Navigation component
-│   ├── pages/             # Page components (Home, About, Projects, CV)
-│   ├── styles/            # CSS and styling
-│   │   └── index.css      # Global styles and Tailwind directives
-│   ├── App.tsx            # Main application component & Routing
-│   ├── index.tsx          # Application entry point
-│   ├── constants.ts       # Global constants and project data
-│   └── types.ts           # TypeScript type definitions
-├── index.html             # HTML entry point
-├── package.json           # Project dependencies and scripts
-├── tailwind.config.js     # Tailwind CSS configuration
-├── vite.config.ts         # Vite configuration
-└── tsconfig.json          # TypeScript configuration
-```
+## Getting Started
 
-## 🛠️ Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-
-### Installation
-
-1. Clone the repository (if you haven't already).
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Development
-
-Run the development server:
 ```bash
+# Install dependencies
+npm install
+
+# Start dev server
 npm run dev
-```
-The site will be available at `http://localhost:3000`.
 
-### Building for Production
-
-To create a production build:
-```bash
+# Build for production
 npm run build
+
+# Preview production build
+npm run preview
 ```
-The optimized files will be in the `dist/` directory.
 
-## 🎨 Technologies Used
+## Project Structure
 
-- **Framework**: [React 19](https://react.dev/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **3D Rendering**: [Three.js](https://threejs.org/), [@react-three/fiber](https://github.com/pmndrs/react-three-fiber), [@react-three/drei](https://github.com/pmndrs/drei)
-- **Audio**: [Tone.js](https://tonejs.github.io/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Routing**: [React Router](https://reactrouter.com/)
+```
+src/
+├── components/     # Reusable components
+├── pages/          # Route pages
+├── content/        # Markdown content
+│   ├── blog/      # Blog posts
+│   └── projects/  # Project case studies
+└── public/         # Static assets
+```
 
-## 📄 License
+## Development
 
-This project is private and for personal use.
+The site uses HashRouter for GitHub Pages compatibility. The interactive MPC on the landing page features:
+- Keyboard controls (1-4, Q-R, A-F, Z-V)
+- Audio synthesis with Tone.js
+- Real-time 3D rendering
+- Responsive design
+
+## License
+
+© 2025 Bo-Yu Chen. All rights reserved.
