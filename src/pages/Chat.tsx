@@ -77,43 +77,35 @@ const Chat: React.FC = () => {
       isCritical ? 'bg-red-950' : 'bg-white'
     }`}>
       {/* Header */}
-      <header className={`border-b ${
-        isCritical ? 'border-red-800 bg-red-950' : 'border-neutral-200 bg-white'
+      <header className={`${
+        isCritical ? 'bg-red-950/30' : 'bg-white'
       }`}>
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-3xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 to="/"
-                className={`p-2 -ml-2 rounded transition-colors ${
-                  isCritical
-                    ? 'hover:bg-red-900 text-red-300'
-                    : 'hover:bg-neutral-100 text-neutral-500'
+                className={`p-1 rounded-full transition-opacity hover:opacity-60 ${
+                  isCritical ? 'text-red-300' : 'text-neutral-400'
                 }`}
                 title="Back to home"
               >
-                <ArrowLeft size={18} />
+                <ArrowLeft size={16} />
               </Link>
               <div>
-                <h1 className={`text-lg font-semibold ${
-                  isCritical ? 'text-red-100' : 'text-neutral-900'
-                }`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                  {isCritical ? 'Critical Mode' : 'Chat'}
-                </h1>
-                <p className={`text-sm ${
-                  isCritical ? 'text-red-400' : 'text-neutral-500'
+                <h1 className={`text-base font-normal ${
+                  isCritical ? 'text-red-200' : 'text-neutral-700'
                 }`}>
-                  {isCritical ? 'Unfiltered responses' : 'Ask me about my work'}
-                </p>
+                  {isCritical ? 'Unfiltered' : 'Conversation'}
+                </h1>
               </div>
             </div>
             {isCritical && (
-              <div className="flex items-center gap-2 text-red-400 text-xs">
-                <span className="relative flex h-2 w-2">
+              <div className="flex items-center gap-2 text-red-400 text-xs opacity-60">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
                 </span>
-                <span>Critical mode active</span>
               </div>
             )}
           </div>
@@ -121,68 +113,60 @@ const Chat: React.FC = () => {
       </header>
 
       {/* Main chat area */}
-      <main className="flex-1 flex flex-col max-w-4xl w-full mx-auto px-6">
+      <main className="flex-1 flex flex-col max-w-3xl w-full mx-auto px-8">
         {/* Input at top */}
-        <div className="py-6">
-          <div className="flex gap-3">
+        <div className="pt-8 pb-6">
+          <div className="flex gap-3 items-center">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isCritical ? "Ask anything..." : "Ask me about my work..."}
-              className={`flex-1 px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${
+              placeholder={isCritical ? "Ask anything..." : "Type a message..."}
+              className={`flex-1 px-0 py-2 bg-transparent border-0 border-b focus:outline-none transition-all duration-300 ${
                 isCritical
-                  ? 'bg-red-900 border-red-800 text-red-100 placeholder-red-400 focus:ring-red-600 focus:border-red-600'
-                  : 'bg-white border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:ring-neutral-900 focus:border-neutral-900'
+                  ? 'text-red-100 placeholder-red-400/50 border-red-900/30 focus:border-red-800'
+                  : 'text-neutral-900 placeholder-neutral-400/60 border-neutral-200 focus:border-neutral-400'
               }`}
+              style={{ fontSize: '15px' }}
               autoFocus
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className={`px-6 py-3 font-medium rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 ${
-                isCritical
-                  ? 'bg-red-900 border-red-800 text-red-100 hover:bg-red-800'
-                  : 'bg-neutral-900 border-neutral-900 text-white hover:bg-neutral-800'
+              className={`text-sm transition-all duration-200 disabled:opacity-30 hover:opacity-60 ${
+                isCritical ? 'text-red-300' : 'text-neutral-500'
               }`}
             >
-              Send
+              →
             </button>
           </div>
-          <p className={`text-xs mt-2 ${
-            isCritical ? 'text-red-400' : 'text-neutral-500'
-          }`}>
-            {isCritical
-              ? 'Critical mode: Unfiltered responses'
-              : 'Demo chatbot - Real responses coming soon'}
-          </p>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 pb-6 space-y-6 overflow-y-auto">
+        <div className="flex-1 pb-12 space-y-8 overflow-y-auto">
           {messages.length === 0 && (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
-                <p className={`text-lg mb-6 ${
-                  isCritical ? 'text-red-200' : 'text-neutral-600'
+              <div className="text-center max-w-sm">
+                <p className={`text-sm mb-8 ${
+                  isCritical ? 'text-red-300/60' : 'text-neutral-500'
                 }`}>
                   {isCritical
                     ? 'You found the unfiltered mode.'
                     : 'Start a conversation.'}
                 </p>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {isCritical ? (
                     <>
                       <button
                         onClick={() => setInput("What do you really think about GANs for music?")}
-                        className="block w-full px-4 py-3 text-sm border border-red-800 rounded-lg bg-red-900 text-red-100 hover:bg-red-800 hover:scale-[1.02] text-left transition-all duration-200"
+                        className="block w-full py-3 text-sm bg-red-900/20 text-red-200 hover:bg-red-900/30 text-left transition-all duration-300"
                       >
                         What do you really think about GANs?
                       </button>
                       <button
                         onClick={() => setInput("What's the hardest part of your research?")}
-                        className="block w-full px-4 py-3 text-sm border border-red-800 rounded-lg bg-red-900 text-red-100 hover:bg-red-800 hover:scale-[1.02] text-left transition-all duration-200"
+                        className="block w-full py-3 text-sm bg-red-900/20 text-red-200 hover:bg-red-900/30 text-left transition-all duration-300"
                       >
                         What's the hardest part of your research?
                       </button>
@@ -191,13 +175,13 @@ const Chat: React.FC = () => {
                     <>
                       <button
                         onClick={() => setInput("Tell me about FlueBricks")}
-                        className="block w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg bg-white text-neutral-700 hover:border-neutral-900 hover:scale-[1.02] text-left transition-all duration-200"
+                        className="block w-full py-3 text-sm bg-neutral-50 text-neutral-600 hover:bg-neutral-100 text-left transition-all duration-300"
                       >
                         Tell me about FlueBricks
                       </button>
                       <button
                         onClick={() => setInput("What's your research focus?")}
-                        className="block w-full px-4 py-3 text-sm border border-neutral-300 rounded-lg bg-white text-neutral-700 hover:border-neutral-900 hover:scale-[1.02] text-left transition-all duration-200"
+                        className="block w-full py-3 text-sm bg-neutral-50 text-neutral-600 hover:bg-neutral-100 text-left transition-all duration-300"
                       >
                         What's your research focus?
                       </button>
@@ -211,20 +195,20 @@ const Chat: React.FC = () => {
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
-              style={{ animationDelay: `${idx * 0.1}s` }}
+              className={`animate-fade-in-up ${msg.role === 'user' ? 'ml-auto max-w-[80%]' : 'mr-auto max-w-[80%]'}`}
+              style={{ animationDelay: `${idx * 0.05}s` }}
             >
               <div
-                className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm ${
+                className={`py-2 ${
                   msg.role === 'user'
                     ? isCritical
-                      ? 'bg-red-900 text-red-50 border border-red-800'
-                      : 'bg-neutral-900 text-white'
+                      ? 'text-red-100/90'
+                      : 'text-neutral-700'
                     : isCritical
-                    ? 'bg-red-900/50 text-red-100 border border-red-800'
-                    : 'bg-neutral-100 text-neutral-900 border border-neutral-200'
+                    ? 'text-red-200/80'
+                    : 'text-neutral-600'
                 }`}
-                style={{ lineHeight: '1.6' }}
+                style={{ lineHeight: '1.7', fontSize: '15px' }}
               >
                 {msg.content}
               </div>
@@ -232,13 +216,11 @@ const Chat: React.FC = () => {
           ))}
 
           {isLoading && (
-            <div className="flex justify-start animate-fade-in-up">
-              <div className={`px-4 py-3 rounded-2xl shadow-sm ${
-                isCritical
-                  ? 'bg-red-900/50 text-red-100 border border-red-800'
-                  : 'bg-neutral-100 text-neutral-900 border border-neutral-200'
+            <div className="mr-auto max-w-[80%] animate-fade-in-up">
+              <div className={`py-2 text-sm ${
+                isCritical ? 'text-red-300/40' : 'text-neutral-400'
               }`}>
-                <div className="flex gap-1 text-sm">
+                <div className="flex gap-1">
                   <span className="animate-bounce">●</span>
                   <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>●</span>
                   <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>●</span>
