@@ -118,7 +118,7 @@ const Chat: React.FC = () => {
             <h2 className={`text-3xl mb-2 ${
               isCritical ? 'text-red-200' : 'text-neutral-800'
             }`} style={{ fontFamily: 'serif' }}>
-              {isCritical ? '◈' : '◇'} {getGreeting()}
+              ≋ {getGreeting()}
             </h2>
           </div>
         )}
