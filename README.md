@@ -63,7 +63,7 @@ touch public/content/blog/my-post.md
 vim public/content/about.md
 ```
 
-See [CONTENT_GUIDE.md](./CONTENT_GUIDE.md) for detailed documentation.
+See [docs/content-guide.md](./docs/content-guide.md) for detailed documentation.
 
 ## 📁 Project Structure
 
@@ -93,7 +93,8 @@ byc-web/
 │   │   └── Chat.tsx
 │   └── utils/
 │       └── contentLoader.ts      # Content loading logic
-├── CONTENT_GUIDE.md              # 📖 Detailed content guide
+├── docs/
+│   └── content-guide.md          # 📖 Detailed content guide
 └── README.md                     # This file
 ```
 
@@ -247,7 +248,7 @@ For GitHub Pages, the site uses `HashRouter` for compatibility.
 
 ## 📚 Documentation
 
-- **[CONTENT_GUIDE.md](./CONTENT_GUIDE.md)** - Complete content management guide
+- **[docs/content-guide.md](./docs/content-guide.md)** - Complete content management guide
 - **TypeScript types** - See `src/utils/contentLoader.ts` for content interfaces
 
 ## 🤝 Contributing
