@@ -34,5 +34,6 @@ export interface Publication {
   authors: string;
   venue: string;
   year: string;
+  acceptanceRate?: string;
   link?: string;
 }

@@ -66,8 +66,15 @@ const CV: React.FC = () => {
             <div key={idx}>
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>
               <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: pub.authors }} />
-              <div className="text-xs text-neutral-400 font-mono">
-                {pub.venue}, {pub.year}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-400 font-mono">
+                <span>
+                  {pub.venue}, {pub.year}
+                </span>
+                {pub.acceptanceRate && (
+                  <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 tabular-nums">
+                    Acceptance rate: {pub.acceptanceRate}
+                  </span>
+                )}
               </div>
             </div>
           ))}

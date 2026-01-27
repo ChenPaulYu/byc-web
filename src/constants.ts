@@ -72,33 +72,45 @@ export const EXPERIENCE: Experience[] = [
 export const PUBLICATIONS: Publication[] = [
   {
     title: "FlueBricks: A Construction Kit of Flute-like Instrument for Acoustic Reasoning",
-    authors: "<strong>Bo-Yu Chen</strong>, Chiao-Wei Huang, Lung-Pan Cheng",
-    venue: "CHI 2026 (25% acceptance rate)",
-    year: "2026"
+    authors: "<strong>*Bo-Yu Chen*</strong>, Chiao-Wei Huang, Lung-Pan Cheng",
+    venue: "CHI 2026",
+    year: "2026",
+    acceptanceRate: "25%"
   },
   {
     title: "AI TrackMate: Finally, Someone Who Will Give Your Music More Than Just \"Sounds Great!\"",
-    authors: "Yi-Lin Jiang, Chia-Ho Hsiung, Yen-Tung Yeh, Lu-Rong Chen, <strong>Bo-Yu Chen</strong>",
+    authors: "Yi-Lin Jiang, Chia-Ho Hsiung, Yen-Tung Yeh, Lu-Rong Chen, <strong>*Bo-Yu Chen*</strong>",
     venue: "NeurIPS Creative AI Track",
-    year: "2024"
+    year: "2024",
+    acceptanceRate: "31%"
   },
   {
     title: "Automatic DJ Transitions with Differentiable Audio Effects and Generative Adversarial Networks",
-    authors: "<strong>Bo-Yu Chen</strong>, Wei-Han Hsu, Wei-Hsiang Liao, Marco A. Martínez Ramírez, Yuki Mitsufuji, Yi-Hsuan Yang",
+    authors: "<strong>*Bo-Yu Chen*</strong>, Wei-Han Hsu, Wei-Hsiang Liao, Marco A. Martínez Ramírez, Yuki Mitsufuji, Yi-Hsuan Yang",
     venue: "ICASSP",
-    year: "2022"
+    year: "2022",
+    acceptanceRate: "47%"
   },
   {
-    title: "Exploiting Pre-trained Feature Networks for GANs in Audio-Domain Loop Generation",
-    authors: "Yen-Tung Yeh, <strong>Bo-Yu Chen</strong>, Yi-Hsuan Yang",
+    title: "Exploiting Pre-trained Feature Networks for Generative Adversarial Networks in Audio-Domain Loop Generation",
+    authors: "Yen-Tung Yeh, <strong>*Bo-Yu Chen*</strong>, Yi-Hsuan Yang",
     venue: "ISMIR",
-    year: "2022"
+    year: "2022",
+    acceptanceRate: "43%"
+  },
+  {
+    title: "A Benchmarking Initiative for Audio-Domain Music Generation Using the Freesound Loop Dataset",
+    authors: "Tun-Min Hung, <strong>*Bo-Yu Chen*</strong>, Yen-Tung Yeh, Yi-Hsuan Yang",
+    venue: "ISMIR",
+    year: "2021",
+    acceptanceRate: "34%"
   },
   {
     title: "Neural Loop Combiner: Neural Network Models for Assessing the Compatibility of Loops",
-    authors: "<strong>Bo-Yu Chen</strong>, Jordan Smith, Yi-Hsuan Yang",
+    authors: "<strong>*Bo-Yu Chen*</strong>, Jordan Smith, Yi-Hsuan Yang",
     venue: "ISMIR",
-    year: "2020"
+    year: "2020",
+    acceptanceRate: "38%"
   }
 ];
 
