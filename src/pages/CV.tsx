@@ -1,5 +1,5 @@
 import React from 'react';
-import { EDUCATION, EXPERIENCE, PUBLICATIONS } from '../constants';
+import { AWARDS, EDUCATION, PUBLICATIONS, RESEARCH_EXPERIENCE, REVIEWER, TEACHING_EXPERIENCE, THESES, WORK_EXPERIENCE } from '../constants';
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-6 mt-12 border-b border-neutral-100 pb-2">
@@ -13,7 +13,7 @@ const CV: React.FC = () => {
       <div className="flex justify-between items-end mb-12">
         <div>
             <h1 className="text-4xl font-bold mb-2">Bo-Yu Chen</h1>
-            <p className="text-neutral-500">Researcher & Educator in AI Music & HCI</p>
+            <p className="text-neutral-500">Researcher and builder at the intersection of MIR, DSP, Instrument Making, and HCI.</p>
         </div>
         <button 
             className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
@@ -40,9 +40,9 @@ const CV: React.FC = () => {
       </section>
 
       <section>
-        <SectionTitle>Experience</SectionTitle>
+        <SectionTitle>Work Experience</SectionTitle>
         <div className="space-y-10">
-          {EXPERIENCE.map((exp, idx) => (
+          {WORK_EXPERIENCE.map((exp, idx) => (
             <div key={idx}>
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
@@ -60,7 +60,62 @@ const CV: React.FC = () => {
       </section>
 
       <section>
-        <SectionTitle>Selected Publications</SectionTitle>
+        <SectionTitle>Research Experience</SectionTitle>
+        <div className="space-y-10">
+          {RESEARCH_EXPERIENCE.map((exp, idx) => (
+            <div key={idx}>
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
+                <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
+              </div>
+              <p className="text-neutral-700 font-medium mb-3">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed">
+                {exp.description.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionTitle>Teaching</SectionTitle>
+        <div className="space-y-10">
+          {TEACHING_EXPERIENCE.map((exp, idx) => (
+            <div key={idx}>
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
+                <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
+              </div>
+              <p className="text-neutral-700 font-medium mb-3">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed">
+                {exp.description.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionTitle>Thesis</SectionTitle>
+        <div className="space-y-6">
+          {THESES.map((thesis, idx) => (
+            <div key={idx}>
+              <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
+              <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: thesis.authors }} />
+              <div className="text-xs text-neutral-400 font-mono">
+                {thesis.institution}, {thesis.year}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionTitle>Publications</SectionTitle>
         <div className="space-y-6">
           {PUBLICATIONS.map((pub, idx) => (
             <div key={idx}>
@@ -80,24 +135,38 @@ const CV: React.FC = () => {
           ))}
         </div>
       </section>
-      
+
       <section>
-          <SectionTitle>Skills</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-            <div>
-                <h4 className="font-semibold mb-2">AI & Machine Learning</h4>
-                <p className="text-neutral-600">PyTorch, GANs, DDSP, NLP, MIR, Audio Generative Models</p>
+        <SectionTitle>Awards</SectionTitle>
+        <div className="space-y-4">
+          {AWARDS.map((award, idx) => (
+            <div key={idx} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              <span className="font-medium text-neutral-900">{award.title}</span>
+              <span className="text-neutral-400">|</span>
+              <span className="text-neutral-600">{award.venue} {award.year}</span>
+              {award.detail && (
+                <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 text-xs font-mono">
+                  {award.detail}
+                </span>
+              )}
             </div>
-            <div>
-                <h4 className="font-semibold mb-2">Programming</h4>
-                <p className="text-neutral-600">Python, TypeScript, C++, Max/MSP, Tone.js, Three.js</p>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-2">Digital Fabrication</h4>
-                <p className="text-neutral-600">Fusion 360, 3D Printing, Arduino, Acoustic Customization</p>
-            </div>
-          </div>
+          ))}
+        </div>
       </section>
+
+      <section>
+        <SectionTitle>Reviewer</SectionTitle>
+        <div className="space-y-2 text-sm text-neutral-700">
+          {REVIEWER.map((item, idx) => (
+            <div key={idx} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="font-medium text-neutral-900">{item.venue}</span>
+              <span className="text-neutral-400">|</span>
+              <span className="text-neutral-600 tabular-nums">{item.years.join(', ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+      
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Project, Experience, Education, Publication } from './types';
+import { Project, Experience, Education, Publication, Thesis, Award } from './types';
 
 export const SOCIAL_LINKS = {
   email: "bernie40916@gmail.com",
@@ -22,18 +22,33 @@ export const EDUCATION: Education[] = [
   }
 ];
 
-export const EXPERIENCE: Experience[] = [
+export const WORK_EXPERIENCE: Experience[] = [
   {
     company: "Rhythm Culture Corporation",
     role: "Technical Lead",
     duration: "July 2023 - Present",
     location: "Taiwan",
     description: [
-      "Developed web-based music education tools with DSP, AI-driven music platforms, and MIR techniques.",
+      "Developed a web-based music sampler for high school classrooms (TMC-CL1, launching soon).",
+      "Built agent-based Music AI systems spanning DJ, Producer, and Tutor roles for interactive creation and feedback workflows.",
       "Leading projects funded by Taipei Music Center, TAICCA, and Taipei Government.",
-      "Recognized at NeurIPS Creative AI Track 2024."
+      "Recognized at NeurIPS Creative AI Track 2024 and ISMIR 2025 LLM4Music workshop."
     ]
   },
+  {
+    company: "Zone Sound Creative Corporation",
+    role: "Interactive Engineer",
+    duration: "Mar 2019 - Aug 2019",
+    location: "Taiwan",
+    description: [
+      "Shipped \"Taptap,\" a browser-based performance interface using a cappella samples; exhibited at Vocal Asia 2019 (Japan).",
+      "Produced \"FusionTaiwanBeat,\" an audio-visual system featuring Taiwanese electronic music with DJ Sonica Calico & VJ Celso Urro; exhibited at MIDEM 2019 (France).",
+      "Developed \"Duplex Transmission,\" a real-time audience-performer interaction system; performed at Songshan Culture Park (Taiwan) with Po-Hao Chi."
+    ]
+  }
+];
+
+export const RESEARCH_EXPERIENCE: Experience[] = [
   {
     company: "Computational Physicality Lab, NTU",
     role: "Research Assistant",
@@ -53,7 +68,7 @@ export const EXPERIENCE: Experience[] = [
     description: [
       "Developed DJTransGAN, the first AI model for generating smooth DJ-like transitions.",
       "Designed automated DJ mixing systems integrating web crawlers and deep learning models.",
-      "Open-sourced project attracting 90+ GitHub stars."
+      "Open-sourced project attracting 100+ GitHub stars."
     ]
   },
   {
@@ -64,7 +79,31 @@ export const EXPERIENCE: Experience[] = [
     description: [
       "Led research in intelligent music production, loop-based retrieval and generation.",
       "Published 5+ papers in top music technology conferences (ISMIR).",
-      "Mentored 5+ junior researchers and developed DeepMIR course materials."
+      "Mentored 5+ junior researchers and developed DeepMIR course materials.",
+      "Collaborated with TikTok, Sony, and MTG at UPF on joint publications."
+    ]
+  }
+];
+
+export const TEACHING_EXPERIENCE: Experience[] = [
+  {
+    company: "BLND Creative Coding School",
+    role: "Instructor",
+    duration: "Aug 2020 - Jul 2023",
+    location: "Taiwan",
+    description: [
+      "Taught creative coding, AI art creation, and interactive device design with Arduino.",
+      "Led courses on Stable Diffusion workflows and GAN-based ML image generation from data collection to training."
+    ]
+  },
+  {
+    company: "OrangeApple Children Programming School",
+    role: "Instructor",
+    duration: "Jul 2015 - Sep 2019",
+    location: "Taiwan",
+    description: [
+      "Taught web development and algorithms in JavaScript and C++ for elementary to senior high students.",
+      "Covered advanced topics (sorting, recursion, dynamic programming, intro AI) and coached students for the APCS exam."
     ]
   }
 ];
@@ -111,6 +150,24 @@ export const PUBLICATIONS: Publication[] = [
     venue: "ISMIR",
     year: "2020",
     acceptanceRate: "38%"
+  }
+];
+
+export const THESES: Thesis[] = [
+  {
+    title: "FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems",
+    authors: "<strong>*Bo-Yu Chen*</strong>, Chiao-Wei Huang, Lung-Pan Cheng",
+    institution: "NTU",
+    year: "2025"
+  }
+];
+
+export const AWARDS: Award[] = [
+  {
+    title: "FlueBricks",
+    venue: "TAICHI",
+    year: "2025",
+    detail: "Best Paper Award 🏆"
   }
 ];
 
@@ -166,4 +223,10 @@ export const PROJECTS: Project[] = [
     ],
     image: "https://picsum.photos/600/403?grayscale"
   }
+];
+
+export const REVIEWER = [
+  { venue: "ISMIR", years: ["2020", "2021", "2022", "2023", "2024"] },
+  { venue: "ICASSP", years: ["2025"] },
+  { venue: "NeurIPS Creative AI Track", years: ["2025"] }
 ];

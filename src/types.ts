@@ -37,3 +37,17 @@ export interface Publication {
   acceptanceRate?: string;
   link?: string;
 }
+
+export interface Thesis {
+  title: string;
+  authors: string;
+  institution: string;
+  year: string;
+}
+
+export interface Award {
+  title: string;
+  venue: string;
+  year: string;
+  detail?: string;
+}
