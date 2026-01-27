@@ -27,7 +27,29 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# Generate a clean CV PDF (no browser headers/footers)
+# Output: public/cv.pdf (and dist/cv.pdf after build)
+npm run build:cvpdf
 ```
+
+## 🧾 CV PDF
+
+The CV page (`/#/cv`) includes a **Download PDF** button that serves `public/cv.pdf`.
+
+To (re)generate the PDF locally:
+
+```bash
+# Build the site and render the CV page to PDF
+npm run build:cvpdf
+
+# If you already built, you can render only:
+npm run cv:pdf
+```
+
+Notes:
+- The first run will download Playwright's Chromium (takes a bit).
+- The PDF is generated via Playwright, so it does not include the browser print header/footer (URL, date/time, page counters).
 
 ### Adding Content (No Code Required!)
 

@@ -1,31 +1,65 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { AWARDS, EDUCATION, PUBLICATIONS, RESEARCH_EXPERIENCE, REVIEWER, TEACHING_EXPERIENCE, THESES, WORK_EXPERIENCE } from '../constants';
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-6 mt-12 border-b border-neutral-100 pb-2">
+  <h2 className="text-sm print:text-xs font-bold uppercase tracking-widest text-neutral-400 mb-6 print:mb-3 mt-12 print:mt-6 border-b border-neutral-100 pb-2 print:pb-1">
     {children}
   </h2>
 );
 
 const CV: React.FC = () => {
+  const originalTitleRef = useRef<string>('');
+
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      originalTitleRef.current = document.title;
+      document.title = 'Bo-Yu Chen - CV';
+    };
+
+    const handleAfterPrint = () => {
+      if (originalTitleRef.current) document.title = originalTitleRef.current;
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
+
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-20">
-      <div className="flex justify-between items-end mb-12">
+    <div className="max-w-3xl mx-auto px-6 print:px-0 pb-20 print:pb-0">
+      <div className="flex justify-between items-end mb-12 print:mb-6">
         <div>
-            <h1 className="text-4xl font-bold mb-2">Bo-Yu Chen</h1>
-            <p className="text-neutral-500">Researcher and builder at the intersection of MIR, DSP, Instrument Making, and HCI.</p>
+            <h1 className="text-4xl print:text-3xl font-bold mb-2">Bo-Yu Chen</h1>
+            <p className="text-neutral-500 print:text-sm">Researcher and builder at the intersection of MIR, DSP, Instrument Making, and HCI.</p>
         </div>
-        <button 
+        <div className="flex gap-2 print:hidden">
+          <a
+            href="/cv.pdf"
             className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
-            onClick={() => window.print()}
-        >
-            Print PDF
-        </button>
+            download
+          >
+            Download PDF
+          </a>
+          <button 
+              className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
+              onClick={() => {
+                originalTitleRef.current = document.title;
+                document.title = 'Bo-Yu Chen - CV';
+                window.print();
+              }}
+          >
+              Print
+          </button>
+        </div>
       </div>
 
       <section>
         <SectionTitle>Education</SectionTitle>
-        <div className="space-y-8">
+        <div className="space-y-8 print:space-y-5">
           {EDUCATION.map((edu, idx) => (
             <div key={idx}>
               <div className="flex justify-between items-baseline mb-1">
@@ -41,15 +75,15 @@ const CV: React.FC = () => {
 
       <section>
         <SectionTitle>Work Experience</SectionTitle>
-        <div className="space-y-10">
+        <div className="space-y-10 print:space-y-6">
           {WORK_EXPERIENCE.map((exp, idx) => (
             <div key={idx}>
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
                 <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
               </div>
-              <p className="text-neutral-700 font-medium mb-3">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed">
+              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
@@ -61,15 +95,15 @@ const CV: React.FC = () => {
 
       <section>
         <SectionTitle>Research Experience</SectionTitle>
-        <div className="space-y-10">
+        <div className="space-y-10 print:space-y-6">
           {RESEARCH_EXPERIENCE.map((exp, idx) => (
             <div key={idx}>
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
                 <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
               </div>
-              <p className="text-neutral-700 font-medium mb-3">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed">
+              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
@@ -81,15 +115,15 @@ const CV: React.FC = () => {
 
       <section>
         <SectionTitle>Teaching</SectionTitle>
-        <div className="space-y-10">
+        <div className="space-y-10 print:space-y-6">
           {TEACHING_EXPERIENCE.map((exp, idx) => (
             <div key={idx}>
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
                 <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
               </div>
-              <p className="text-neutral-700 font-medium mb-3">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed">
+              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
                   <li key={i}>{item}</li>
                 ))}
@@ -101,7 +135,7 @@ const CV: React.FC = () => {
 
       <section>
         <SectionTitle>Thesis</SectionTitle>
-        <div className="space-y-6">
+        <div className="space-y-6 print:space-y-4">
           {THESES.map((thesis, idx) => (
             <div key={idx}>
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
@@ -116,7 +150,7 @@ const CV: React.FC = () => {
 
       <section>
         <SectionTitle>Publications</SectionTitle>
-        <div className="space-y-6">
+        <div className="space-y-6 print:space-y-4">
           {PUBLICATIONS.map((pub, idx) => (
             <div key={idx}>
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>

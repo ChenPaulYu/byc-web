@@ -8,7 +8,7 @@ const NavBar: React.FC = () => {
     }`;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-transparent">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-transparent print:hidden">
       <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
         <NavLink to="/" className="text-base font-bold tracking-tight text-black hover:opacity-70 transition-opacity">
           Bo-Yu Chen

@@ -226,7 +226,7 @@ export const PROJECTS: Project[] = [
 ];
 
 export const REVIEWER = [
-  { venue: "ISMIR", years: "2020–2024" },
+  { venue: "ISMIR", years: "2020–2025" },
   { venue: "ICASSP", years: "2025" },
   { venue: "NeurIPS Creative AI Track", years: "2025" }
 ];

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "cv:pdf": "node scripts/render-cv-pdf.mjs",
+    "build:cvpdf": "npm run build && npm run cv:pdf",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -32,6 +34,7 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.17",
+    "playwright": "1.58.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "~5.8.2",
