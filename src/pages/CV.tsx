@@ -161,7 +161,7 @@ const CV: React.FC = () => {
             <div key={idx} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="font-medium text-neutral-900">{item.venue}</span>
               <span className="text-neutral-400">|</span>
-              <span className="text-neutral-600 tabular-nums">{item.years.join(', ')}</span>
+              <span className="text-neutral-600 tabular-nums">{item.years}</span>
             </div>
           ))}
         </div>

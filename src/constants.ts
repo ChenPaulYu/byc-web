@@ -26,19 +26,19 @@ export const WORK_EXPERIENCE: Experience[] = [
   {
     company: "Rhythm Culture Corporation",
     role: "Technical Lead",
-    duration: "July 2023 - Present",
+    duration: "Jul 2023 – Present",
     location: "Taiwan",
     description: [
-      "Developed a web-based music sampler for high school classrooms (TMC-CL1, launching soon).",
+      "Developed TMC-CL1, a web-based music sampler for high school classrooms.",
       "Built agent-based Music AI systems spanning DJ, Producer, and Tutor roles for interactive creation and feedback workflows.",
-      "Leading projects funded by Taipei Music Center, TAICCA, and Taipei Government.",
-      "Recognized at NeurIPS Creative AI Track 2024 and ISMIR 2025 LLM4Music workshop."
+      "Led projects funded by Taipei Music Center, TAICCA, and Taipei Government.",
+      "Recognized at NeurIPS Creative AI Track 2024 and ISMIR 2025 LLM4Music Workshop."
     ]
   },
   {
     company: "Zone Sound Creative Corporation",
     role: "Interactive Engineer",
-    duration: "Mar 2019 - Aug 2019",
+    duration: "Mar 2019 – Aug 2019",
     location: "Taiwan",
     description: [
       "Shipped \"Taptap,\" a browser-based performance interface using a cappella samples; exhibited at Vocal Asia 2019 (Japan).",
@@ -63,18 +63,18 @@ export const RESEARCH_EXPERIENCE: Experience[] = [
   {
     company: "Creative AI Lab, Sony Group Corporation",
     role: "Research Intern",
-    duration: "Nov 2020 - Sep 2021",
+    duration: "Nov 2020 – Sep 2021",
     location: "Tokyo, Japan (Remote)",
     description: [
       "Developed DJTransGAN, the first AI model for generating smooth DJ-like transitions.",
       "Designed automated DJ mixing systems integrating web crawlers and deep learning models.",
-      "Open-sourced project attracting 100+ GitHub stars."
+      "Open-sourced the project; 100+ GitHub stars."
     ]
   },
   {
     company: "Music and AI Lab, Academia Sinica",
     role: "Research Assistant",
-    duration: "July 2019 – Sep 2023",
+    duration: "Jul 2019 – Sep 2023",
     location: "Taiwan",
     description: [
       "Led research in intelligent music production, loop-based retrieval and generation.",
@@ -89,17 +89,17 @@ export const TEACHING_EXPERIENCE: Experience[] = [
   {
     company: "BLND Creative Coding School",
     role: "Instructor",
-    duration: "Aug 2020 - Jul 2023",
+    duration: "Aug 2020 – Jul 2023",
     location: "Taiwan",
     description: [
-      "Taught creative coding, AI art creation, and interactive device design with Arduino.",
+      "Taught creative coding, AI art, and interactive device design with Arduino.",
       "Led courses on Stable Diffusion workflows and GAN-based ML image generation from data collection to training."
     ]
   },
   {
     company: "OrangeApple Children Programming School",
     role: "Instructor",
-    duration: "Jul 2015 - Sep 2019",
+    duration: "Jul 2015 – Sep 2019",
     location: "Taiwan",
     description: [
       "Taught web development and algorithms in JavaScript and C++ for elementary to senior high students.",
@@ -226,7 +226,7 @@ export const PROJECTS: Project[] = [
 ];
 
 export const REVIEWER = [
-  { venue: "ISMIR", years: ["2020", "2021", "2022", "2023", "2024"] },
-  { venue: "ICASSP", years: ["2025"] },
-  { venue: "NeurIPS Creative AI Track", years: ["2025"] }
+  { venue: "ISMIR", years: "2020–2024" },
+  { venue: "ICASSP", years: "2025" },
+  { venue: "NeurIPS Creative AI Track", years: "2025" }
 ];
