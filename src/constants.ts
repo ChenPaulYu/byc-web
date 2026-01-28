@@ -56,8 +56,7 @@ export const RESEARCH_EXPERIENCE: Experience[] = [
     location: "Taiwan",
     description: [
       "Developed FlueBricks, a modular toolkit for designing customizable flute-like instruments.",
-      "Utilized digital fabrication (Fusion 360, 3D printing) for rapid prototyping.",
-      "Engineered Python & Arduino-based evaluation systems for acoustic analysis."
+      "Utilized digital fabrication (Fusion 360, 3D printing) for rapid prototyping."
     ]
   },
   {
@@ -67,7 +66,6 @@ export const RESEARCH_EXPERIENCE: Experience[] = [
     location: "Tokyo, Japan (Remote)",
     description: [
       "Developed DJTransGAN, the first AI model for generating smooth DJ-like transitions.",
-      "Designed automated DJ mixing systems integrating web crawlers and deep learning models.",
       "Open-sourced the project; 100+ GitHub stars."
     ]
   },
