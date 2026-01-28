@@ -170,15 +170,10 @@ export const AWARDS: Award[] = [
     detail: "FlueBricks"
   },
   {
-    title: "Top 15",
-    venue: "Acer Longterm Smile Internet of Beings Competition",
-    year: "2018"
-  },
-  {
     title: "Overseas Visit Delegate",
     venue: "Epoch Foundation YEF Program",
     year: "2017",
-    detail: "Selected 16/175"
+    detail: "Top 9% (16/175)"
   },
   {
     title: "3rd Prize",
