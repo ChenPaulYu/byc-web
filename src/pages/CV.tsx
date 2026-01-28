@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { AWARDS, EDUCATION, PUBLICATIONS, RESEARCH_EXPERIENCE, REVIEWER, TEACHING_EXPERIENCE, THESES, WORK_EXPERIENCE } from '../constants';
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -7,28 +7,17 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   </h2>
 );
 
+const TwoColHeader: React.FC<{ left: React.ReactNode; right: React.ReactNode }> = ({
+  left,
+  right,
+}) => (
+  <div className="flex justify-between items-baseline mb-1 gap-4">
+    <div className="min-w-0">{left}</div>
+    <div className="shrink-0">{right}</div>
+  </div>
+);
+
 const CV: React.FC = () => {
-  const originalTitleRef = useRef<string>('');
-
-  useEffect(() => {
-    const handleBeforePrint = () => {
-      originalTitleRef.current = document.title;
-      document.title = 'Bo-Yu Chen - CV';
-    };
-
-    const handleAfterPrint = () => {
-      if (originalTitleRef.current) document.title = originalTitleRef.current;
-    };
-
-    window.addEventListener('beforeprint', handleBeforePrint);
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    return () => {
-      window.removeEventListener('beforeprint', handleBeforePrint);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-  }, []);
-
   return (
     <div className="max-w-3xl mx-auto px-6 print:px-0 pb-20 print:pb-0">
       <div className="flex justify-between items-end mb-12 print:mb-6">
@@ -42,18 +31,8 @@ const CV: React.FC = () => {
             className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
             download
           >
-            Download PDF
+            Download
           </a>
-          <button 
-              className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
-              onClick={() => {
-                originalTitleRef.current = document.title;
-                document.title = 'Bo-Yu Chen - CV';
-                window.print();
-              }}
-          >
-              Print
-          </button>
         </div>
       </div>
 
@@ -61,11 +40,11 @@ const CV: React.FC = () => {
         <SectionTitle>Education</SectionTitle>
         <div className="space-y-8 print:space-y-5">
           {EDUCATION.map((edu, idx) => (
-            <div key={idx}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="font-semibold text-neutral-900">{edu.school}</h3>
-                <span className="text-sm text-neutral-400 tabular-nums">{edu.duration}</span>
-              </div>
+            <div key={idx} className="break-inside-avoid">
+              <TwoColHeader
+                left={<h3 className="font-semibold text-neutral-900">{edu.school}</h3>}
+                right={<span className="text-sm text-neutral-400 tabular-nums">{edu.duration}</span>}
+              />
               <p className="text-neutral-600 italic">{edu.degree}</p>
               <p className="text-sm text-neutral-500">{edu.location}</p>
             </div>
@@ -77,11 +56,11 @@ const CV: React.FC = () => {
         <SectionTitle>Work Experience</SectionTitle>
         <div className="space-y-10 print:space-y-6">
           {WORK_EXPERIENCE.map((exp, idx) => (
-            <div key={idx}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
-                <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
-              </div>
+            <div key={idx} className="break-inside-avoid">
+              <TwoColHeader
+                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
+                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
+              />
               <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
               <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
@@ -97,11 +76,11 @@ const CV: React.FC = () => {
         <SectionTitle>Research Experience</SectionTitle>
         <div className="space-y-10 print:space-y-6">
           {RESEARCH_EXPERIENCE.map((exp, idx) => (
-            <div key={idx}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
-                <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
-              </div>
+            <div key={idx} className="break-inside-avoid">
+              <TwoColHeader
+                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
+                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
+              />
               <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
               <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
@@ -117,11 +96,11 @@ const CV: React.FC = () => {
         <SectionTitle>Teaching</SectionTitle>
         <div className="space-y-10 print:space-y-6">
           {TEACHING_EXPERIENCE.map((exp, idx) => (
-            <div key={idx}>
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="font-semibold text-neutral-900">{exp.company}</h3>
-                <span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>
-              </div>
+            <div key={idx} className="break-inside-avoid">
+              <TwoColHeader
+                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
+                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
+              />
               <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
               <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
                 {exp.description.map((item, i) => (
@@ -137,7 +116,7 @@ const CV: React.FC = () => {
         <SectionTitle>Thesis</SectionTitle>
         <div className="space-y-6 print:space-y-4">
           {THESES.map((thesis, idx) => (
-            <div key={idx}>
+            <div key={idx} className="break-inside-avoid">
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
               <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: thesis.authors }} />
               <div className="text-xs text-neutral-400 font-mono">
@@ -152,7 +131,7 @@ const CV: React.FC = () => {
         <SectionTitle>Publications</SectionTitle>
         <div className="space-y-6 print:space-y-4">
           {PUBLICATIONS.map((pub, idx) => (
-            <div key={idx}>
+            <div key={idx} className="break-inside-avoid">
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>
               <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: pub.authors }} />
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-400 font-mono">

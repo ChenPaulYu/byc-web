@@ -32,7 +32,7 @@ export const WORK_EXPERIENCE: Experience[] = [
       "Developed TMC-CL1, a web-based music sampler for high school classrooms.",
       "Built agent-based Music AI systems spanning DJ, Producer, and Tutor roles for interactive creation and feedback workflows.",
       "Led projects funded by Taipei Music Center, TAICCA, and Taipei Government.",
-      "Recognized at NeurIPS Creative AI Track 2024 and ISMIR 2025 LLM4Music Workshop."
+      "Recognized at NeurIPS Creative AI Track 2024 and ISMIR LLM4Music Workshop 2025."
     ]
   },
   {
