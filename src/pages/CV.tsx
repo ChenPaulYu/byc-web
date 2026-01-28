@@ -45,7 +45,7 @@ const CV: React.FC = () => {
                 left={<h3 className="font-semibold text-neutral-900">{edu.school}</h3>}
                 right={<span className="text-sm text-neutral-400 tabular-nums">{edu.duration}</span>}
               />
-              <p className="text-neutral-600 italic">{edu.degree}</p>
+              <p className="text-neutral-600">{edu.degree}</p>
               <p className="text-sm text-neutral-500">{edu.location}</p>
             </div>
           ))}

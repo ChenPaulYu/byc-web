@@ -12,10 +12,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
       <div className="min-h-screen bg-white text-neutral-900 flex flex-col">
-        {!isHome && <NavBar />}
+      {!isHome && <NavBar />}
 
       <main className={`flex-grow ${!isHome ? 'pt-24 pb-16 print:pt-0 print:pb-0' : ''}`}>
-        {children}
+        <div key={location.pathname} className="page-transition">
+          {children}
+        </div>
       </main>
 
       {!isHome && (

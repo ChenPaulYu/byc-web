@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Environment, RoundedBox, Text, OrbitControls, useGLTF, useAnimations, ContactShadows, useTexture } from '@react-three/drei';
+import { Environment, RoundedBox, Text, OrbitControls, useGLTF, useAnimations, ContactShadows, useTexture, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +29,7 @@ const createSynth = () => {
 };
 
 // --- VIDEO SCREEN COMPONENT ---
-const VideoScreen: React.FC<{ width: number; height: number; depth: number; opacity?: number; rotationX?: number; rotationY?: number; rotationZ?: number }> = ({ width, height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0 }) => {
+const VideoScreen: React.FC<{ width: number; height: number; depth: number; opacity?: number; rotationX?: number; rotationY?: number; rotationZ?: number; onReady?: () => void }> = ({ width, height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0, onReady }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
 
@@ -74,17 +74,24 @@ const VideoScreen: React.FC<{ width: number; height: number; depth: number; opac
       });
     };
 
+    // Mark ready when the first frame is available
+    const handleLoaded = () => {
+      onReady?.();
+      startVideo();
+    };
+
     // Try autoplay first, then on click
-    video.addEventListener('loadeddata', startVideo);
+    video.addEventListener('loadeddata', handleLoaded);
     document.addEventListener('click', handleInteraction, { once: true });
 
     return () => {
       video.pause();
       video.src = '';
       document.removeEventListener('click', handleInteraction);
+      video.removeEventListener('loadeddata', handleLoaded);
       texture.dispose();
     };
-  }, []);
+  }, [onReady]);
 
   // Update texture on every frame
   useFrame(() => {
@@ -416,7 +423,7 @@ const MpcButton: React.FC<MpcButtonProps> = ({
   );
 };
 
-const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) => void }> = ({ synth, onDragChange }) => {
+const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) => void; onVideoReady?: () => void }> = ({ synth, onDragChange, onVideoReady }) => {
   // --- LAYOUT CONFIG ---
   // [ PADS 4x4 ] [ SCREEN / AVATAR ] [ KNOBS ]
 
@@ -902,6 +909,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
                 rotationX={positions.videoRotationX}
                 rotationY={positions.videoRotationY}
                 rotationZ={positions.videoRotationZ}
+                onReady={onVideoReady}
               />
             ) : (
               <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
@@ -981,11 +989,51 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
   );
 };
 
+const LoadingOverlay: React.FC<{ extraReady: boolean }> = ({ extraReady }) => {
+  const { active, progress } = useProgress();
+  const [hidden, setHidden] = useState(false);
+  const shouldShow = active || !extraReady;
+
+  useEffect(() => {
+    if (!active && progress >= 100 && extraReady) {
+      const t = window.setTimeout(() => setHidden(true), 300);
+      return () => window.clearTimeout(t);
+    }
+
+    setHidden(false);
+  }, [active, progress, extraReady]);
+
+  if (hidden) return null;
+
+  return (
+    <div
+      className={`absolute inset-0 z-20 pointer-events-none flex items-center justify-center bg-[#f9fafb] transition-opacity duration-500 ${
+        shouldShow ? 'opacity-100' : 'opacity-0'
+      }`}
+      aria-hidden={!shouldShow}
+    >
+      <div className="w-[280px] sm:w-[360px]">
+        <div className="flex items-baseline justify-between mb-2">
+          <div className="text-xs font-mono tracking-widest uppercase text-neutral-400">Loading</div>
+          <div className="text-xs font-mono tabular-nums text-neutral-400">{Math.round(progress)}%</div>
+        </div>
+        <div className="h-1.5 rounded bg-neutral-100 overflow-hidden">
+          <div
+            className="h-full bg-neutral-800 transition-[width] duration-200 ease-out"
+            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const LandingScene: React.FC = () => {
   const navigate = useNavigate();
   const synth = useMemo(() => createSynth(), []);
   const [started, setStarted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [videoReady, setVideoReady] = useState(!VIDEO_ENABLED);
 
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
@@ -1039,6 +1087,7 @@ const LandingScene: React.FC = () => {
 
   return (
     <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden" onClick={handleStart}>
+      <LoadingOverlay extraReady={videoReady} />
       <Canvas
         shadows
         camera={{ position: cameraPosition, fov: 35 }}
@@ -1075,7 +1124,7 @@ const LandingScene: React.FC = () => {
           dampingFactor={0.05}
         />
 
-        <MPC synth={synth} onDragChange={setIsDragging} />
+        <MPC synth={synth} onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
         <Environment preset="city" />
         {/* Floor Shadow */}

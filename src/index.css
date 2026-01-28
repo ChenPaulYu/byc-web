@@ -11,6 +11,27 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: pageIn 240ms ease-out;
+}
+
+@media print {
+  .page-transition {
+    animation: none;
+  }
+}
+
 h1,
 h2,
 h3,
