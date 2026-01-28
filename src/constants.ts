@@ -179,11 +179,6 @@ export const AWARDS: Award[] = [
     title: "3rd Prize",
     venue: "MOEA GetFresh Creativity Competition",
     year: "2017"
-  },
-  {
-    title: "Honorable Mention",
-    venue: "MediaTek Mobiles Hero IoT Wearable Contest",
-    year: "2015"
   }
 ];
 
