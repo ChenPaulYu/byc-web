@@ -164,10 +164,31 @@ export const THESES: Thesis[] = [
 
 export const AWARDS: Award[] = [
   {
-    title: "FlueBricks",
+    title: "Best Paper Award 🏆",
     venue: "TAICHI",
     year: "2025",
-    detail: "Best Paper Award 🏆"
+    detail: "FlueBricks"
+  },
+  {
+    title: "Top 15",
+    venue: "Acer Longterm Smile Internet of Beings Competition",
+    year: "2018"
+  },
+  {
+    title: "Overseas Visit Delegate",
+    venue: "Epoch Foundation YEF Program",
+    year: "2017",
+    detail: "Selected 16/175"
+  },
+  {
+    title: "3rd Prize",
+    venue: "MOEA GetFresh Creativity Competition",
+    year: "2017"
+  },
+  {
+    title: "Honorable Mention",
+    venue: "MediaTek Mobiles Hero IoT Wearable Contest",
+    year: "2015"
   }
 ];
 
