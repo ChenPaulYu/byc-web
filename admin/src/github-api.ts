@@ -55,7 +55,9 @@ async function ghRequest(url: string, options?: RequestInit) {
 
 async function getFileContent(path: string): Promise<{ content: string; sha: string }> {
   const data = await ghRequest(`/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`);
-  const decoded = atob(data.content.replace(/\n/g, ''));
+  const binary = atob(data.content.replace(/\n/g, ''));
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  const decoded = new TextDecoder().decode(bytes);
   return { content: decoded, sha: data.sha };
 }
 
