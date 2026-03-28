@@ -64,12 +64,12 @@ const NewsList: React.FC = () => {
   }));
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">News</h2>
+        <h2 className="text-xl font-semibold text-neutral-900">News</h2>
         <button
           onClick={() => navigate('/news/new')}
-          className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 transition-colors"
         >
           New Item
         </button>

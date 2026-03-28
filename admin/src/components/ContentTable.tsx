@@ -27,11 +27,11 @@ const ContentTable: React.FC<ContentTableProps> = ({ columns, rows, onEdit, onDe
       <thead>
         <tr className="border-b border-neutral-200">
           {columns.map((col) => (
-            <th key={col.key} className="text-left text-xs font-medium text-neutral-400 uppercase tracking-wider px-4 py-3">
+            <th key={col.key} className="text-left text-[11px] font-medium text-neutral-400 uppercase tracking-wide px-4 py-3">
               {col.label}
             </th>
           ))}
-          <th className="text-right text-xs font-medium text-neutral-400 uppercase tracking-wider px-4 py-3">
+          <th className="text-right text-[11px] font-medium text-neutral-400 uppercase tracking-wide px-4 py-3">
             Actions
           </th>
         </tr>
@@ -40,7 +40,7 @@ const ContentTable: React.FC<ContentTableProps> = ({ columns, rows, onEdit, onDe
         {rows.map((row) => (
           <tr
             key={row.slug as string}
-            className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors"
+            className="border-b border-neutral-100 hover:bg-neutral-50/50 cursor-pointer transition-colors"
             onClick={() => onEdit(row.slug as string)}
           >
             {columns.map((col) => (
@@ -57,7 +57,7 @@ const ContentTable: React.FC<ContentTableProps> = ({ columns, rows, onEdit, onDe
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(row.slug as string); }}
-                className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
               >
                 Delete
               </button>

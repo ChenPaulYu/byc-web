@@ -30,10 +30,10 @@ const InsertToolbar: React.FC<InsertToolbarProps> = ({ textareaRef, onInsert }) 
     { label: 'H2', action: () => insertAtCursor('\n## ', '\n'), title: 'Heading' },
     { label: 'B', action: () => insertAtCursor('**', '**'), title: 'Bold' },
     { label: 'I', action: () => insertAtCursor('*', '*'), title: 'Italic' },
-    { label: 'IMG', action: () => insertAtCursor('![alt](', ')'), title: 'Image' },
-    { label: 'YT', action: () => insertAtCursor('\nhttps://www.youtube.com/watch?v=VIDEO_ID\n', ''), title: 'YouTube' },
-    { label: 'LI', action: () => insertAtCursor('\n- ', '\n'), title: 'List item' },
-    { label: 'CD', action: () => insertAtCursor('`', '`'), title: 'Inline code' },
+    { label: 'Image', action: () => insertAtCursor('![alt](', ')'), title: 'Image' },
+    { label: 'Video', action: () => insertAtCursor('\nhttps://www.youtube.com/watch?v=VIDEO_ID\n', ''), title: 'YouTube' },
+    { label: 'List', action: () => insertAtCursor('\n- ', '\n'), title: 'List item' },
+    { label: 'Code', action: () => insertAtCursor('`', '`'), title: 'Inline code' },
   ];
 
   return (

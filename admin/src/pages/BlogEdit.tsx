@@ -118,7 +118,7 @@ const BlogEdit: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -127,7 +127,7 @@ const BlogEdit: React.FC = () => {
 
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Title</label>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Title</label>
           <input
             type="text"
             value={metadata.title}
@@ -137,7 +137,7 @@ const BlogEdit: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Date</label>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Date</label>
           <input
             type="date"
             value={metadata.date}
@@ -146,7 +146,7 @@ const BlogEdit: React.FC = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Category</label>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Category</label>
           <input
             type="text"
             value={metadata.category}
@@ -156,7 +156,7 @@ const BlogEdit: React.FC = () => {
           />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Tags (comma-separated)</label>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Tags (comma-separated)</label>
           <input
             type="text"
             value={tagsInput}

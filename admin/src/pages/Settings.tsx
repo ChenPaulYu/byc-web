@@ -46,13 +46,13 @@ const Settings: React.FC = () => {
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">Site Settings</h2>
+        <h2 className="text-xl font-semibold text-neutral-900">Site Settings</h2>
         <div className="flex items-center gap-3">
           {saved && <span className="text-sm text-green-600">Saved!</span>}
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -61,10 +61,10 @@ const Settings: React.FC = () => {
 
       <div className="space-y-8">
         <div>
-          <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Site</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-4">Site</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Title</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Title</label>
               <input
                 type="text"
                 value={config.site.title}
@@ -74,7 +74,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Description</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Description</label>
               <input
                 type="text"
                 value={config.site.description}
@@ -84,7 +84,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Author</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Author</label>
               <input
                 type="text"
                 value={config.site.author}
@@ -94,7 +94,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">URL</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">URL</label>
               <input
                 type="text"
                 value={config.site.url}
@@ -107,10 +107,10 @@ const Settings: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-4">Social Links</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-4">Social Links</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Email</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Email</label>
               <input
                 type="text"
                 value={(config.about.social?.email as string) || ''}
@@ -120,7 +120,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">GitHub</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">GitHub</label>
               <input
                 type="text"
                 value={(config.about.social?.github as string) || ''}
@@ -130,7 +130,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">LinkedIn</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">LinkedIn</label>
               <input
                 type="text"
                 value={(config.about.social?.linkedin as string) || ''}
@@ -140,7 +140,7 @@ const Settings: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Twitter</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Twitter</label>
               <input
                 type="text"
                 value={(config.about.social?.twitter as string) || ''}

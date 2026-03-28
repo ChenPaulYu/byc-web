@@ -55,9 +55,9 @@ const ImageGallery: React.FC = () => {
   };
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-neutral-900">Images</h2>
+        <h2 className="text-xl font-semibold text-neutral-900">Images</h2>
         <div>
           <input
             ref={fileInputRef}
@@ -69,7 +69,7 @@ const ImageGallery: React.FC = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
           >
             {uploading ? 'Uploading...' : 'Upload Image'}
           </button>
@@ -105,7 +105,7 @@ const ImageGallery: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(filename)}
-                    className="text-xs px-2 py-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    className="text-xs px-2 py-1 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                   >
                     Delete
                   </button>

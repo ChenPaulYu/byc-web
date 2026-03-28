@@ -17,7 +17,7 @@ const App: React.FC = () => {
     <BrowserRouter>
       <div className="flex min-h-screen bg-white">
         <Sidebar />
-        <main className="flex-1 ml-60">
+        <main className="flex-1 ml-56">
           <Routes>
             <Route path="/" element={<Navigate to="/blog" replace />} />
             <Route path="/blog" element={<BlogList />} />

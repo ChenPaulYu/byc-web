@@ -83,18 +83,18 @@ const MpcAssets: React.FC = () => {
 
   return (
     <div className="p-8 max-w-4xl">
-      <h2 className="text-2xl font-bold text-neutral-900 mb-8">MPC Assets</h2>
+      <h2 className="text-xl font-semibold text-neutral-900 mb-8">MPC Assets</h2>
 
       {/* Pad Configuration */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">Pad Configuration</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Pad Configuration</h3>
           <div className="flex items-center gap-3">
             {configSaved && <span className="text-sm text-green-600">Saved!</span>}
             <button
               onClick={handleSaveConfig}
               disabled={configSaving}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
             >
               {configSaving ? 'Saving...' : 'Save Config'}
             </button>
@@ -105,7 +105,7 @@ const MpcAssets: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">BPM</label>
+                <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">BPM</label>
                 <input
                   type="number"
                   min={40}
@@ -116,7 +116,7 @@ const MpcAssets: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">Loop Sample</label>
+                <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Loop Sample</label>
                 <select
                   value={mpcConfig.loop}
                   onChange={(e) => setMpcConfig({ ...mpcConfig, loop: e.target.value })}
@@ -129,7 +129,7 @@ const MpcAssets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">Pad Assignments</label>
+              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-2">Pad Assignments</label>
               <div className="grid grid-cols-4 gap-2">
                 {['1','2','3','4','q','w','e','r','a','s','d','f','z','x','c','v'].map((key) => (
                   <div key={key} className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg">
@@ -161,13 +161,13 @@ const MpcAssets: React.FC = () => {
       {/* Audio Samples */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">Audio Samples</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Audio Samples</h3>
           <div>
             <input ref={sampleInputRef} type="file" accept=".wav,.mp3,.ogg" onChange={handleUploadSample} className="hidden" />
             <button
               onClick={() => sampleInputRef.current?.click()}
               disabled={uploading === 'sample'}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
             >
               {uploading === 'sample' ? 'Uploading...' : 'Upload Sample'}
             </button>
@@ -185,7 +185,7 @@ const MpcAssets: React.FC = () => {
                 </div>
                 <button
                   onClick={() => handleDeleteSample(filename)}
-                  className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                  className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
                 >
                   Delete
                 </button>
@@ -198,13 +198,13 @@ const MpcAssets: React.FC = () => {
       {/* 3D Avatar Model */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">3D Avatar Model</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">3D Avatar Model</h3>
           <div>
             <input ref={modelInputRef} type="file" accept=".glb,.gltf" onChange={handleUploadModel} className="hidden" />
             <button
               onClick={() => modelInputRef.current?.click()}
               disabled={uploading === 'model'}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
             >
               {uploading === 'model' ? 'Uploading...' : 'Replace Model'}
             </button>
@@ -222,13 +222,13 @@ const MpcAssets: React.FC = () => {
       {/* Background Video */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-neutral-500 uppercase tracking-wider">Background Video</h3>
+          <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Background Video</h3>
           <div>
             <input ref={videoInputRef} type="file" accept=".mp4,.webm" onChange={handleUploadVideo} className="hidden" />
             <button
               onClick={() => videoInputRef.current?.click()}
               disabled={uploading === 'video'}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
             >
               {uploading === 'video' ? 'Uploading...' : 'Replace Video'}
             </button>
