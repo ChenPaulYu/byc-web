@@ -10,6 +10,17 @@ All content is managed through:
 
 No code changes needed! Just add files and update the config.
 
+## Admin Dashboard
+
+The easiest way to manage content is via the admin dashboard:
+
+- **Local:** Run `npm run admin` and visit http://localhost:3001
+- **Deployed:** Visit https://boyuchen.dev/admin (password: configured via `VITE_ADMIN_PASSWORD`)
+
+The dashboard provides a visual editor for all content types, with live markdown preview, image upload, and more. See the README for full details.
+
+For manual editing, continue reading below.
+
 ## Directory Structure
 
 ```
@@ -93,6 +104,7 @@ That's it! Your project will now appear on the site.
 ---
 title: "My Blog Post Title"
 date: "2024-01-20"
+updated: "2024-02-01"  # Optional: last updated date
 category: "technology"
 tags: ["react", "typescript", "web"]
 pinned: false
@@ -125,6 +137,7 @@ Write your blog post here in markdown...
 ---
 title: "New Paper Published!"
 date: "2024-01-25"
+updated: "2024-02-01"  # Optional: last updated date
 type: "announcement"  # update, release, announcement, event
 url: "https://paper-link.com"  # Optional external link
 ---

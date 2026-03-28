@@ -1,289 +1,135 @@
 # byc-web
 
-Personal portfolio website for Bo-Yu Chen — Creative Technologist, Researcher, Engineer.
+Personal portfolio website for Bo-Yu Chen — Researcher // Engineer // Creator.
 
-## ✨ Features
+## Features
 
-- **Interactive 3D MPC Controller** - Music production interface with Web Audio API
-- **Config-Driven Content** - Add projects/blog posts without touching code
-- **Markdown Everything** - All content in easy-to-edit markdown files
-- **Chat Interface** - AI-powered chat with hidden Easter egg mechanics
-- **Mobile Optimized** - Touch controls, responsive design, zoom support
-- **Minimal Aesthetic** - Calm, poetic design inspired by Bear Blog
+- **Interactive 3D MPC Controller** — Playable music production interface with configurable pads, samples, and loop
+- **Admin Dashboard** — Full CMS at `/admin` for managing all content from the browser
+- **Config-Driven Content** — Blog, projects, news, CV, and site settings editable without touching code
+- **Markdown Everything** — All content in markdown files with YAML frontmatter
+- **Mobile Optimized** — Responsive design with touch controls
+- **SEO Ready** — Open Graph, Twitter Cards, per-page titles, favicon
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Development
 
 ```bash
-# Install dependencies
 npm install
 
-# Start dev server (http://localhost:5173)
+# Start the public site (http://localhost:3000)
 npm run dev
 
-# Build for production
+# Start the admin dashboard (http://localhost:3001 + API on :3002)
+npm run admin
+
+# Build for production (builds both public site and admin)
 npm run build
 
-# Preview production build
-npm run preview
-
-# Generate a clean CV PDF (no browser headers/footers)
-# Output: public/cv.pdf (and dist/cv.pdf after build)
+# Generate CV PDF
 npm run build:cvpdf
 ```
 
-## 🧾 CV PDF
+### Admin Dashboard
 
-The CV page (`/#/cv`) includes a **Download PDF** button that serves `public/cv.pdf`.
+The admin dashboard lets you manage all site content:
 
-To (re)generate the PDF locally:
+| Section | What you can do |
+|---------|----------------|
+| **Blog** | Create, edit, delete posts. Toggle draft/published, pin posts |
+| **Projects** | Create, edit, delete. Set category, importance, links |
+| **News** | Create, edit, delete announcements, updates, events |
+| **About** | Edit the about page markdown |
+| **CV** | Edit all CV sections, toggle visibility, add custom sections |
+| **Settings** | Site title, description, social links |
+| **Images** | Upload, browse, copy paths, delete images |
+| **MPC Assets** | Configure pad assignments, BPM, loop, upload samples/model/video |
 
-```bash
-# Build the site and render the CV page to PDF
-npm run build:cvpdf
+**Local:** `npm run admin` → http://localhost:3001
 
-# If you already built, you can render only:
-npm run cv:pdf
-```
+**Deployed:** https://boyuchen.dev/admin (password protected)
 
-Notes:
-- The first run will download Playwright's Chromium (takes a bit).
-- The PDF is generated via Playwright, so it does not include the browser print header/footer (URL, date/time, page counters).
+### Deployment (Vercel)
 
-### Adding Content (No Code Required!)
+The site is deployed on Vercel. Both the public site and admin dashboard deploy together.
 
-**Add a New Project:**
-```bash
-# 1. Create markdown file
-touch public/content/projects/my-project.md
+**Environment variables for Vercel:**
 
-# 2. Add entry to public/content.config.json
-{
-  "projects": [
-    {"slug": "my-project", "enabled": true}
-  ]
-}
-```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_ADMIN_PASSWORD` | No | Admin login password (default: `byc123`) |
+| `VITE_GITHUB_TOKEN` | Yes (for deployed admin) | GitHub classic token with `repo` scope |
+| `VITE_GITHUB_OWNER` | No | GitHub username (default: `ChenPaulYu`) |
+| `VITE_GITHUB_REPO` | No | Repository name (default: `byc-web`) |
+| `VITE_GITHUB_BRANCH` | No | Branch name (default: `main`) |
 
-**Add a New Blog Post:**
-```bash
-# 1. Create markdown file
-touch public/content/blog/my-post.md
-
-# 2. Update config
-{
-  "blog": [
-    {"slug": "my-post", "enabled": true}
-  ]
-}
-```
-
-**Update About Page:**
-```bash
-# Simply edit this file - no config needed!
-vim public/content/about.md
-```
-
-See [docs/content-guide.md](./docs/content-guide.md) for detailed documentation.
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 byc-web/
 ├── public/
-│   ├── content.config.json       # 📝 Main content configuration
+│   ├── content.config.json       # Content registry
+│   ├── cv.config.json            # CV data
+│   ├── mpc.config.json           # MPC pad/loop/BPM config
+│   ├── favicon.svg               # MPC favicon
+│   ├── og-image.png              # Social sharing image
 │   └── content/
-│       ├── about.md              # About page content
+│       ├── about.md              # About page
 │       ├── projects/             # Project markdown files
-│       │   ├── project-1.md
-│       │   └── project-2.md
 │       ├── blog/                 # Blog post markdown files
-│       │   ├── post-1.md
-│       │   └── post-2.md
-│       └── news/                 # Optional news/updates
-│           └── update-1.md
-├── src/
-│   ├── components/               # React components
-│   │   ├── LandingScene.tsx     # 3D MPC interface
-│   │   ├── EyeWidget.tsx        # Easter egg widget
-│   │   └── MarkdownRenderer.tsx # Markdown display
+│       └── news/                 # News/update markdown files
+├── src/                          # Public site
+│   ├── components/
+│   │   ├── LandingScene.tsx      # 3D MPC interface
+│   │   ├── MarkdownRenderer.tsx  # Markdown display
+│   │   └── NavBar.tsx            # Navigation
 │   ├── pages/                    # Route pages
-│   │   ├── Home.tsx
-│   │   ├── Projects.tsx
-│   │   ├── Blog.tsx
-│   │   └── Chat.tsx
 │   └── utils/
-│       └── contentLoader.ts      # Content loading logic
-├── docs/
-│   └── content-guide.md          # 📖 Detailed content guide
-└── README.md                     # This file
+│       └── contentLoader.ts      # Content loading
+├── admin/                        # Admin dashboard (separate Vite app)
+│   └── src/
+│       ├── App.tsx               # Dashboard shell + auth gate
+│       ├── api.ts                # API switcher (local/GitHub)
+│       ├── local-api.ts          # Express API client
+│       ├── github-api.ts         # GitHub Contents API client
+│       ├── components/           # Sidebar, editor, table, toolbar
+│       └── pages/                # Dashboard pages
+├── server/                       # Local API server (dev only)
+│   ├── index.ts                  # Express entry point
+│   ├── routes.ts                 # REST endpoints
+│   └── storage/                  # Storage abstraction
+│       ├── adapter.ts            # Interface
+│       └── local.ts              # Filesystem implementation
+└── scripts/
+    └── render-cv-pdf.mjs         # Playwright PDF generator
 ```
 
-## 🎯 Content Management
+## Content Management
 
-### Markdown Frontmatter Examples
+### Using the Dashboard (Recommended)
 
-**Project:**
-```markdown
----
-title: "My Awesome Project"
-date: "2024-01-15"
-year: "2024"
-category: "Research"         # Research, Engineering, or Creative
-role: "Lead Developer"
-tags: ["AI", "Music", "WebGL"]
-cover: "/images/cover.jpg"
-pinned: false               # Pin to top
-importance: 5               # Priority (0-10)
-links:
-  - label: "View Demo"
-    url: "https://demo.com"
-    icon: "demo"            # video, paper, code, demo
----
+Visit `/admin` to manage content visually. Changes on the deployed version commit directly to GitHub and trigger auto-deploy.
 
-Your project description...
-```
+### Manual Editing
 
-**Blog Post:**
-```markdown
----
-title: "My Blog Post"
-date: "2024-01-20"
-category: "technology"
-tags: ["react", "typescript"]
-pinned: false
-draft: false               # Set true to hide
----
-
-Your blog content...
-```
-
-**News/Update:**
-```markdown
----
-title: "New Release!"
-date: "2024-01-25"
-type: "announcement"        # update, release, announcement, event
-url: "https://link.com"    # Optional
----
-
-Brief description...
-```
+All content is in `public/content/` as markdown with YAML frontmatter. See [docs/content-guide.md](./docs/content-guide.md) for details.
 
 ### Content Ordering
 
-- **Projects**: `pinned` → `importance` → alphabetical
+- **Projects**: `pinned` → `importance` (0-10) → alphabetical
 - **Blog**: `pinned` → newest date → alphabetical
 - **News**: newest date first
 
-### Quick Tips
+## Tech Stack
 
-```bash
-# Hide content temporarily
-{"slug": "old-project", "enabled": false}
+- **React 19** + TypeScript + Vite 6
+- **React Three Fiber** — 3D graphics with Three.js
+- **Tailwind CSS** — Utility-first styling
+- **Tone.js** — Web Audio framework
+- **Express** — Admin API server (local dev)
+- **GitHub Contents API** — Remote content editing (deployed)
 
-# Pin to top
-pinned: true
-
-# Save as draft
-draft: true
-```
-
-## 🛠️ Tech Stack
-
-- **React 19** + TypeScript
-- **Vite** - Lightning-fast build tool
-- **React Three Fiber** - 3D graphics with Three.js
-- **Tailwind CSS** - Utility-first styling
-- **Tone.js** - Web Audio framework
-- **React Router** - Client-side routing
-- **gray-matter** - Frontmatter parsing
-- **remark-gfm** - GitHub Flavored Markdown
-
-## 🎮 Interactive Features
-
-### 3D MPC Controller
-- **Keyboard**: 1-4, Q-R, A-F, Z-V to play pads
-- **Mouse**: Drag knobs to adjust parameters
-- **Mobile**: Touch controls with pinch-to-zoom
-- **Audio**: Real-time synthesis with Tone.js
-
-### Eye Widget Easter Egg
-- **Desktop**: Circle mouse around eye or stare for 10 seconds
-- **Mobile**: Circle finger around eye or long-press for 3 seconds
-- Unlocks hidden chat mode
-
-## 🎨 Customization
-
-### Site Configuration
-
-Edit `public/content.config.json`:
-
-```json
-{
-  "site": {
-    "title": "Your Name",
-    "description": "Your tagline",
-    "author": "Your Name",
-    "url": "https://your-site.com"
-  },
-  "about": {
-    "source": "about.md",
-    "social": {
-      "email": "your@email.com",
-      "github": "https://github.com/username",
-      "linkedin": "https://linkedin.com/in/username",
-      "twitter": "https://twitter.com/username"
-    }
-  }
-}
-```
-
-### Styling
-
-- Global styles: `src/index.css`
-- Markdown styles: `.markdown-content` classes in `src/index.css`
-- Tailwind config: `tailwind.config.js`
-
-## 📱 Mobile Optimizations
-
-- Responsive 3D scene scaling
-- Touch-optimized navigation (larger tap targets)
-- Pinch-to-zoom support for orbit controls
-- Long-press Easter egg trigger (3s vs 10s desktop)
-- Enhanced eye widget visibility
-
-## 🚢 Deployment
-
-The site is configured for static hosting (Vercel, Netlify, GitHub Pages):
-
-```bash
-# Build
-npm run build
-
-# Output directory
-dist/
-```
-
-For GitHub Pages, the site uses `HashRouter` for compatibility.
-
-## 📚 Documentation
-
-- **[docs/content-guide.md](./docs/content-guide.md)** - Complete content management guide
-- **TypeScript types** - See `src/utils/contentLoader.ts` for content interfaces
-
-## 🤝 Contributing
-
-This is a personal portfolio, but feel free to:
-- Report issues
-- Suggest features
-- Fork for your own use
-
-## 📄 License
+## License
 
 © 2025 Bo-Yu Chen. All rights reserved.
-
----
-
-**Built with ❤️ using React, Three.js, and Tone.js**
