@@ -9,13 +9,8 @@ import AboutEdit from './pages/AboutEdit';
 import NewsList from './pages/NewsList';
 import NewsEdit from './pages/NewsEdit';
 import Settings from './pages/Settings';
-
-const Placeholder: React.FC<{ title: string }> = ({ title }) => (
-  <div className="p-8">
-    <h2 className="text-2xl font-bold text-neutral-900">{title}</h2>
-    <p className="text-sm text-neutral-400 mt-2">Coming soon.</p>
-  </div>
-);
+import ImageGallery from './pages/ImageGallery';
+import MpcAssets from './pages/MpcAssets';
 
 const App: React.FC = () => {
   return (
@@ -33,8 +28,8 @@ const App: React.FC = () => {
             <Route path="/news" element={<NewsList />} />
             <Route path="/news/:slug" element={<NewsEdit />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/images" element={<Placeholder title="Images" />} />
-            <Route path="/mpc" element={<Placeholder title="MPC Assets" />} />
+            <Route path="/images" element={<ImageGallery />} />
+            <Route path="/mpc" element={<MpcAssets />} />
           </Routes>
         </main>
       </div>
