@@ -9,6 +9,7 @@ const sections = [
       { to: '/projects', label: 'Projects', icon: '📁' },
       { to: '/news', label: 'News', icon: '📢' },
       { to: '/about', label: 'About', icon: '👤' },
+      { to: '/cv', label: 'CV', icon: '📄' },
     ],
   },
   {

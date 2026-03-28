@@ -11,6 +11,7 @@ import NewsEdit from './pages/NewsEdit';
 import Settings from './pages/Settings';
 import ImageGallery from './pages/ImageGallery';
 import MpcAssets from './pages/MpcAssets';
+import CvEdit from './pages/CvEdit';
 
 const App: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const App: React.FC = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/images" element={<ImageGallery />} />
             <Route path="/mpc" element={<MpcAssets />} />
+            <Route path="/cv" element={<CvEdit />} />
           </Routes>
         </main>
       </div>
