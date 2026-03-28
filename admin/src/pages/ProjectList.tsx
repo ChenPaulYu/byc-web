@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentTable, { Column } from '../components/ContentTable';
-import { listContent, deleteContent, getConfig, type ContentItem } from '../api';
+import { listContent, deleteContent, getConfig, getContent, updateContent, type ContentItem } from '../api';
 
-const columns: Column[] = [
+const staticColumns: Column[] = [
   { key: 'title', label: 'Title', render: (_, item) => (item.metadata as Record<string, unknown>)?.title as string ?? item.slug },
   { key: 'year', label: 'Year', render: (_, item) => (item.metadata as Record<string, unknown>)?.year as string ?? '' },
   {
@@ -53,6 +53,41 @@ const ProjectList: React.FC = () => {
   };
 
   useEffect(() => { fetchItems(); }, []);
+
+  const handleUpdateImportance = async (slug: string, importance: number) => {
+    try {
+      const item = await getContent('projects', slug);
+      await updateContent('projects', slug, { ...item.metadata, importance }, item.content);
+      await fetchItems();
+    } catch (err) {
+      alert(`Failed to update: ${err}`);
+    }
+  };
+
+  const columns: Column[] = [
+    ...staticColumns,
+    {
+      key: 'importance',
+      label: 'Importance',
+      render: (_, item) => {
+        const importance = (item.metadata as Record<string, unknown>)?.importance as number ?? 0;
+        return (
+          <input
+            type="number"
+            min={0}
+            max={10}
+            value={importance}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleUpdateImportance(item.slug as string, parseInt(e.target.value) || 0);
+            }}
+            className="w-14 px-2 py-0.5 text-xs border border-neutral-200 rounded text-center focus:outline-none focus:ring-1 focus:ring-neutral-300"
+          />
+        );
+      },
+    },
+  ];
 
   const handleDelete = async (slug: string) => {
     if (!window.confirm(`Delete project "${slug}"? This cannot be undone.`)) return;

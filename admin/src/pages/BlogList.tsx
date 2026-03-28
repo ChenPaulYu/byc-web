@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentTable, { Column } from '../components/ContentTable';
-import { listContent, deleteContent, type ContentItem } from '../api';
+import { listContent, deleteContent, getContent, updateContent, type ContentItem } from '../api';
 
-const columns: Column[] = [
+const staticColumns: Column[] = [
   { key: 'title', label: 'Title', render: (_, item) => (item.metadata as Record<string, unknown>)?.title as string ?? item.slug },
   { key: 'date', label: 'Date', render: (_, item) => (item.metadata as Record<string, unknown>)?.date as string ?? '' },
   {
@@ -48,6 +48,40 @@ const BlogList: React.FC = () => {
   };
 
   useEffect(() => { fetchItems(); }, []);
+
+  const handleTogglePin = async (slug: string, pinned: boolean) => {
+    try {
+      const item = await getContent('blog', slug);
+      await updateContent('blog', slug, { ...item.metadata, pinned }, item.content);
+      await fetchItems();
+    } catch (err) {
+      alert(`Failed to update: ${err}`);
+    }
+  };
+
+  const columns: Column[] = [
+    ...staticColumns,
+    {
+      key: 'pinned',
+      label: 'Pin',
+      render: (_, item) => {
+        const pinned = (item.metadata as Record<string, unknown>)?.pinned as boolean | undefined;
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleTogglePin(item.slug as string, !pinned);
+            }}
+            className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+              pinned ? 'bg-amber-100 text-amber-700' : 'bg-neutral-100 text-neutral-400 hover:text-neutral-600'
+            }`}
+          >
+            {pinned ? '📌 Pinned' : 'Pin'}
+          </button>
+        );
+      },
+    },
+  ];
 
   const handleDelete = async (slug: string) => {
     if (!window.confirm(`Delete blog post "${slug}"? This cannot be undone.`)) return;
