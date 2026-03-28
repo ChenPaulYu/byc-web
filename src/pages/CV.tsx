@@ -42,6 +42,18 @@ interface ReviewerEntry {
   years: string;
 }
 
+interface CustomSectionItem {
+  text: string;
+  detail?: string;
+}
+
+interface CustomSection {
+  id: string;
+  title: string;
+  visible: boolean;
+  items: CustomSectionItem[];
+}
+
 interface CvConfig {
   header: { name: string; tagline: string };
   education: Education[];
@@ -52,6 +64,8 @@ interface CvConfig {
   theses: Thesis[];
   awards: Award[];
   reviewer: ReviewerEntry[];
+  visibility: Record<string, boolean>;
+  customSections: CustomSection[];
 }
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -122,91 +136,126 @@ const CV: React.FC = () => {
         </div>
       </div>
 
-      <section>
-        <SectionTitle>Education</SectionTitle>
-        <div className="space-y-8 print:space-y-5">
-          {config.education.map((edu, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <TwoColHeader
-                left={<h3 className="font-semibold text-neutral-900">{edu.school}</h3>}
-                right={<span className="text-sm text-neutral-400 tabular-nums">{edu.duration}</span>}
-              />
-              <p className="text-neutral-600">{edu.degree}</p>
-              <p className="text-sm text-neutral-500">{edu.location}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <ExperienceSection title="Work Experience" items={config.workExperience} />
-      <ExperienceSection title="Research Experience" items={config.researchExperience} />
-      <ExperienceSection title="Teaching" items={config.teachingExperience} />
-
-      <section>
-        <SectionTitle>Thesis</SectionTitle>
-        <div className="space-y-6 print:space-y-4">
-          {config.theses.map((thesis, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
-              <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: thesis.authors }} />
-              <div className="text-xs text-neutral-400 font-mono">
-                {thesis.institution}, {thesis.year}
+      {config.visibility?.education !== false && (
+        <section>
+          <SectionTitle>Education</SectionTitle>
+          <div className="space-y-8 print:space-y-5">
+            {config.education.map((edu, idx) => (
+              <div key={idx} className="break-inside-avoid">
+                <TwoColHeader
+                  left={<h3 className="font-semibold text-neutral-900">{edu.school}</h3>}
+                  right={<span className="text-sm text-neutral-400 tabular-nums">{edu.duration}</span>}
+                />
+                <p className="text-neutral-600">{edu.degree}</p>
+                <p className="text-sm text-neutral-500">{edu.location}</p>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <SectionTitle>Publications</SectionTitle>
-        <div className="space-y-6 print:space-y-4">
-          {config.publications.map((pub, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>
-              <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: pub.authors }} />
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-400 font-mono">
-                <span>{pub.venue}, {pub.year}</span>
-                {pub.acceptanceRate && (
-                  <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 tabular-nums">
-                    Acceptance rate: {pub.acceptanceRate}
+      {config.visibility?.workExperience !== false && (
+        <ExperienceSection title="Work Experience" items={config.workExperience} />
+      )}
+      {config.visibility?.researchExperience !== false && (
+        <ExperienceSection title="Research Experience" items={config.researchExperience} />
+      )}
+      {config.visibility?.teachingExperience !== false && (
+        <ExperienceSection title="Teaching" items={config.teachingExperience} />
+      )}
+
+      {config.visibility?.theses !== false && (
+        <section>
+          <SectionTitle>Thesis</SectionTitle>
+          <div className="space-y-6 print:space-y-4">
+            {config.theses.map((thesis, idx) => (
+              <div key={idx} className="break-inside-avoid">
+                <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
+                <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: thesis.authors }} />
+                <div className="text-xs text-neutral-400 font-mono">
+                  {thesis.institution}, {thesis.year}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {config.visibility?.publications !== false && (
+        <section>
+          <SectionTitle>Publications</SectionTitle>
+          <div className="space-y-6 print:space-y-4">
+            {config.publications.map((pub, idx) => (
+              <div key={idx} className="break-inside-avoid">
+                <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>
+                <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: pub.authors }} />
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-400 font-mono">
+                  <span>{pub.venue}, {pub.year}</span>
+                  {pub.acceptanceRate && (
+                    <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 tabular-nums">
+                      Acceptance rate: {pub.acceptanceRate}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {config.visibility?.awards !== false && (
+        <section>
+          <SectionTitle>Awards</SectionTitle>
+          <div className="space-y-4">
+            {config.awards.map((award, idx) => (
+              <div key={idx} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <span className="font-medium text-neutral-900">{award.title}</span>
+                <span className="text-neutral-400">|</span>
+                <span className="text-neutral-600">{award.venue} {award.year}</span>
+                {award.detail && (
+                  <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 text-xs font-mono">
+                    {award.detail}
                   </span>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <SectionTitle>Awards</SectionTitle>
-        <div className="space-y-4">
-          {config.awards.map((award, idx) => (
-            <div key={idx} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-              <span className="font-medium text-neutral-900">{award.title}</span>
-              <span className="text-neutral-400">|</span>
-              <span className="text-neutral-600">{award.venue} {award.year}</span>
-              {award.detail && (
-                <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 text-xs font-mono">
-                  {award.detail}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+      {config.visibility?.reviewer !== false && (
+        <section>
+          <SectionTitle>Reviewer</SectionTitle>
+          <div className="space-y-2 text-sm text-neutral-700">
+            {config.reviewer.map((item, idx) => (
+              <div key={idx} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="font-medium text-neutral-900">{item.venue}</span>
+                <span className="text-neutral-400">|</span>
+                <span className="text-neutral-600 tabular-nums">{item.years}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
-        <SectionTitle>Reviewer</SectionTitle>
-        <div className="space-y-2 text-sm text-neutral-700">
-          {config.reviewer.map((item, idx) => (
-            <div key={idx} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span className="font-medium text-neutral-900">{item.venue}</span>
-              <span className="text-neutral-400">|</span>
-              <span className="text-neutral-600 tabular-nums">{item.years}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {config.customSections?.filter(s => s.visible !== false).map((section) => (
+        <section key={section.id}>
+          <SectionTitle>{section.title}</SectionTitle>
+          <div className="space-y-3">
+            {section.items.map((item, idx) => (
+              <div key={idx} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <span className="font-medium text-neutral-900">{item.text}</span>
+                {item.detail && (
+                  <>
+                    <span className="text-neutral-400">|</span>
+                    <span className="text-neutral-600">{item.detail}</span>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 };

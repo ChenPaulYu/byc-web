@@ -173,5 +173,16 @@
     { "venue": "ISMIR", "years": "2020–2025" },
     { "venue": "ICASSP", "years": "2025" },
     { "venue": "NeurIPS Creative AI Track", "years": "2025" }
-  ]
+  ],
+  "visibility": {
+    "education": true,
+    "workExperience": true,
+    "researchExperience": true,
+    "teachingExperience": true,
+    "publications": true,
+    "theses": true,
+    "awards": true,
+    "reviewer": true
+  },
+  "customSections": []
 }

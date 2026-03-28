@@ -7,6 +7,8 @@ interface Publication { title: string; authors: string; venue: string; year: str
 interface Thesis { title: string; authors: string; institution: string; year: string; }
 interface Award { title: string; venue: string; year: string; detail?: string; }
 interface ReviewerEntry { venue: string; years: string; }
+interface CustomSectionItem { text: string; detail?: string; }
+interface CustomSection { id: string; title: string; visible: boolean; items: CustomSectionItem[]; }
 
 interface CvConfig {
   header: { name: string; tagline: string };
@@ -18,11 +20,20 @@ interface CvConfig {
   theses: Thesis[];
   awards: Award[];
   reviewer: ReviewerEntry[];
+  visibility: Record<string, boolean>;
+  customSections: CustomSection[];
 }
 
-const SectionHeader: React.FC<{ title: string; onAdd: () => void }> = ({ title, onAdd }) => (
+const SectionHeader: React.FC<{ title: string; onAdd: () => void; visible?: boolean; onToggle?: () => void }> = ({ title, onAdd, visible, onToggle }) => (
   <div className="flex items-center justify-between mb-3 mt-8 first:mt-0">
-    <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">{title}</h3>
+    <div className="flex items-center gap-3">
+      <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">{title}</h3>
+      {onToggle !== undefined && (
+        <button type="button" onClick={onToggle} className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${visible !== false ? 'bg-green-50 text-green-700' : 'bg-neutral-100 text-neutral-400'}`}>
+          {visible !== false ? 'Visible' : 'Hidden'}
+        </button>
+      )}
+    </div>
     <button type="button" onClick={onAdd} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add</button>
   </div>
 );
@@ -94,7 +105,12 @@ const CvEdit: React.FC = () => {
       </div>
 
       {/* Education */}
-      <SectionHeader title="Education" onAdd={() => setConfig({ ...config, education: [...config.education, { school: '', degree: '', duration: '', location: '' }] })} />
+      <SectionHeader
+        title="Education"
+        onAdd={() => setConfig({ ...config, education: [...config.education, { school: '', degree: '', duration: '', location: '' }] })}
+        visible={config.visibility?.education}
+        onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), education: !(config.visibility?.education !== false) } })}
+      />
       {config.education.map((edu, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, education: removeItem(config.education, i) })} /></div>
@@ -114,7 +130,12 @@ const CvEdit: React.FC = () => {
         { key: 'teachingExperience' as const, title: 'Teaching Experience' },
       ]).map(({ key, title }) => (
         <React.Fragment key={key}>
-          <SectionHeader title={title} onAdd={() => setConfig({ ...config, [key]: [...config[key], { company: '', role: '', duration: '', location: '', description: [''] }] })} />
+          <SectionHeader
+            title={title}
+            onAdd={() => setConfig({ ...config, [key]: [...config[key], { company: '', role: '', duration: '', location: '', description: [''] }] })}
+            visible={config.visibility?.[key]}
+            onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), [key]: !(config.visibility?.[key] !== false) } })}
+          />
           {config[key].map((exp: Experience, i: number) => (
             <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
               <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, [key]: removeItem(config[key], i) })} /></div>
@@ -156,7 +177,12 @@ const CvEdit: React.FC = () => {
       ))}
 
       {/* Publications */}
-      <SectionHeader title="Publications" onAdd={() => setConfig({ ...config, publications: [...config.publications, { title: '', authors: '', venue: '', year: '', acceptanceRate: '' }] })} />
+      <SectionHeader
+        title="Publications"
+        onAdd={() => setConfig({ ...config, publications: [...config.publications, { title: '', authors: '', venue: '', year: '', acceptanceRate: '' }] })}
+        visible={config.visibility?.publications}
+        onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), publications: !(config.visibility?.publications !== false) } })}
+      />
       {config.publications.map((pub, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, publications: removeItem(config.publications, i) })} /></div>
@@ -171,7 +197,12 @@ const CvEdit: React.FC = () => {
       ))}
 
       {/* Theses */}
-      <SectionHeader title="Thesis" onAdd={() => setConfig({ ...config, theses: [...config.theses, { title: '', authors: '', institution: '', year: '' }] })} />
+      <SectionHeader
+        title="Thesis"
+        onAdd={() => setConfig({ ...config, theses: [...config.theses, { title: '', authors: '', institution: '', year: '' }] })}
+        visible={config.visibility?.theses}
+        onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), theses: !(config.visibility?.theses !== false) } })}
+      />
       {config.theses.map((thesis, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, theses: removeItem(config.theses, i) })} /></div>
@@ -185,7 +216,12 @@ const CvEdit: React.FC = () => {
       ))}
 
       {/* Awards */}
-      <SectionHeader title="Awards" onAdd={() => setConfig({ ...config, awards: [...config.awards, { title: '', venue: '', year: '', detail: '' }] })} />
+      <SectionHeader
+        title="Awards"
+        onAdd={() => setConfig({ ...config, awards: [...config.awards, { title: '', venue: '', year: '', detail: '' }] })}
+        visible={config.visibility?.awards}
+        onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), awards: !(config.visibility?.awards !== false) } })}
+      />
       {config.awards.map((award, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, awards: removeItem(config.awards, i) })} /></div>
@@ -199,12 +235,85 @@ const CvEdit: React.FC = () => {
       ))}
 
       {/* Reviewer */}
-      <SectionHeader title="Reviewer" onAdd={() => setConfig({ ...config, reviewer: [...config.reviewer, { venue: '', years: '' }] })} />
+      <SectionHeader
+        title="Reviewer"
+        onAdd={() => setConfig({ ...config, reviewer: [...config.reviewer, { venue: '', years: '' }] })}
+        visible={config.visibility?.reviewer}
+        onToggle={() => setConfig({ ...config, visibility: { ...(config.visibility || {}), reviewer: !(config.visibility?.reviewer !== false) } })}
+      />
       {config.reviewer.map((rev, i) => (
         <div key={i} className="flex gap-3 mb-2 items-end">
           <div className="flex-1"><label className={labelClass}>Venue</label><input type="text" value={rev.venue} onChange={(e) => setConfig({ ...config, reviewer: updateField(config.reviewer, i, 'venue', e.target.value) })} className={inputClass} /></div>
           <div className="w-32"><label className={labelClass}>Years</label><input type="text" value={rev.years} onChange={(e) => setConfig({ ...config, reviewer: updateField(config.reviewer, i, 'years', e.target.value) })} className={inputClass} /></div>
           <RemoveBtn onClick={() => setConfig({ ...config, reviewer: removeItem(config.reviewer, i) })} />
+        </div>
+      ))}
+
+      {/* Custom Sections */}
+      <div className="flex items-center justify-between mb-3 mt-8">
+        <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Custom Sections</h3>
+        <button type="button" onClick={() => {
+          const id = `custom-${Date.now()}`;
+          setConfig({ ...config, customSections: [...(config.customSections || []), { id, title: 'New Section', visible: true, items: [] }] });
+        }} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add Section</button>
+      </div>
+
+      {(config.customSections || []).map((section, si) => (
+        <div key={section.id} className="border border-neutral-200 rounded-lg p-4 mb-3">
+          <div className="flex justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={section.title}
+                onChange={(e) => {
+                  const updated = [...config.customSections];
+                  updated[si] = { ...updated[si], title: e.target.value };
+                  setConfig({ ...config, customSections: updated });
+                }}
+                className="text-sm font-semibold border-none focus:outline-none focus:ring-0 p-0 bg-transparent text-neutral-900"
+                placeholder="Section title"
+              />
+              <button type="button" onClick={() => {
+                const updated = [...config.customSections];
+                updated[si] = { ...updated[si], visible: !updated[si].visible };
+                setConfig({ ...config, customSections: updated });
+              }} className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${section.visible ? 'bg-green-50 text-green-700' : 'bg-neutral-100 text-neutral-400'}`}>
+                {section.visible ? 'Visible' : 'Hidden'}
+              </button>
+            </div>
+            <button type="button" onClick={() => {
+              setConfig({ ...config, customSections: config.customSections.filter((_, i) => i !== si) });
+            }} className="text-xs text-neutral-400 hover:text-red-500 transition-colors">Delete Section</button>
+          </div>
+
+          {section.items.map((item, ii) => (
+            <div key={ii} className="flex gap-2 mb-2">
+              <input type="text" value={item.text} onChange={(e) => {
+                const updated = [...config.customSections];
+                const items = [...updated[si].items];
+                items[ii] = { ...items[ii], text: e.target.value };
+                updated[si] = { ...updated[si], items };
+                setConfig({ ...config, customSections: updated });
+              }} className={inputClass} placeholder="Item text" />
+              <input type="text" value={item.detail || ''} onChange={(e) => {
+                const updated = [...config.customSections];
+                const items = [...updated[si].items];
+                items[ii] = { ...items[ii], detail: e.target.value || undefined };
+                updated[si] = { ...updated[si], items };
+                setConfig({ ...config, customSections: updated });
+              }} className={`${inputClass} w-40`} placeholder="Detail (optional)" />
+              <button type="button" onClick={() => {
+                const updated = [...config.customSections];
+                updated[si] = { ...updated[si], items: updated[si].items.filter((_, k) => k !== ii) };
+                setConfig({ ...config, customSections: updated });
+              }} className="text-neutral-400 hover:text-red-500 px-2 transition-colors">×</button>
+            </div>
+          ))}
+          <button type="button" onClick={() => {
+            const updated = [...config.customSections];
+            updated[si] = { ...updated[si], items: [...updated[si].items, { text: '', detail: '' }] };
+            setConfig({ ...config, customSections: updated });
+          }} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors mt-1">+ Add item</button>
         </div>
       ))}
     </div>
