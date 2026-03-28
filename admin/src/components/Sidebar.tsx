@@ -5,30 +5,30 @@ const sections = [
   {
     label: 'Content',
     items: [
-      { to: '/blog', label: 'Blog' },
-      { to: '/projects', label: 'Projects' },
-      { to: '/news', label: 'News' },
-      { to: '/about', label: 'About' },
+      { to: '/blog', label: 'Blog', icon: '📝' },
+      { to: '/projects', label: 'Projects', icon: '📁' },
+      { to: '/news', label: 'News', icon: '📢' },
+      { to: '/about', label: 'About', icon: '👤' },
     ],
   },
   {
     label: 'Site',
     items: [
-      { to: '/settings', label: 'Settings' },
-      { to: '/images', label: 'Images' },
+      { to: '/settings', label: 'Settings', icon: '⚙️' },
+      { to: '/images', label: 'Images', icon: '🖼️' },
     ],
   },
   {
     label: 'Home Page',
     items: [
-      { to: '/mpc', label: 'MPC Assets' },
+      { to: '/mpc', label: 'MPC Assets', icon: '🎹' },
     ],
   },
 ];
 
 const Sidebar: React.FC = () => {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `block px-4 py-2 rounded-md text-sm transition-colors ${
+    `flex items-center gap-2.5 px-4 py-2 rounded-md text-sm transition-colors ${
       isActive
         ? 'bg-neutral-900 text-white font-medium'
         : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
@@ -49,6 +49,7 @@ const Sidebar: React.FC = () => {
             <div className="space-y-0.5">
               {section.items.map((item) => (
                 <NavLink key={item.to} to={item.to} className={linkClass}>
+                  <span className="text-sm">{item.icon}</span>
                   {item.label}
                 </NavLink>
               ))}
