@@ -8,7 +8,8 @@
     "build": "vite build",
     "cv:pdf": "node scripts/render-cv-pdf.mjs",
     "build:cvpdf": "npm run build && npm run cv:pdf",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "admin": "concurrently \"tsx server/index.ts\" \"vite --config admin/vite.config.ts\""
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -16,7 +17,10 @@
     "@types/dat.gui": "0.7.13",
     "@use-gesture/react": "10.3.1",
     "buffer": "6.0.3",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.6",
     "dat.gui": "0.7.9",
+    "express": "^5.2.1",
     "fuse.js": "7.1.0",
     "gray-matter": "4.0.3",
     "highlight.js": "11.11.1",
@@ -33,9 +37,12 @@
     "remark-gfm": "4.0.1",
     "three": "^0.182.0",
     "tone": "^15.1.22",
+    "tsx": "^4.21.0",
     "yet-another-react-lightbox": "3.28.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.17",
