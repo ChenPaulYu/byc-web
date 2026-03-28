@@ -1198,7 +1198,7 @@ const LandingScene: React.FC = () => {
 
         {/* Header: Top Left */}
         <header className="z-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sans tracking-tight text-neutral-900 mb-1 sm:mb-2">
+          <h1 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sans tracking-tight text-neutral-900 mb-1 sm:mb-2">
             Bo-Yu Chen
           </h1>
           <p className="text-neutral-500 font-mono text-xs sm:text-sm md:text-base tracking-wide">
@@ -1207,12 +1207,12 @@ const LandingScene: React.FC = () => {
         </header>
 
         {/* Footer Area */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between w-full mt-auto gap-4 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between w-full mt-auto gap-2 sm:gap-0">
           {/* Mobile: Center everything, Desktop: Left Spacer */}
           <div className="hidden sm:block sm:w-1/3"></div>
 
           {/* Center: Keyboard Guide */}
-          <div className="w-full sm:w-1/3 text-center pb-2 sm:pb-4">
+          <div className="w-full sm:w-1/3 text-center pb-1 sm:pb-4">
             <p className="text-neutral-300 text-xs sm:text-xs md:text-sm font-mono tracking-widest uppercase">
               <span className="hidden sm:inline">Keyboard: 1-4, Q-R, A-F, Z-V</span>
               <span className="sm:hidden">Tap pads to play</span>
@@ -1220,34 +1220,34 @@ const LandingScene: React.FC = () => {
           </div>
 
           {/* Right: Navigation */}
-          <nav className="w-full sm:w-1/3 pointer-events-auto flex flex-wrap sm:flex-col items-center sm:items-end gap-3 sm:gap-4 justify-center sm:justify-end">
+          <nav className="w-full sm:w-1/3 pointer-events-auto flex sm:flex-col items-center sm:items-end gap-x-5 gap-y-2 sm:gap-4 justify-center sm:justify-end pb-2 sm:pb-0">
             <button
               onClick={() => navigate('/about')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               About
             </button>
             <button
               onClick={() => navigate('/projects')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               Projects
             </button>
             <button
               onClick={() => navigate('/blog')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               Blog
             </button>
             <button
               onClick={() => navigate('/news')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               News
             </button>
             <button
               onClick={() => navigate('/cv')}
-              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               CV
             </button>
