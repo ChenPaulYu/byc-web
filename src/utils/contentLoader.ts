@@ -311,11 +311,20 @@ export const loadAllNews = async (): Promise<NewsContent[]> => {
   });
 };
 
+// Verify a fetch response is actually a file, not the SPA HTML fallback
+const isRealFile = async (response: Response): Promise<boolean> => {
+  if (!response.ok) return false;
+  const contentType = response.headers.get('content-type') || '';
+  // If server returns text/html, it's the SPA fallback, not the actual file
+  if (contentType.includes('text/html')) return false;
+  return true;
+};
+
 // Check if a Chinese version of content exists
 export const hasChineseVersion = async (type: 'blog' | 'projects', slug: string): Promise<boolean> => {
   try {
     const response = await fetch(`/content/${type}/${slug}.zh.md`);
-    return response.ok;
+    return isRealFile(response);
   } catch {
     return false;
   }
@@ -325,7 +334,7 @@ export const hasChineseVersion = async (type: 'blog' | 'projects', slug: string)
 export const loadBlogPostZh = async (slug: string): Promise<BlogContent> => {
   try {
     const response = await fetch(`/content/blog/${slug}.zh.md`);
-    if (!response.ok) throw new Error('No Chinese version');
+    if (!await isRealFile(response)) throw new Error('No Chinese version');
     const raw = await response.text();
     const { data, content } = matter(raw);
     return { slug, metadata: data as BlogMetadata, content, excerpt: extractExcerpt(content) };
@@ -338,7 +347,7 @@ export const loadBlogPostZh = async (slug: string): Promise<BlogContent> => {
 export const loadProjectZh = async (slug: string): Promise<ProjectContent> => {
   try {
     const response = await fetch(`/content/projects/${slug}.zh.md`);
-    if (!response.ok) throw new Error('No Chinese version');
+    if (!await isRealFile(response)) throw new Error('No Chinese version');
     const raw = await response.text();
     const { data, content } = matter(raw);
     return { slug, metadata: data as ProjectMetadata, content, excerpt: extractExcerpt(content) };
@@ -351,7 +360,7 @@ export const loadProjectZh = async (slug: string): Promise<ProjectContent> => {
 export const hasChineseAbout = async (): Promise<boolean> => {
   try {
     const response = await fetch('/content/about.zh.md');
-    return response.ok;
+    return isRealFile(response);
   } catch {
     return false;
   }
@@ -361,7 +370,7 @@ export const hasChineseAbout = async (): Promise<boolean> => {
 export const loadAboutContentZh = async (): Promise<string> => {
   try {
     const response = await fetch('/content/about.zh.md');
-    if (!response.ok) throw new Error('No Chinese version');
+    if (!await isRealFile(response)) throw new Error('No Chinese version');
     const raw = await response.text();
     const { content } = matter(raw);
     return content;
@@ -374,7 +383,7 @@ export const loadAboutContentZh = async (): Promise<string> => {
 export const hasChineseCv = async (): Promise<boolean> => {
   try {
     const response = await fetch('/cv.config.zh.json');
-    return response.ok;
+    return isRealFile(response);
   } catch {
     return false;
   }
