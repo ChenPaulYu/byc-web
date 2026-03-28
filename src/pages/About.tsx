@@ -55,7 +55,7 @@ Also teaching workshops on interactive music systems and contributing to open-so
       <header className="mb-12">
         <div className="flex items-center gap-4 mb-4">
           <h1 className="text-3xl font-bold">About Me</h1>
-          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
+          <LanguageToggle lang={lang} hasZh={hasZh} onChange={setLang} />
         </div>
         <div className="w-12 h-1 bg-neutral-900 mb-8"></div>
       </header>

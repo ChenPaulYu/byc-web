@@ -102,7 +102,7 @@ const BlogPost: React.FC = () => {
               <span className="capitalize">{post.metadata.category}</span>
             </>
           )}
-          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
+          <LanguageToggle lang={lang} hasZh={hasZh} onChange={setLang} />
         </div>
 
         {/* Tags */}

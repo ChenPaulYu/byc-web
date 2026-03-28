@@ -146,7 +146,7 @@ const CV: React.FC = () => {
           <p className="text-neutral-500 print:text-sm">{config.header.tagline}</p>
         </div>
         <div className="flex gap-2 items-center print:hidden">
-          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
+          <LanguageToggle lang={lang} hasZh={hasZh} onChange={setLang} />
           <a
             href="/cv.pdf"
             className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"

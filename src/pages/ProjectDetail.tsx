@@ -84,7 +84,7 @@ const ProjectDetail: React.FC = () => {
           <span>{project.metadata.year}</span>
           <span>•</span>
           <span>{project.metadata.role}</span>
-          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
+          <LanguageToggle lang={lang} hasZh={hasZh} onChange={setLang} />
         </div>
 
         {/* Tags */}
