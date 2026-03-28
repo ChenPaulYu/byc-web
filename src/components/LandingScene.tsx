@@ -1056,6 +1056,49 @@ const LoadingOverlay: React.FC<{ extraReady: boolean }> = ({ extraReady }) => {
   );
 };
 
+// Error boundary for 3D canvas failures (e.g., WebGL not supported)
+class CanvasErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+const StaticFallback: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="w-full h-screen bg-[#f9fafb] flex flex-col items-center justify-center px-6">
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3 text-center">
+        Bo-Yu Chen
+      </h1>
+      <p className="text-neutral-500 font-mono text-sm sm:text-base tracking-wide mb-12">
+        Researcher // Engineer // Creator
+      </p>
+      <nav className="flex flex-wrap gap-4 justify-center">
+        {['About', 'Projects', 'Blog', 'News', 'CV'].map((page) => (
+          <button
+            key={page}
+            onClick={() => navigate(`/${page.toLowerCase()}`)}
+            className="text-lg text-neutral-800 hover:text-black transition-colors"
+          >
+            {page}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
 const WelcomeScreen: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
   return (
     <div
@@ -1147,6 +1190,7 @@ const LandingScene: React.FC = () => {
   }, []);
 
   return (
+    <CanvasErrorBoundary fallback={<StaticFallback />}>
     <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden">
       {!entered && <WelcomeScreen onEnter={handleEnter} />}
       {entered && <LoadingOverlay extraReady={videoReady} />}
@@ -1262,6 +1306,7 @@ const LandingScene: React.FC = () => {
         </div>
       </div>
     </div>
+    </CanvasErrorBoundary>
   );
 };
 

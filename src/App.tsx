@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 
@@ -12,6 +12,21 @@ const BlogPost = lazy(() => import('./pages/BlogPost'));
 const News = lazy(() => import('./pages/News'));
 const CV = lazy(() => import('./pages/CV'));
 
+// Redirect old /#/ hash URLs to new clean URLs
+const HashRedirect: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window.location.hash.startsWith('#/')) {
+      const path = window.location.hash.slice(1); // Remove #
+      navigate(path, { replace: true });
+    }
+  }, [location, navigate]);
+
+  return null;
+};
+
 const PageLoading = () => (
   <div className="min-h-screen flex items-center justify-center">
     <p className="text-neutral-400 text-sm">Loading...</p>
@@ -21,6 +36,7 @@ const PageLoading = () => (
 const App: React.FC = () => {
   return (
     <Router>
+      <HashRedirect />
       <Routes>
         {/* Other pages with Layout */}
         <Route path="*" element={
