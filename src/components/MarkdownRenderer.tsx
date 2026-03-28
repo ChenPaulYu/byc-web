@@ -7,6 +7,7 @@ import 'highlight.js/styles/github-dark-dimmed.css';
 
 // Lazy load heavy components
 const Lightbox = lazy(() => import('./blog/Lightbox'));
+const AudioPlayer = lazy(() => import('./blog/AudioPlayer'));
 
 // Initialize Mermaid with better config
 mermaid.initialize({
@@ -14,6 +15,15 @@ mermaid.initialize({
   theme: 'neutral',
   securityLevel: 'loose'
 });
+
+// Custom component patterns
+const CUSTOM_COMPONENT_PATTERN = /^::(\w+)\[([^\]]*)\]$/;
+
+const parseCustomComponent = (text: string): { type: string; content: string } | null => {
+  const match = text.trim().match(CUSTOM_COMPONENT_PATTERN);
+  if (!match) return null;
+  return { type: match[1], content: match[2] };
+};
 
 // YouTube URL patterns
 const YOUTUBE_PATTERNS = [
@@ -176,8 +186,30 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               />
             );
           },
-          // Paragraph with YouTube URL detection
+          // Paragraph with custom component and YouTube URL detection
           p: ({ node, children }: any) => {
+            // Check for custom components (::type[content])
+            const textContent = typeof children === 'string' ? children.trim()
+              : (Array.isArray(children) && children.length === 1 && typeof children[0] === 'string') ? children[0].trim()
+              : null;
+
+            if (textContent) {
+              const custom = parseCustomComponent(textContent);
+              if (custom) {
+                switch (custom.type) {
+                  case 'audio':
+                    return (
+                      <Suspense fallback={<div className="my-6 h-20 bg-neutral-50 rounded-lg animate-pulse" />}>
+                        <AudioPlayer src={custom.content} />
+                      </Suspense>
+                    );
+                  // Add more custom components here in the future
+                  default:
+                    break;
+                }
+              }
+            }
+
             let youtubeUrl: string | null = null;
 
             // Try to find a YouTube URL in the paragraph
