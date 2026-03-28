@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 
 const HOST = '127.0.0.1';
 const PORT = 4173;
-const PREVIEW_URL = `http://${HOST}:${PORT}/#/cv`;
+const PREVIEW_URL = `http://${HOST}:${PORT}/cv`;
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
