@@ -41,6 +41,7 @@
     "three": "^0.182.0",
     "tone": "^15.1.22",
     "tsx": "^4.21.0",
+    "wavesurfer.js": "^7.12.5",
     "yet-another-react-lightbox": "3.28.0"
   },
   "devDependencies": {
