@@ -9,6 +9,7 @@ interface NewsMetadata {
   updated?: string;
   type: string;
   url?: string;
+  status: 'pinned' | 'published' | 'draft';
 }
 
 const defaultMetadata: NewsMetadata = {
@@ -17,6 +18,7 @@ const defaultMetadata: NewsMetadata = {
   updated: '',
   type: 'update',
   url: '',
+  status: 'published',
 };
 
 const NewsEdit: React.FC = () => {
@@ -31,6 +33,7 @@ const NewsEdit: React.FC = () => {
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [zhContent, setZhContent] = useState('');
+  const [zhStatus, setZhStatus] = useState<'pinned' | 'published' | 'draft'>('draft');
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -44,6 +47,7 @@ const NewsEdit: React.FC = () => {
             updated: meta.updated || '',
             type: meta.type || 'update',
             url: meta.url || '',
+            status: (meta as any).pinned ? 'pinned' : ((meta as any).draft ? 'draft' : 'published'),
           });
           setContent(item.content);
         })
@@ -61,7 +65,11 @@ const NewsEdit: React.FC = () => {
   useEffect(() => {
     if (lang === 'zh' && hasZh && slug && !isNew && !zhContent) {
       getZhContent('news', slug)
-        .then((item) => setZhContent(item.content))
+        .then((item) => {
+          setZhContent(item.content);
+          const zhMeta = item.metadata as any;
+          setZhStatus(zhMeta?.pinned ? 'pinned' : (zhMeta?.draft ? 'draft' : 'published'));
+        })
         .catch(() => { /* new zh file, start empty */ });
     }
   }, [lang, hasZh, slug, isNew]);
@@ -77,10 +85,13 @@ const NewsEdit: React.FC = () => {
 
     setSaving(true);
     const finalSlug = isNew ? generateSlug(metadata.title) : slug!;
+    const activeStatus = lang === 'zh' ? zhStatus : metadata.status;
     const finalMetadata: Record<string, unknown> = {
       title: metadata.title,
       date: metadata.date,
       type: metadata.type,
+      pinned: activeStatus === 'pinned',
+      draft: activeStatus === 'draft',
     };
     if (metadata.updated?.trim()) {
       finalMetadata.updated = metadata.updated.trim();
@@ -197,6 +208,22 @@ const NewsEdit: React.FC = () => {
             className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
             placeholder="https://example.com/external-link"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Status</label>
+          <select
+            value={lang === 'zh' ? zhStatus : metadata.status}
+            onChange={(e) => {
+              const s = e.target.value as 'pinned' | 'published' | 'draft';
+              if (lang === 'zh') setZhStatus(s);
+              else setMetadata({ ...metadata, status: s });
+            }}
+            className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
+          >
+            <option value="published">Published</option>
+            <option value="pinned">Pinned</option>
+            <option value="draft">Draft</option>
+          </select>
         </div>
       </div>
 

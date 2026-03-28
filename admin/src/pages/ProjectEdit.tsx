@@ -17,7 +17,7 @@ interface ProjectMetadata {
   role: string;
   tags: string[];
   cover: string;
-  pinned: boolean;
+  status: 'pinned' | 'published' | 'draft';
   importance: number;
   links: ProjectLink[];
 }
@@ -30,7 +30,7 @@ const defaultMetadata: ProjectMetadata = {
   role: '',
   tags: [],
   cover: '',
-  pinned: false,
+  status: 'published',
   importance: 5,
   links: [],
 };
@@ -48,6 +48,7 @@ const ProjectEdit: React.FC = () => {
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [zhContent, setZhContent] = useState('');
+  const [zhStatus, setZhStatus] = useState<'pinned' | 'published' | 'draft'>('draft');
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -63,7 +64,7 @@ const ProjectEdit: React.FC = () => {
             role: meta.role || '',
             tags: meta.tags || [],
             cover: meta.cover || '',
-            pinned: meta.pinned || false,
+            status: (meta as any).pinned ? 'pinned' : ((meta as any).draft ? 'draft' : 'published'),
             importance: meta.importance ?? 5,
             links: meta.links || [],
           });
@@ -84,7 +85,11 @@ const ProjectEdit: React.FC = () => {
   useEffect(() => {
     if (lang === 'zh' && hasZh && slug && !isNew && !zhContent) {
       getZhContent('projects', slug)
-        .then((item) => setZhContent(item.content))
+        .then((item) => {
+          setZhContent(item.content);
+          const zhMeta = item.metadata as any;
+          setZhStatus(zhMeta?.pinned ? 'pinned' : (zhMeta?.draft ? 'draft' : 'published'));
+        })
         .catch(() => { /* new zh file, start empty */ });
     }
   }, [lang, hasZh, slug, isNew]);
@@ -100,10 +105,15 @@ const ProjectEdit: React.FC = () => {
 
     setSaving(true);
     const finalSlug = isNew ? generateSlug(metadata.title) : slug!;
-    const finalMetadata = {
+
+    const activeStatus = lang === 'zh' ? zhStatus : metadata.status;
+    const finalMetadata: any = {
       ...metadata,
       tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
+      pinned: activeStatus === 'pinned',
+      draft: activeStatus === 'draft',
     };
+    delete finalMetadata.status;
 
     try {
       if (lang === 'zh') {
@@ -210,10 +220,22 @@ const ProjectEdit: React.FC = () => {
           <input type="text" value={metadata.cover} onChange={(e) => setMetadata({ ...metadata, cover: e.target.value })} className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" placeholder="/images/project-cover.jpg" />
         </div>
         <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2 text-sm text-neutral-700">
-            <input type="checkbox" checked={metadata.pinned} onChange={(e) => setMetadata({ ...metadata, pinned: e.target.checked })} className="rounded" />
-            Pinned
-          </label>
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Status</label>
+            <select
+              value={lang === 'zh' ? zhStatus : metadata.status}
+              onChange={(e) => {
+                const s = e.target.value as 'pinned' | 'published' | 'draft';
+                if (lang === 'zh') setZhStatus(s);
+                else setMetadata({ ...metadata, status: s });
+              }}
+              className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
+            >
+              <option value="published">Published</option>
+              <option value="pinned">Pinned</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-neutral-700">Importance</label>
             <input type="number" min={0} max={10} value={metadata.importance} onChange={(e) => setMetadata({ ...metadata, importance: parseInt(e.target.value) || 0 })} className="w-16 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" />

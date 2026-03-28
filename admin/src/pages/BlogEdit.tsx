@@ -9,8 +9,7 @@ interface BlogMetadata {
   updated: string;
   category: string;
   tags: string[];
-  pinned: boolean;
-  draft: boolean;
+  status: 'pinned' | 'published' | 'draft';
 }
 
 const defaultMetadata: BlogMetadata = {
@@ -19,8 +18,7 @@ const defaultMetadata: BlogMetadata = {
   updated: '',
   category: '',
   tags: [],
-  pinned: false,
-  draft: false,
+  status: 'published',
 };
 
 const BlogEdit: React.FC = () => {
@@ -36,6 +34,7 @@ const BlogEdit: React.FC = () => {
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [zhContent, setZhContent] = useState('');
+  const [zhStatus, setZhStatus] = useState<'pinned' | 'published' | 'draft'>('draft');
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -49,8 +48,7 @@ const BlogEdit: React.FC = () => {
             updated: meta.updated || '',
             category: meta.category || '',
             tags: meta.tags || [],
-            pinned: meta.pinned || false,
-            draft: meta.draft || false,
+            status: (meta as any).pinned ? 'pinned' : ((meta as any).draft ? 'draft' : 'published'),
           });
           setTagsInput((meta.tags || []).join(', '));
           setContent(item.content);
@@ -69,7 +67,11 @@ const BlogEdit: React.FC = () => {
   useEffect(() => {
     if (lang === 'zh' && hasZh && slug && !isNew && !zhContent) {
       getZhContent('blog', slug)
-        .then((item) => setZhContent(item.content))
+        .then((item) => {
+          setZhContent(item.content);
+          const zhMeta = item.metadata as any;
+          setZhStatus(zhMeta?.pinned ? 'pinned' : (zhMeta?.draft ? 'draft' : 'published'));
+        })
         .catch(() => { /* new zh file, start empty */ });
     }
   }, [lang, hasZh, slug, isNew]);
@@ -85,10 +87,15 @@ const BlogEdit: React.FC = () => {
 
     setSaving(true);
     const finalSlug = isNew ? generateSlug(metadata.title) : slug!;
-    const finalMetadata = {
+
+    const activeStatus = lang === 'zh' ? zhStatus : metadata.status;
+    const finalMetadata: any = {
       ...metadata,
       tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
+      pinned: activeStatus === 'pinned',
+      draft: activeStatus === 'draft',
     };
+    delete finalMetadata.status;
 
     try {
       if (lang === 'zh') {
@@ -196,25 +203,21 @@ const BlogEdit: React.FC = () => {
             placeholder="react, typescript, web"
           />
         </div>
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-neutral-700">
-            <input
-              type="checkbox"
-              checked={metadata.pinned}
-              onChange={(e) => setMetadata({ ...metadata, pinned: e.target.checked })}
-              className="rounded"
-            />
-            Pinned
-          </label>
-          <label className="flex items-center gap-2 text-sm text-neutral-700">
-            <input
-              type="checkbox"
-              checked={metadata.draft}
-              onChange={(e) => setMetadata({ ...metadata, draft: e.target.checked })}
-              className="rounded"
-            />
-            Draft
-          </label>
+        <div>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Status</label>
+          <select
+            value={lang === 'zh' ? zhStatus : metadata.status}
+            onChange={(e) => {
+              const s = e.target.value as 'pinned' | 'published' | 'draft';
+              if (lang === 'zh') setZhStatus(s);
+              else setMetadata({ ...metadata, status: s });
+            }}
+            className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
+          >
+            <option value="published">Published</option>
+            <option value="pinned">Pinned</option>
+            <option value="draft">Draft</option>
+          </select>
         </div>
       </div>
 
