@@ -4,7 +4,11 @@ import { NavLink } from 'react-router-dom';
 const navItems = [
   { to: '/blog', label: 'Blog Posts', icon: '📝' },
   { to: '/projects', label: 'Projects', icon: '📁' },
+  { to: '/news', label: 'News', icon: '📢' },
   { to: '/about', label: 'About', icon: '👤' },
+  { to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/images', label: 'Images', icon: '🖼️' },
+  { to: '/mpc', label: 'MPC Assets', icon: '🎹' },
 ];
 
 const Sidebar: React.FC = () => {
