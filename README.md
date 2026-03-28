@@ -63,6 +63,7 @@ The site is deployed on Vercel. Both the public site and admin dashboard deploy 
 | `VITE_GITHUB_OWNER` | No | GitHub username (default: `ChenPaulYu`) |
 | `VITE_GITHUB_REPO` | No | Repository name (default: `byc-web`) |
 | `VITE_GITHUB_BRANCH` | No | Branch name (default: `main`) |
+| `VITE_VERCEL_DEPLOY_HOOK` | No | Deploy hook URL — adds a "Deploy Site" button to admin sidebar |
 
 ## Project Structure
 

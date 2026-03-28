@@ -168,16 +168,16 @@ async function listDir(path: string): Promise<string[]> {
 
 export const listContent = async (type: ContentType): Promise<ContentItem[]> => {
   const files = await listDir(`public/content/${type}`);
-  const items: ContentItem[] = [];
-  for (const filename of files) {
-    if (!filename.endsWith('.md')) continue;
-    const slug = filename.replace('.md', '');
-    try {
-      const item = await getContent(type, slug);
-      items.push(item);
-    } catch { /* skip */ }
-  }
-  return items;
+  const mdFiles = files.filter(f => f.endsWith('.md'));
+  const results = await Promise.allSettled(
+    mdFiles.map(filename => {
+      const slug = filename.replace('.md', '');
+      return getContent(type, slug);
+    })
+  );
+  return results
+    .filter((r): r is PromiseFulfilledResult<ContentItem> => r.status === 'fulfilled')
+    .map(r => r.value);
 };
 
 export const getContent = async (type: ContentType, slug: string): Promise<ContentItem> => {
@@ -277,18 +277,16 @@ export const deleteImage = async (filename: string): Promise<{ deleted: string }
 // --- MPC Assets ---
 
 export const getMpcAssets = async (): Promise<MpcAssets> => {
-  const samples = await listDir('public/samples');
-  let hasModel = false;
-  let hasVideo = false;
-  try {
-    await ghRequest(`/repos/${OWNER}/${REPO}/contents/public/model.glb?ref=${BRANCH}`);
-    hasModel = true;
-  } catch { /* not found */ }
-  try {
-    await ghRequest(`/repos/${OWNER}/${REPO}/contents/public/animation.mp4?ref=${BRANCH}`);
-    hasVideo = true;
-  } catch { /* not found */ }
-  return { samples, hasModel, hasVideo };
+  const [samples, modelResult, videoResult] = await Promise.allSettled([
+    listDir('public/samples'),
+    ghRequest(`/repos/${OWNER}/${REPO}/contents/public/model.glb?ref=${BRANCH}`),
+    ghRequest(`/repos/${OWNER}/${REPO}/contents/public/animation.mp4?ref=${BRANCH}`),
+  ]);
+  return {
+    samples: samples.status === 'fulfilled' ? samples.value : [],
+    hasModel: modelResult.status === 'fulfilled',
+    hasVideo: videoResult.status === 'fulfilled',
+  };
 };
 
 export const uploadSample = async (file: File): Promise<{ filename: string }> => {
@@ -377,3 +375,16 @@ export const updateMpcConfig = async (config: MpcConfig): Promise<{ success: boo
   await putFile('public/mpc.config.json', JSON.stringify(config, null, 2) + '\n', 'update: MPC config', sha);
   return { success: true };
 };
+
+// --- Deploy ---
+
+const DEPLOY_HOOK = import.meta.env.VITE_VERCEL_DEPLOY_HOOK || '';
+
+export const triggerDeploy = async (): Promise<{ success: boolean }> => {
+  if (!DEPLOY_HOOK) throw new Error('No deploy hook configured. Set VITE_VERCEL_DEPLOY_HOOK.');
+  const res = await fetch(DEPLOY_HOOK, { method: 'POST' });
+  if (!res.ok) throw new Error('Deploy trigger failed');
+  return { success: true };
+};
+
+export const hasDeployHook = (): boolean => !!DEPLOY_HOOK;

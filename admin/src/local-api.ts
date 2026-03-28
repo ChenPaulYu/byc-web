@@ -143,3 +143,11 @@ export const updateMpcConfig = (config: MpcConfig) =>
     method: 'PUT',
     body: JSON.stringify(config),
   });
+
+// --- Deploy ---
+
+export const triggerDeploy = async (): Promise<{ success: boolean }> => {
+  throw new Error('Deploy is not available in local mode');
+};
+
+export const hasDeployHook = (): boolean => false;

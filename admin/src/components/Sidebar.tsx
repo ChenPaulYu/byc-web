@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { triggerDeploy, hasDeployHook } from '../api';
 
 const sections = [
   {
@@ -26,6 +27,39 @@ const sections = [
     ],
   },
 ];
+
+const DeployButton: React.FC = () => {
+  const [deploying, setDeploying] = useState(false);
+  const [deployed, setDeployed] = useState(false);
+
+  const handleDeploy = async () => {
+    if (!window.confirm('Deploy all changes to the live site?')) return;
+    setDeploying(true);
+    try {
+      await triggerDeploy();
+      setDeployed(true);
+      setTimeout(() => setDeployed(false), 3000);
+    } catch (err) {
+      alert(`Deploy failed: ${err}`);
+    } finally {
+      setDeploying(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleDeploy}
+      disabled={deploying}
+      className={`w-full px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+        deployed
+          ? 'bg-green-50 text-green-700'
+          : 'bg-neutral-900 text-white hover:bg-neutral-800 disabled:opacity-50'
+      }`}
+    >
+      {deployed ? 'Deploy triggered!' : deploying ? 'Deploying...' : 'Deploy Site'}
+    </button>
+  );
+};
 
 interface SidebarProps {
   isOpen: boolean;
@@ -78,12 +112,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           ))}
         </nav>
 
-        <div className="px-5 py-3 border-t border-neutral-200">
+        <div className="px-4 py-3 border-t border-neutral-200 space-y-2">
+          {hasDeployHook() && <DeployButton />}
           <a
             href="http://localhost:3000"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="block text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             View site →
           </a>

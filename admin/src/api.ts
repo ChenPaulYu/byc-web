@@ -32,5 +32,7 @@ export const getCvConfig = api.getCvConfig;
 export const updateCvConfig = api.updateCvConfig;
 export const getMpcConfig = api.getMpcConfig;
 export const updateMpcConfig = api.updateMpcConfig;
+export const triggerDeploy = api.triggerDeploy;
+export const hasDeployHook = api.hasDeployHook;
 
 export type { ContentItem, ContentConfig, MpcAssets, MpcConfig } from './local-api';
