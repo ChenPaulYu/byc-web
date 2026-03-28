@@ -120,6 +120,15 @@ export const uploadVideo = async (file: File): Promise<{ filename: string }> => 
   return res.json();
 };
 
+// CV Config
+export const getCvConfig = () => request<Record<string, unknown>>('/cv-config');
+
+export const updateCvConfig = (config: Record<string, unknown>) =>
+  request<{ success: boolean }>('/cv-config', {
+    method: 'PUT',
+    body: JSON.stringify(config),
+  });
+
 // MPC Config
 export interface MpcConfig {
   bpm: number;

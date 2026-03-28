@@ -244,6 +244,29 @@ export function createRoutes(storage: StorageAdapter, publicDir: string): Router
     res.status(201).json({ filename: 'animation.mp4' });
   });
 
+  // CV Config
+  router.get('/cv-config', async (_req, res) => {
+    try {
+      const raw = await fs.readFile(path.join(publicDir, 'cv.config.json'), 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch {
+      res.status(500).json({ error: 'Failed to read CV config' });
+    }
+  });
+
+  router.put('/cv-config', async (req, res) => {
+    try {
+      await fs.writeFile(
+        path.join(publicDir, 'cv.config.json'),
+        JSON.stringify(req.body, null, 2) + '\n',
+        'utf-8'
+      );
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ error: 'Failed to update CV config' });
+    }
+  });
+
   // MPC Config
   router.get('/mpc-config', async (_req, res) => {
     try {
