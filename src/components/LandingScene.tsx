@@ -1056,10 +1056,38 @@ const LoadingOverlay: React.FC<{ extraReady: boolean }> = ({ extraReady }) => {
   );
 };
 
+const WelcomeScreen: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
+  return (
+    <div
+      className="absolute inset-0 z-30 bg-[#f9fafb] flex flex-col items-center justify-center cursor-pointer select-none"
+      onClick={onEnter}
+    >
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3">
+        Bo-Yu Chen
+      </h1>
+      <p className="text-neutral-500 font-mono text-sm sm:text-base tracking-wide mb-12">
+        Researcher // Engineer // Creator
+      </p>
+      <button
+        onClick={onEnter}
+        className="group flex items-center gap-3 px-6 py-3 rounded-full border border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 transition-all duration-300"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="group-hover:scale-110 transition-transform">
+          <polygon points="3,1 13,8 3,15" />
+        </svg>
+        <span className="text-sm font-medium tracking-wide uppercase">Enter</span>
+      </button>
+      <p className="absolute bottom-8 text-xs text-neutral-300 font-mono">
+        Interactive audio experience
+      </p>
+    </div>
+  );
+};
+
 const LandingScene: React.FC = () => {
   const navigate = useNavigate();
   const synth = useMemo(() => createSynth(), []);
-  const [started, setStarted] = useState(false);
+  const [entered, setEntered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [videoReady, setVideoReady] = useState(!VIDEO_ENABLED);
 
@@ -1069,6 +1097,11 @@ const LandingScene: React.FC = () => {
     const timeout = window.setTimeout(() => setVideoReady(true), 5000);
     return () => window.clearTimeout(timeout);
   }, [videoReady]);
+
+  const handleEnter = async () => {
+    await Tone.start();
+    setEntered(true);
+  };
 
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
@@ -1113,16 +1146,10 @@ const LandingScene: React.FC = () => {
     return () => window.removeEventListener('resize', updateCameraPosition);
   }, []);
 
-  const handleStart = async () => {
-    if (!started) {
-      await Tone.start();
-      setStarted(true);
-    }
-  };
-
   return (
-    <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden" onClick={handleStart}>
-      <LoadingOverlay extraReady={videoReady} />
+    <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden">
+      {!entered && <WelcomeScreen onEnter={handleEnter} />}
+      {entered && <LoadingOverlay extraReady={videoReady} />}
       <Canvas
         shadows
         camera={{ position: cameraPosition, fov: 35 }}
