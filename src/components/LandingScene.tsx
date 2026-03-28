@@ -174,17 +174,17 @@ interface PadProps {
   color: string;
   onTrigger: () => void;
   height?: number;
+  registerTrigger?: (key: string, fn: () => void) => void;
 }
 
-const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2 }) => {
+const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2, registerTrigger }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [active, setActive] = useState(false);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
     const material = meshRef.current.material as THREE.MeshStandardMaterial;
-    // Grey pads from screenshot
-    const baseColor = new THREE.Color("#6b7280"); // Neutral-500
+    const baseColor = new THREE.Color("#6b7280");
     const activeColor = new THREE.Color(color);
 
     material.color.lerp(active ? activeColor : baseColor, delta * 20);
@@ -205,18 +205,12 @@ const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger,
 
   const trigger = () => {
     setActive(true);
-    if (Tone.context.state === 'running') onTrigger();
+    onTrigger();
   };
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      // Handle number keys specially since they might be used for other things
-      if (key === triggerKey) trigger();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [triggerKey, onTrigger]);
+    registerTrigger?.(triggerKey, trigger);
+  }, [triggerKey, registerTrigger]);
 
   return (
     <RoundedBox
@@ -304,7 +298,7 @@ const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange
 
       {/* Knob Body */}
       <mesh castShadow receiveShadow position={[0, 0.12, 0]} rotation={[0, rotation, 0]}>
-        <cylinderGeometry args={[0.25, 0.25, 0.25, 32]} />
+        <cylinderGeometry args={[0.25, 0.25, 0.25, 16]} />
         <meshStandardMaterial
           color={hovered ? "#4b5563" : "#374151"}
           roughness={0.3}
@@ -320,7 +314,7 @@ const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange
 
       {/* Larger Invisible Hit Area */}
       <mesh position={[0, 0.12, 0]} visible={false}>
-        <cylinderGeometry args={[0.5, 0.5, 0.6, 16]} />
+        <cylinderGeometry args={[0.5, 0.5, 0.6, 8]} />
       </mesh>
     </group>
   );
@@ -329,11 +323,11 @@ const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange
 const JogWheel: React.FC<{ position: [number, number, number] }> = ({ position }) => (
   <group position={position}>
     <mesh castShadow receiveShadow position={[0, 0.1, 0]}>
-      <cylinderGeometry args={[0.8, 0.85, 0.2, 64]} />
+      <cylinderGeometry args={[0.8, 0.85, 0.2, 24]} />
       <meshStandardMaterial color="#1f2937" roughness={0.4} metalness={0.5} />
     </mesh>
     <mesh position={[0, 0.21, 0]}>
-      <cylinderGeometry args={[0.1, 0.1, 0.05, 32]} />
+      <cylinderGeometry args={[0.1, 0.1, 0.05, 12]} />
       <meshStandardMaterial color="#4b5563" />
     </mesh>
   </group>
@@ -424,6 +418,19 @@ const MpcButton: React.FC<MpcButtonProps> = ({
 };
 
 const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) => void; onVideoReady?: () => void }> = ({ synth, onDragChange, onVideoReady }) => {
+  // --- CENTRALIZED KEYBOARD HANDLING ---
+  const padTriggersRef = useRef<Map<string, () => void>>(new Map());
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      const triggerFn = padTriggersRef.current.get(key);
+      if (triggerFn) triggerFn();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // --- LAYOUT CONFIG ---
   // [ PADS 4x4 ] [ SCREEN / AVATAR ] [ KNOBS ]
 
@@ -885,6 +892,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
                 triggerKey={pad.key}
                 color={colors[row]}
                 onTrigger={handleTrigger}
+                registerTrigger={(key, fn) => padTriggersRef.current.set(key, fn)}
               />
             );
           })}
@@ -923,7 +931,7 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
             </Suspense>
-            <ContactShadows opacity={0.4} scale={2.5} blur={2} far={1} resolution={128} color="#000000" />
+            {/* ContactShadows removed for performance */}
           </group>
         </group>
 
@@ -1091,7 +1099,7 @@ const LandingScene: React.FC = () => {
       <Canvas
         shadows
         camera={{ position: cameraPosition, fov: 35 }}
-        dpr={[1, 2]} // Limit pixel ratio for performance
+        dpr={[1, 1.5]} // Limit pixel ratio for performance
         performance={{ min: 0.5 }} // Allow frame rate to drop for performance
       >
         <color attach="background" args={['#f9fafb']} />
@@ -1103,7 +1111,7 @@ const LandingScene: React.FC = () => {
           penumbra={1}
           intensity={1}
           castShadow
-          shadow-mapSize={window.innerWidth < 768 ? [1024, 1024] : [2048, 2048]} // Lower shadow resolution on mobile
+          shadow-mapSize={[1024, 1024]}
         />
         <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
@@ -1183,12 +1191,13 @@ const LandingScene: React.FC = () => {
             >
               CV
             </button>
-            <button
+            {/* Chat temporarily disabled */}
+            {/* <button
               onClick={() => navigate('/chat')}
               className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
               Chat
-            </button>
+            </button> */}
           </nav>
         </div>
       </div>

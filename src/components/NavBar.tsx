@@ -19,7 +19,8 @@ const NavBar: React.FC = () => {
           <NavLink to="/projects" className={linkClass}>Projects</NavLink>
           <NavLink to="/blog" className={linkClass}>Blog</NavLink>
           <NavLink to="/cv" className={linkClass}>CV</NavLink>
-          <NavLink to="/chat" className={linkClass}>Chat</NavLink>
+          {/* Chat temporarily disabled */}
+          {/* <NavLink to="/chat" className={linkClass}>Chat</NavLink> */}
         </div>
       </div>
     </nav>

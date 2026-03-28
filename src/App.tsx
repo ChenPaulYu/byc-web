@@ -8,14 +8,15 @@ import ProjectDetail from './pages/ProjectDetail';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CV from './pages/CV';
-import Chat from './pages/Chat';
+// Chat temporarily disabled
+// import Chat from './pages/Chat';
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Chat page - full screen without Layout */}
-        <Route path="/chat" element={<Chat />} />
+        {/* Chat page temporarily disabled */}
+        {/* <Route path="/chat" element={<Chat />} /> */}
 
         {/* Other pages with Layout */}
         <Route path="*" element={
