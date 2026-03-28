@@ -13,10 +13,59 @@ import ImageGallery from './pages/ImageGallery';
 import MpcAssets from './pages/MpcAssets';
 import CvEdit from './pages/CvEdit';
 
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
+
+const LoginGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => {
+    if (!ADMIN_PASSWORD) return true; // No password set = no gate
+    return sessionStorage.getItem('byc-admin-auth') === 'true';
+  });
+
+  if (authenticated) return <>{children}</>;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      sessionStorage.setItem('byc-admin-auth', 'true');
+      setAuthenticated(true);
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-xs">
+        <h1 className="text-lg font-bold text-neutral-900 mb-1">BYC Admin</h1>
+        <p className="text-xs text-neutral-400 mb-6">Enter password to continue.</p>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          autoFocus
+          className="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300 mb-3"
+        />
+        <button
+          type="submit"
+          className="w-full px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 transition-colors"
+        >
+          Sign In
+        </button>
+        {error && <p className="text-xs text-red-500 mt-2 text-center">Incorrect password</p>}
+      </form>
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <LoginGate>
     <BrowserRouter basename="/admin">
       <div className="flex min-h-screen bg-white">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -54,6 +103,7 @@ const App: React.FC = () => {
         </main>
       </div>
     </BrowserRouter>
+    </LoginGate>
   );
 };
 
