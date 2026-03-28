@@ -311,6 +311,75 @@ export const loadAllNews = async (): Promise<NewsContent[]> => {
   });
 };
 
+// Check if a Chinese version of content exists
+export const hasChineseVersion = async (type: 'blog' | 'projects', slug: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`/content/${type}/${slug}.zh.md`);
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+// Load Chinese version of a blog post
+export const loadBlogPostZh = async (slug: string): Promise<BlogContent> => {
+  try {
+    const response = await fetch(`/content/blog/${slug}.zh.md`);
+    if (!response.ok) throw new Error('No Chinese version');
+    const raw = await response.text();
+    const { data, content } = matter(raw);
+    return { slug, metadata: data as BlogMetadata, content, excerpt: extractExcerpt(content) };
+  } catch {
+    return loadBlogPost(slug); // Fallback to English
+  }
+};
+
+// Load Chinese version of a project
+export const loadProjectZh = async (slug: string): Promise<ProjectContent> => {
+  try {
+    const response = await fetch(`/content/projects/${slug}.zh.md`);
+    if (!response.ok) throw new Error('No Chinese version');
+    const raw = await response.text();
+    const { data, content } = matter(raw);
+    return { slug, metadata: data as ProjectMetadata, content, excerpt: extractExcerpt(content) };
+  } catch {
+    return loadProject(slug); // Fallback to English
+  }
+};
+
+// Check if Chinese about page exists
+export const hasChineseAbout = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/content/about.zh.md');
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+// Load Chinese about page
+export const loadAboutContentZh = async (): Promise<string> => {
+  try {
+    const response = await fetch('/content/about.zh.md');
+    if (!response.ok) throw new Error('No Chinese version');
+    const raw = await response.text();
+    const { content } = matter(raw);
+    return content;
+  } catch {
+    return loadAboutContent(); // Fallback to English
+  }
+};
+
+// Check if Chinese CV config exists
+export const hasChineseCv = async (): Promise<boolean> => {
+  try {
+    const response = await fetch('/cv.config.zh.json');
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
 // Search functionality (simple implementation)
 export const searchContent = async (query: string, type: 'projects' | 'blog' | 'all' = 'all') => {
   const lowerQuery = query.toLowerCase();

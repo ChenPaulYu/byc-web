@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SOCIAL_LINKS } from '../constants';
 import { ExternalLink, Mail } from 'lucide-react';
 import { usePageTitle } from '../utils/usePageTitle';
+import LanguageToggle from '../components/LanguageToggle';
+import { hasChineseAbout, loadAboutContent, loadAboutContentZh } from '../utils/contentLoader';
 
 const About: React.FC = () => {
   usePageTitle('About');
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
+  const [aboutContent, setAboutContent] = useState<string>('');
+
   // Manual "Now" section - update this whenever you want!
   const nowSection = {
     // Announcement banner (blue box with emoji)
@@ -25,30 +31,75 @@ Also teaching workshops on interactive music systems and contributing to open-so
     `.trim()
   };
 
+  useEffect(() => {
+    const init = async () => {
+      const zhExists = await hasChineseAbout();
+      setHasZh(zhExists);
+      const content = await loadAboutContent();
+      setAboutContent(content);
+    };
+    init();
+  }, []);
+
+  useEffect(() => {
+    if (!hasZh) return;
+    const loadLang = async () => {
+      const content = lang === 'zh' ? await loadAboutContentZh() : await loadAboutContent();
+      setAboutContent(content);
+    };
+    loadLang();
+  }, [lang, hasZh]);
+
   return (
     <div className="max-w-2xl mx-auto px-6">
       <header className="mb-12">
-        <h1 className="text-3xl font-bold mb-4">About Me</h1>
+        <div className="flex items-center gap-4 mb-4">
+          <h1 className="text-3xl font-bold">About Me</h1>
+          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
+        </div>
         <div className="w-12 h-1 bg-neutral-900 mb-8"></div>
       </header>
 
-      <section className="prose prose-neutral prose-lg text-neutral-600 leading-relaxed space-y-6">
-        <p>
-          I am a passionate researcher and educator innovating at the nexus of <strong className="text-black font-medium">AI Music</strong>, <strong className="text-black font-medium">Musical Acoustics</strong>, and <strong className="text-black font-medium">Human-Computer Interaction</strong>.
-        </p>
+      {aboutContent ? (
+        <section className="prose prose-neutral prose-lg text-neutral-600 leading-relaxed space-y-6">
+          <ReactMarkdown
+            components={{
+              a: ({ node, ...props }) => (
+                <a
+                  {...props}
+                  className="text-blue-600 hover:text-blue-700 underline"
+                />
+              ),
+              p: ({ node, ...props }) => (
+                <p {...props} className="mb-4" />
+              ),
+              strong: ({ node, ...props }) => (
+                <strong {...props} className="text-neutral-900 font-semibold" />
+              ),
+            }}
+          >
+            {aboutContent}
+          </ReactMarkdown>
+        </section>
+      ) : (
+        <section className="prose prose-neutral prose-lg text-neutral-600 leading-relaxed space-y-6">
+          <p>
+            I am a passionate researcher and educator innovating at the nexus of <strong className="text-black font-medium">AI Music</strong>, <strong className="text-black font-medium">Musical Acoustics</strong>, and <strong className="text-black font-medium">Human-Computer Interaction</strong>.
+          </p>
 
-        <p>
-          Currently, I am pursuing my M.S. at National Taiwan University, where my research focuses on computational physicality—specifically, how we can use digital fabrication and algorithms to design novel musical instruments (like <em>FlueBricks</em>).
-        </p>
+          <p>
+            Currently, I am pursuing my M.S. at National Taiwan University, where my research focuses on computational physicality—specifically, how we can use digital fabrication and algorithms to design novel musical instruments (like <em>FlueBricks</em>).
+          </p>
 
-        <p>
-          Previously, I worked with the Creative AI Lab at Sony Group Corporation in Japan, where I developed <em>DJTransGAN</em>, the first AI model capable of generating smooth DJ-like transitions between tracks. My work bridges the gap between technical engineering (DSP, Deep Learning) and creative expression.
-        </p>
+          <p>
+            Previously, I worked with the Creative AI Lab at Sony Group Corporation in Japan, where I developed <em>DJTransGAN</em>, the first AI model capable of generating smooth DJ-like transitions between tracks. My work bridges the gap between technical engineering (DSP, Deep Learning) and creative expression.
+          </p>
 
-        <p>
-          I strive to build systems that are "quietly confident"—tools that empower musicians and novices alike without overwhelming them with complexity.
-        </p>
-      </section>
+          <p>
+            I strive to build systems that are "quietly confident"—tools that empower musicians and novices alike without overwhelming them with complexity.
+          </p>
+        </section>
+      )}
 
       {/* Now Section */}
       <section className="mt-16 pt-8 border-t border-neutral-100">

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { loadBlogPost, BlogContent } from '../utils/contentLoader';
+import { loadBlogPost, loadBlogPostZh, hasChineseVersion, BlogContent } from '../utils/contentLoader';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import { usePageTitle } from '../utils/usePageTitle';
+import LanguageToggle from '../components/LanguageToggle';
 
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -10,6 +11,8 @@ const BlogPost: React.FC = () => {
   usePageTitle(post?.metadata?.title || 'Blog');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -19,6 +22,8 @@ const BlogPost: React.FC = () => {
         setLoading(true);
         const data = await loadBlogPost(slug);
         setPost(data);
+        const zhExists = await hasChineseVersion('blog', slug);
+        setHasZh(zhExists);
       } catch (err) {
         setError('Post not found');
         console.error(err);
@@ -29,6 +34,15 @@ const BlogPost: React.FC = () => {
 
     loadContent();
   }, [slug]);
+
+  useEffect(() => {
+    if (!slug || !hasZh) return;
+    const loadLang = async () => {
+      const data = lang === 'zh' ? await loadBlogPostZh(slug) : await loadBlogPost(slug);
+      setPost(data);
+    };
+    loadLang();
+  }, [lang, slug, hasZh]);
 
   if (loading) {
     return (
@@ -88,6 +102,7 @@ const BlogPost: React.FC = () => {
               <span className="capitalize">{post.metadata.category}</span>
             </>
           )}
+          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
         </div>
 
         {/* Tags */}

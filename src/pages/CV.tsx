@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePageTitle } from '../utils/usePageTitle';
+import LanguageToggle from '../components/LanguageToggle';
+import { hasChineseCv } from '../utils/contentLoader';
 
 interface Education {
   school: string;
@@ -110,13 +112,29 @@ const ExperienceSection: React.FC<{ title: string; items: Experience[] }> = ({ t
 const CV: React.FC = () => {
   usePageTitle('CV');
   const [config, setConfig] = useState<CvConfig | null>(null);
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
 
   useEffect(() => {
-    fetch('/cv.config.json')
+    hasChineseCv().then(setHasZh);
+  }, []);
+
+  useEffect(() => {
+    const configUrl = lang === 'zh' ? '/cv.config.zh.json' : '/cv.config.json';
+    fetch(configUrl)
       .then(r => r.json())
       .then(setConfig)
-      .catch(err => console.error('Failed to load CV config:', err));
-  }, []);
+      .catch(err => {
+        console.error('Failed to load CV config:', err);
+        if (lang === 'zh') {
+          // Fallback to English
+          fetch('/cv.config.json')
+            .then(r => r.json())
+            .then(setConfig)
+            .catch(e => console.error('Failed to load fallback CV config:', e));
+        }
+      });
+  }, [lang]);
 
   if (!config) return <div className="max-w-3xl mx-auto px-6 py-20 text-neutral-400">Loading...</div>;
 
@@ -127,7 +145,8 @@ const CV: React.FC = () => {
           <h1 className="text-4xl print:text-3xl font-bold mb-2">{config.header.name}</h1>
           <p className="text-neutral-500 print:text-sm">{config.header.tagline}</p>
         </div>
-        <div className="flex gap-2 print:hidden">
+        <div className="flex gap-2 items-center print:hidden">
+          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
           <a
             href="/cv.pdf"
             className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"

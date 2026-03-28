@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { loadProject, ProjectContent } from '../utils/contentLoader';
+import { loadProject, loadProjectZh, hasChineseVersion, ProjectContent } from '../utils/contentLoader';
 import MarkdownRenderer from '../components/MarkdownRenderer';
 import { usePageTitle } from '../utils/usePageTitle';
+import LanguageToggle from '../components/LanguageToggle';
 
 const ProjectDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -10,6 +11,8 @@ const ProjectDetail: React.FC = () => {
   usePageTitle(project?.metadata?.title || 'Projects');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -19,6 +22,8 @@ const ProjectDetail: React.FC = () => {
         setLoading(true);
         const data = await loadProject(slug);
         setProject(data);
+        const zhExists = await hasChineseVersion('projects', slug);
+        setHasZh(zhExists);
       } catch (err) {
         setError('Project not found');
         console.error(err);
@@ -29,6 +34,15 @@ const ProjectDetail: React.FC = () => {
 
     loadContent();
   }, [slug]);
+
+  useEffect(() => {
+    if (!slug || !hasZh) return;
+    const loadLang = async () => {
+      const data = lang === 'zh' ? await loadProjectZh(slug) : await loadProject(slug);
+      setProject(data);
+    };
+    loadLang();
+  }, [lang, slug, hasZh]);
 
   if (loading) {
     return (
@@ -70,6 +84,7 @@ const ProjectDetail: React.FC = () => {
           <span>{project.metadata.year}</span>
           <span>•</span>
           <span>{project.metadata.role}</span>
+          {hasZh && <LanguageToggle lang={lang} onChange={setLang} />}
         </div>
 
         {/* Tags */}
