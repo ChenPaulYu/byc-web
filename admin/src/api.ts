@@ -119,3 +119,18 @@ export const uploadVideo = async (file: File): Promise<{ filename: string }> => 
   if (!res.ok) throw new Error('Upload failed');
   return res.json();
 };
+
+// MPC Config
+export interface MpcConfig {
+  bpm: number;
+  loop: string;
+  pads: Record<string, string>;
+}
+
+export const getMpcConfig = () => request<MpcConfig>('/mpc-config');
+
+export const updateMpcConfig = (config: MpcConfig) =>
+  request<{ success: boolean }>('/mpc-config', {
+    method: 'PUT',
+    body: JSON.stringify(config),
+  });

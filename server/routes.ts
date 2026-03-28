@@ -244,5 +244,28 @@ export function createRoutes(storage: StorageAdapter, publicDir: string): Router
     res.status(201).json({ filename: 'animation.mp4' });
   });
 
+  // MPC Config
+  router.get('/mpc-config', async (_req, res) => {
+    try {
+      const raw = await fs.readFile(path.join(publicDir, 'mpc.config.json'), 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch {
+      res.status(500).json({ error: 'Failed to read MPC config' });
+    }
+  });
+
+  router.put('/mpc-config', async (req, res) => {
+    try {
+      await fs.writeFile(
+        path.join(publicDir, 'mpc.config.json'),
+        JSON.stringify(req.body, null, 2) + '\n',
+        'utf-8'
+      );
+      res.json({ success: true });
+    } catch {
+      res.status(500).json({ error: 'Failed to update MPC config' });
+    }
+  });
+
   return router;
 }
