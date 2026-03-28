@@ -1063,6 +1063,13 @@ const LandingScene: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [videoReady, setVideoReady] = useState(!VIDEO_ENABLED);
 
+  // Timeout fallback: if video doesn't load within 5 seconds, show the scene anyway
+  useEffect(() => {
+    if (videoReady) return;
+    const timeout = window.setTimeout(() => setVideoReady(true), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [videoReady]);
+
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
 
