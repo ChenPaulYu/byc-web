@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { MarkdownRenderer } from '@shared/components/MarkdownRenderer';
 import InsertToolbar from './InsertToolbar';
 
 interface MarkdownEditorProps {
@@ -51,8 +50,8 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange }) => {
           />
         </>
       ) : (
-        <div className="p-6 prose prose-neutral max-w-none min-h-[500px]">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
+        <div className="p-6 max-w-none min-h-[500px]">
+          <MarkdownRenderer content={value} />
         </div>
       )}
     </div>
