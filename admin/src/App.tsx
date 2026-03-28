@@ -17,7 +17,7 @@ const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <div className="flex min-h-screen bg-white">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

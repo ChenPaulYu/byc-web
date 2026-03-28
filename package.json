@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --config admin/vite.config.ts",
+    "build:main": "vite build",
+    "build:admin": "vite build --config admin/vite.config.ts",
     "cv:pdf": "node scripts/render-cv-pdf.mjs",
     "build:cvpdf": "npm run build && npm run cv:pdf",
     "preview": "vite preview",
