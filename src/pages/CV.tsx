@@ -1,5 +1,58 @@
-import React from 'react';
-import { AWARDS, EDUCATION, PUBLICATIONS, RESEARCH_EXPERIENCE, REVIEWER, TEACHING_EXPERIENCE, THESES, WORK_EXPERIENCE } from '../constants';
+import React, { useEffect, useState } from 'react';
+
+interface Education {
+  school: string;
+  degree: string;
+  duration: string;
+  location: string;
+}
+
+interface Experience {
+  company: string;
+  role: string;
+  duration: string;
+  location: string;
+  description: string[];
+}
+
+interface Publication {
+  title: string;
+  authors: string;
+  venue: string;
+  year: string;
+  acceptanceRate?: string;
+}
+
+interface Thesis {
+  title: string;
+  authors: string;
+  institution: string;
+  year: string;
+}
+
+interface Award {
+  title: string;
+  venue: string;
+  year: string;
+  detail?: string;
+}
+
+interface ReviewerEntry {
+  venue: string;
+  years: string;
+}
+
+interface CvConfig {
+  header: { name: string; tagline: string };
+  education: Education[];
+  workExperience: Experience[];
+  researchExperience: Experience[];
+  teachingExperience: Experience[];
+  publications: Publication[];
+  theses: Thesis[];
+  awards: Award[];
+  reviewer: ReviewerEntry[];
+}
 
 const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <h2 className="text-sm print:text-xs font-bold uppercase tracking-widest text-neutral-400 mb-6 print:mb-3 mt-12 print:mt-6 border-b border-neutral-100 pb-2 print:pb-1">
@@ -17,13 +70,46 @@ const TwoColHeader: React.FC<{ left: React.ReactNode; right: React.ReactNode }> 
   </div>
 );
 
+const ExperienceSection: React.FC<{ title: string; items: Experience[] }> = ({ title, items }) => (
+  <section>
+    <SectionTitle>{title}</SectionTitle>
+    <div className="space-y-10 print:space-y-6">
+      {items.map((exp, idx) => (
+        <div key={idx} className="break-inside-avoid">
+          <TwoColHeader
+            left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
+            right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
+          />
+          <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
+          <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
+            {exp.description.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
 const CV: React.FC = () => {
+  const [config, setConfig] = useState<CvConfig | null>(null);
+
+  useEffect(() => {
+    fetch('/cv.config.json')
+      .then(r => r.json())
+      .then(setConfig)
+      .catch(err => console.error('Failed to load CV config:', err));
+  }, []);
+
+  if (!config) return <div className="max-w-3xl mx-auto px-6 py-20 text-neutral-400">Loading...</div>;
+
   return (
     <div className="max-w-3xl mx-auto px-6 print:px-0 pb-20 print:pb-0">
       <div className="flex justify-between items-end mb-12 print:mb-6">
         <div>
-            <h1 className="text-4xl print:text-3xl font-bold mb-2">Bo-Yu Chen</h1>
-            <p className="text-neutral-500 print:text-sm">Researcher and builder at the intersection of MIR, DSP, Instrument Making, and HCI.</p>
+          <h1 className="text-4xl print:text-3xl font-bold mb-2">{config.header.name}</h1>
+          <p className="text-neutral-500 print:text-sm">{config.header.tagline}</p>
         </div>
         <div className="flex gap-2 print:hidden">
           <a
@@ -39,7 +125,7 @@ const CV: React.FC = () => {
       <section>
         <SectionTitle>Education</SectionTitle>
         <div className="space-y-8 print:space-y-5">
-          {EDUCATION.map((edu, idx) => (
+          {config.education.map((edu, idx) => (
             <div key={idx} className="break-inside-avoid">
               <TwoColHeader
                 left={<h3 className="font-semibold text-neutral-900">{edu.school}</h3>}
@@ -52,70 +138,14 @@ const CV: React.FC = () => {
         </div>
       </section>
 
-      <section>
-        <SectionTitle>Work Experience</SectionTitle>
-        <div className="space-y-10 print:space-y-6">
-          {WORK_EXPERIENCE.map((exp, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <TwoColHeader
-                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
-                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
-              />
-              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
-                {exp.description.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <SectionTitle>Research Experience</SectionTitle>
-        <div className="space-y-10 print:space-y-6">
-          {RESEARCH_EXPERIENCE.map((exp, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <TwoColHeader
-                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
-                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
-              />
-              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
-                {exp.description.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <SectionTitle>Teaching</SectionTitle>
-        <div className="space-y-10 print:space-y-6">
-          {TEACHING_EXPERIENCE.map((exp, idx) => (
-            <div key={idx} className="break-inside-avoid">
-              <TwoColHeader
-                left={<h3 className="font-semibold text-neutral-900">{exp.company}</h3>}
-                right={<span className="text-sm text-neutral-400 tabular-nums">{exp.duration}</span>}
-              />
-              <p className="text-neutral-700 font-medium mb-3 print:mb-2">{exp.role} <span className="text-neutral-400 font-normal">| {exp.location}</span></p>
-              <ul className="list-disc list-outside ml-4 space-y-1 text-neutral-600 text-sm leading-relaxed print:leading-snug">
-                {exp.description.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ExperienceSection title="Work Experience" items={config.workExperience} />
+      <ExperienceSection title="Research Experience" items={config.researchExperience} />
+      <ExperienceSection title="Teaching" items={config.teachingExperience} />
 
       <section>
         <SectionTitle>Thesis</SectionTitle>
         <div className="space-y-6 print:space-y-4">
-          {THESES.map((thesis, idx) => (
+          {config.theses.map((thesis, idx) => (
             <div key={idx} className="break-inside-avoid">
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{thesis.title}</h3>
               <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: thesis.authors }} />
@@ -130,14 +160,12 @@ const CV: React.FC = () => {
       <section>
         <SectionTitle>Publications</SectionTitle>
         <div className="space-y-6 print:space-y-4">
-          {PUBLICATIONS.map((pub, idx) => (
+          {config.publications.map((pub, idx) => (
             <div key={idx} className="break-inside-avoid">
               <h3 className="font-medium text-neutral-900 leading-snug mb-1">{pub.title}</h3>
               <p className="text-sm text-neutral-600 mb-1" dangerouslySetInnerHTML={{ __html: pub.authors }} />
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-400 font-mono">
-                <span>
-                  {pub.venue}, {pub.year}
-                </span>
+                <span>{pub.venue}, {pub.year}</span>
                 {pub.acceptanceRate && (
                   <span className="border border-neutral-200 bg-neutral-50 text-neutral-500 rounded px-2 py-0.5 tabular-nums">
                     Acceptance rate: {pub.acceptanceRate}
@@ -152,7 +180,7 @@ const CV: React.FC = () => {
       <section>
         <SectionTitle>Awards</SectionTitle>
         <div className="space-y-4">
-          {AWARDS.map((award, idx) => (
+          {config.awards.map((award, idx) => (
             <div key={idx} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
               <span className="font-medium text-neutral-900">{award.title}</span>
               <span className="text-neutral-400">|</span>
@@ -170,7 +198,7 @@ const CV: React.FC = () => {
       <section>
         <SectionTitle>Reviewer</SectionTitle>
         <div className="space-y-2 text-sm text-neutral-700">
-          {REVIEWER.map((item, idx) => (
+          {config.reviewer.map((item, idx) => (
             <div key={idx} className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="font-medium text-neutral-900">{item.venue}</span>
               <span className="text-neutral-400">|</span>
@@ -179,7 +207,6 @@ const CV: React.FC = () => {
           ))}
         </div>
       </section>
-      
     </div>
   );
 };
