@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SOCIAL_LINKS } from '../constants';
-import { ExternalLink, Mail } from 'lucide-react';
+import { GitHubIcon, ScholarIcon, MailIcon, TwitterIcon } from '../components/SocialIcons';
 import { usePageTitle } from '../utils/usePageTitle';
 import LanguageToggle from '../components/LanguageToggle';
 import { hasChineseAbout, loadAboutContent, loadAboutContentZh } from '../utils/contentLoader';
@@ -150,16 +150,20 @@ Also teaching workshops on interactive music systems and contributing to open-so
         <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-6">Connect</h2>
         <div className="flex flex-col gap-3">
           <a href={`mailto:${SOCIAL_LINKS.email}`} className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
-            <Mail size={18} className="text-neutral-400 group-hover:text-blue-600" />
+            <MailIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
             <span>{SOCIAL_LINKS.email}</span>
           </a>
           <a href={SOCIAL_LINKS.scholar} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
-            <ExternalLink size={18} className="text-neutral-400 group-hover:text-blue-600" />
+            <ScholarIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
             <span>Google Scholar</span>
           </a>
           <a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
-            <ExternalLink size={18} className="text-neutral-400 group-hover:text-blue-600" />
+            <GitHubIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
             <span>GitHub</span>
+          </a>
+          <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
+            <TwitterIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
+            <span>X (Twitter)</span>
           </a>
         </div>
       </section>
