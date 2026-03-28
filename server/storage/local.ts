@@ -6,8 +6,10 @@ import type { StorageAdapter, ContentConfig, ContentItem, ContentType } from './
 export class LocalStorageAdapter implements StorageAdapter {
   private contentDir: string;
   private configPath: string;
+  private publicDir: string;
 
   constructor(publicDir: string) {
+    this.publicDir = publicDir;
     this.contentDir = path.join(publicDir, 'content');
     this.configPath = path.join(publicDir, 'content.config.json');
   }
@@ -74,5 +76,20 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   async writeConfig(config: ContentConfig): Promise<void> {
     await fs.writeFile(this.configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+  }
+
+  async listAssets(directory: string): Promise<string[]> {
+    const dir = path.join(this.publicDir, directory);
+    try {
+      const files = await fs.readdir(dir);
+      return files.filter(f => !f.startsWith('.'));
+    } catch {
+      return [];
+    }
+  }
+
+  async deleteAsset(filePath: string): Promise<void> {
+    const fullPath = path.join(this.publicDir, filePath);
+    await fs.unlink(fullPath);
   }
 }

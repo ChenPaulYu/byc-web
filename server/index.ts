@@ -13,7 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 const storage = new LocalStorageAdapter(publicDir);
-app.use('/api', createRoutes(storage));
+app.use('/api', createRoutes(storage, publicDir));
+app.use('/public', express.static(publicDir));
 
 const PORT = 3002;
 app.listen(PORT, () => {

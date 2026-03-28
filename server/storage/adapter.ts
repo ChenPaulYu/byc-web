@@ -26,7 +26,7 @@ export interface ContentItem {
   content: string;
 }
 
-export type ContentType = 'blog' | 'projects';
+export type ContentType = 'blog' | 'projects' | 'news';
 
 export interface StorageAdapter {
   listFiles(type: ContentType): Promise<ContentItem[]>;
@@ -37,4 +37,6 @@ export interface StorageAdapter {
   writeAbout(content: string): Promise<void>;
   readConfig(): Promise<ContentConfig>;
   writeConfig(config: ContentConfig): Promise<void>;
+  listAssets(directory: string): Promise<string[]>;
+  deleteAsset(filePath: string): Promise<void>;
 }

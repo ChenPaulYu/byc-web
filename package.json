@@ -26,6 +26,7 @@
     "highlight.js": "11.11.1",
     "lucide-react": "^0.562.0",
     "mermaid": "11.12.2",
+    "multer": "^2.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "10.1.0",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.17",
