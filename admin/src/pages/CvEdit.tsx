@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCvConfig, updateCvConfig, hasZhCv, getZhCvConfig, saveZhCvConfig } from '../api';
+import { getCvConfig, updateCvConfig, hasZhCv, getZhCvConfig, saveZhCvConfig, getGitHubHistoryUrl } from '../api';
 
 interface Education { school: string; degree: string; duration: string; location: string; }
 interface Experience { company: string; role: string; duration: string; location: string; description: string[]; }
@@ -117,6 +117,16 @@ const CvEdit: React.FC = () => {
         <h2 className="text-xl font-semibold text-neutral-900">CV</h2>
         <div className="flex items-center gap-3">
           {saved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
+          {getGitHubHistoryUrl('') && (
+            <a
+              href={getGitHubHistoryUrl('public/cv.config.json')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            >
+              History
+            </a>
+          )}
           <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors">
             {saving ? 'Saving...' : 'Save'}
           </button>

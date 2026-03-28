@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MarkdownEditor from '../components/MarkdownEditor';
-import { getContent, createContent, updateContent, deleteContent, hasZhContent, getZhContent, saveZhContent } from '../api';
+import { getContent, createContent, updateContent, deleteContent, hasZhContent, getZhContent, saveZhContent, getGitHubHistoryUrl } from '../api';
 
 interface NewsMetadata {
   title: string;
@@ -139,6 +139,16 @@ const NewsEdit: React.FC = () => {
           ← Back to News
         </button>
         <div className="flex gap-2">
+          {!isNew && getGitHubHistoryUrl('') && (
+            <a
+              href={getGitHubHistoryUrl(`public/content/news/${slug}.md`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            >
+              History
+            </a>
+          )}
           {!isNew && (
             <button
               onClick={handleDelete}

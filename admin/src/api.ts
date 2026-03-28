@@ -34,6 +34,7 @@ export const getMpcConfig = api.getMpcConfig;
 export const updateMpcConfig = api.updateMpcConfig;
 export const triggerDeploy = api.triggerDeploy;
 export const hasDeployHook = api.hasDeployHook;
+export const getGitHubHistoryUrl = api.getGitHubHistoryUrl;
 export const hasZhContent = api.hasZhContent;
 export const getZhContent = api.getZhContent;
 export const saveZhContent = api.saveZhContent;

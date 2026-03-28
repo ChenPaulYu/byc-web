@@ -190,3 +190,7 @@ export const triggerDeploy = async (): Promise<{ success: boolean }> => {
 };
 
 export const hasDeployHook = (): boolean => false;
+
+export const getGitHubHistoryUrl = (_filePath: string): string => {
+  return ''; // Not available in local mode
+};

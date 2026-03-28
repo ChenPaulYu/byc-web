@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getConfig, updateConfig, type ContentConfig } from '../api';
+import { getConfig, updateConfig, type ContentConfig, getGitHubHistoryUrl } from '../api';
 
 const defaultConfig: ContentConfig = {
   site: { title: '', description: '', author: '', url: '' },
@@ -49,6 +49,16 @@ const Settings: React.FC = () => {
         <h2 className="text-xl font-semibold text-neutral-900">Site Settings</h2>
         <div className="flex items-center gap-3">
           {saved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
+          {getGitHubHistoryUrl('') && (
+            <a
+              href={getGitHubHistoryUrl('public/content.config.json')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            >
+              History
+            </a>
+          )}
           <button
             onClick={handleSave}
             disabled={saving}

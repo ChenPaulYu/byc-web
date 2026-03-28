@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import MarkdownEditor from '../components/MarkdownEditor';
-import { getAbout, updateAbout, hasZhAbout, getZhAbout, saveZhAbout } from '../api';
+import { getAbout, updateAbout, hasZhAbout, getZhAbout, saveZhAbout, getGitHubHistoryUrl } from '../api';
 
 const AboutEdit: React.FC = () => {
   const [content, setContent] = useState('');
@@ -57,6 +57,16 @@ const AboutEdit: React.FC = () => {
         <h2 className="text-xl font-semibold text-neutral-900">About Page</h2>
         <div className="flex items-center gap-3">
           {saved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
+          {getGitHubHistoryUrl('') && (
+            <a
+              href={getGitHubHistoryUrl('public/content/about.md')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            >
+              History
+            </a>
+          )}
           <button
             onClick={handleSave}
             disabled={saving}

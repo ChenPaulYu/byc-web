@@ -451,3 +451,7 @@ export const triggerDeploy = async (): Promise<{ success: boolean }> => {
 };
 
 export const hasDeployHook = (): boolean => !!DEPLOY_HOOK;
+
+export const getGitHubHistoryUrl = (filePath: string): string => {
+  return `https://github.com/${OWNER}/${REPO}/commits/${BRANCH}/${filePath}`;
+};
