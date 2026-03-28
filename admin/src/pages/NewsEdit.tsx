@@ -6,6 +6,7 @@ import { getContent, createContent, updateContent, deleteContent } from '../api'
 interface NewsMetadata {
   title: string;
   date: string;
+  updated?: string;
   type: string;
   url?: string;
 }
@@ -13,6 +14,7 @@ interface NewsMetadata {
 const defaultMetadata: NewsMetadata = {
   title: '',
   date: new Date().toISOString().split('T')[0],
+  updated: '',
   type: 'update',
   url: '',
 };
@@ -36,6 +38,7 @@ const NewsEdit: React.FC = () => {
           setMetadata({
             title: meta.title || '',
             date: meta.date || '',
+            updated: meta.updated || '',
             type: meta.type || 'update',
             url: meta.url || '',
           });
@@ -62,6 +65,9 @@ const NewsEdit: React.FC = () => {
       date: metadata.date,
       type: metadata.type,
     };
+    if (metadata.updated?.trim()) {
+      finalMetadata.updated = metadata.updated.trim();
+    }
     if (metadata.url?.trim()) {
       finalMetadata.url = metadata.url.trim();
     }
@@ -138,6 +144,15 @@ const NewsEdit: React.FC = () => {
             type="date"
             value={metadata.date}
             onChange={(e) => setMetadata({ ...metadata, date: e.target.value })}
+            className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Updated (optional)</label>
+          <input
+            type="date"
+            value={metadata.updated || ''}
+            onChange={(e) => setMetadata({ ...metadata, updated: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
           />
         </div>

@@ -76,6 +76,9 @@ const BlogPost: React.FC = () => {
           <time dateTime={post.metadata.date}>
             {formatDate(post.metadata.date)}
           </time>
+          {post.metadata.updated && (
+            <span className="text-neutral-400 ml-2">(Updated {formatDate(post.metadata.updated)})</span>
+          )}
 
           {post.metadata.category && (
             <>

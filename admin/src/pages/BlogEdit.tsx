@@ -6,6 +6,7 @@ import { getContent, createContent, updateContent, deleteContent } from '../api'
 interface BlogMetadata {
   title: string;
   date: string;
+  updated: string;
   category: string;
   tags: string[];
   pinned: boolean;
@@ -15,6 +16,7 @@ interface BlogMetadata {
 const defaultMetadata: BlogMetadata = {
   title: '',
   date: new Date().toISOString().split('T')[0],
+  updated: '',
   category: '',
   tags: [],
   pinned: false,
@@ -41,6 +43,7 @@ const BlogEdit: React.FC = () => {
           setMetadata({
             title: meta.title || '',
             date: meta.date || '',
+            updated: meta.updated || '',
             category: meta.category || '',
             tags: meta.tags || [],
             pinned: meta.pinned || false,
@@ -142,6 +145,15 @@ const BlogEdit: React.FC = () => {
             type="date"
             value={metadata.date}
             onChange={(e) => setMetadata({ ...metadata, date: e.target.value })}
+            className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Updated (optional)</label>
+          <input
+            type="date"
+            value={metadata.updated}
+            onChange={(e) => setMetadata({ ...metadata, updated: e.target.value })}
             className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300"
           />
         </div>

@@ -21,6 +21,7 @@ export interface ProjectMetadata {
 export interface BlogMetadata {
   title: string;
   date: string;
+  updated?: string;
   tags: string[];
   category: string;
   pinned?: boolean;
@@ -30,6 +31,7 @@ export interface BlogMetadata {
 export interface NewsMetadata {
   title: string;
   date: string;
+  updated?: string;
   type: 'update' | 'release' | 'announcement' | 'event';
   url?: string;
 }
