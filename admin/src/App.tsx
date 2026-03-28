@@ -13,13 +13,12 @@ import ImageGallery from './pages/ImageGallery';
 import MpcAssets from './pages/MpcAssets';
 import CvEdit from './pages/CvEdit';
 
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || '';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'byc123';
 
 const LoginGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [authenticated, setAuthenticated] = useState(() => {
-    if (!ADMIN_PASSWORD) return true; // No password set = no gate
     return sessionStorage.getItem('byc-admin-auth') === 'true';
   });
 
