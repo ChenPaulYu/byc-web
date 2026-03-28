@@ -40,7 +40,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange }) => {
       </div>
 
       {mode === 'edit' ? (
-        <>
+        <div key="edit" className="animate-fade-in">
           <InsertToolbar textareaRef={textareaRef} onInsert={onChange} />
           <textarea
             ref={textareaRef}
@@ -49,9 +49,9 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ value, onChange }) => {
             className="w-full min-h-[500px] p-4 font-mono text-sm text-neutral-800 resize-y focus:outline-none"
             placeholder="Write your markdown content here..."
           />
-        </>
+        </div>
       ) : (
-        <div className="p-6 max-w-none min-h-[500px]">
+        <div key="preview" className="p-6 max-w-none min-h-[500px] animate-fade-in">
           <MarkdownRenderer content={value} />
         </div>
       )}

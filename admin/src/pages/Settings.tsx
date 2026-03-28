@@ -48,7 +48,7 @@ const Settings: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-neutral-900">Site Settings</h2>
         <div className="flex items-center gap-3">
-          {saved && <span className="text-sm text-green-600">Saved!</span>}
+          {saved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
           <button
             onClick={handleSave}
             disabled={saving}

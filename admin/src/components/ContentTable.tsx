@@ -40,7 +40,7 @@ const ContentTable: React.FC<ContentTableProps> = ({ columns, rows, onEdit, onDe
         {rows.map((row) => (
           <tr
             key={row.slug as string}
-            className="border-b border-neutral-100 hover:bg-neutral-50/50 cursor-pointer transition-colors"
+            className="border-b border-neutral-100 hover:bg-neutral-50/50 cursor-pointer transition-colors card-hover"
             onClick={() => onEdit(row.slug as string)}
           >
             {columns.map((col) => (

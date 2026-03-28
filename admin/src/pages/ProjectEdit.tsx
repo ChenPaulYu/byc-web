@@ -273,7 +273,7 @@ const ProjectEdit: React.FC = () => {
         </div>
       )}
 
-      <MarkdownEditor value={lang === 'zh' ? zhContent : content} onChange={lang === 'zh' ? setZhContent : setContent} />
+      <MarkdownEditor key={lang} value={lang === 'zh' ? zhContent : content} onChange={lang === 'zh' ? setZhContent : setContent} />
     </div>
   );
 };

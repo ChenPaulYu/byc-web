@@ -90,7 +90,7 @@ const MpcAssets: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Pad Configuration</h3>
           <div className="flex items-center gap-3">
-            {configSaved && <span className="text-sm text-green-600">Saved!</span>}
+            {configSaved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
             <button
               onClick={handleSaveConfig}
               disabled={configSaving}

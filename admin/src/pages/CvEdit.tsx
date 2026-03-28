@@ -116,7 +116,7 @@ const CvEdit: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-neutral-900">CV</h2>
         <div className="flex items-center gap-3">
-          {saved && <span className="text-sm text-green-600">Saved!</span>}
+          {saved && <span className="text-sm text-green-600 animate-fade-in">Saved!</span>}
           <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors">
             {saving ? 'Saving...' : 'Save'}
           </button>

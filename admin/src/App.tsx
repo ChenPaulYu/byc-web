@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import BlogList from './pages/BlogList';
 import BlogEdit from './pages/BlogEdit';
@@ -37,7 +37,7 @@ const LoginGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-xs">
+      <form onSubmit={handleSubmit} className="w-full max-w-xs animate-scale-in">
         <h1 className="text-lg font-bold text-neutral-900 mb-1">BYC Admin</h1>
         <p className="text-xs text-neutral-400 mb-6">Enter password to continue.</p>
         <input
@@ -56,6 +56,15 @@ const LoginGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </button>
         {error && <p className="text-xs text-red-500 mt-2 text-center">Incorrect password</p>}
       </form>
+    </div>
+  );
+};
+
+const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-fade-in">
+      {children}
     </div>
   );
 };
@@ -85,20 +94,22 @@ const App: React.FC = () => {
             <span className="text-sm font-bold text-neutral-900">BYC Admin</span>
           </div>
 
-          <Routes>
-            <Route path="/" element={<Navigate to="/blog" replace />} />
-            <Route path="/blog" element={<BlogList />} />
-            <Route path="/blog/:slug" element={<BlogEdit />} />
-            <Route path="/projects" element={<ProjectList />} />
-            <Route path="/projects/:slug" element={<ProjectEdit />} />
-            <Route path="/about" element={<AboutEdit />} />
-            <Route path="/news" element={<NewsList />} />
-            <Route path="/news/:slug" element={<NewsEdit />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/images" element={<ImageGallery />} />
-            <Route path="/mpc" element={<MpcAssets />} />
-            <Route path="/cv" element={<CvEdit />} />
-          </Routes>
+          <PageTransition>
+            <Routes>
+              <Route path="/" element={<Navigate to="/blog" replace />} />
+              <Route path="/blog" element={<BlogList />} />
+              <Route path="/blog/:slug" element={<BlogEdit />} />
+              <Route path="/projects" element={<ProjectList />} />
+              <Route path="/projects/:slug" element={<ProjectEdit />} />
+              <Route path="/about" element={<AboutEdit />} />
+              <Route path="/news" element={<NewsList />} />
+              <Route path="/news/:slug" element={<NewsEdit />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/images" element={<ImageGallery />} />
+              <Route path="/mpc" element={<MpcAssets />} />
+              <Route path="/cv" element={<CvEdit />} />
+            </Routes>
+          </PageTransition>
         </main>
       </div>
     </BrowserRouter>
