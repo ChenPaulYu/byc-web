@@ -735,6 +735,26 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
   const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
   const [history, setHistory] = useState<number[][]>([]); // Knob history
+  const [mpcConfig, setMpcConfig] = useState<{ bpm: number; loop: string; pads: Record<string, string> } | null>(null);
+
+  useEffect(() => {
+    fetch('/mpc.config.json')
+      .then(r => r.json())
+      .then(setMpcConfig)
+      .catch(() => {
+        // Fallback to hardcoded defaults
+        setMpcConfig({
+          bpm: 78,
+          loop: 'SLS_CSP_78_songstarter_soul_thief_Cmin.wav',
+          pads: {
+            z: 'SLS_CSP_kick_father.wav',
+            x: 'SLS_CSP_snare_acoustic_intro.wav',
+            c: 'SLS_CSP_hihat_grit_closed.wav',
+            v: 'SLS_CSP_hihat_grit_open.wav',
+          },
+        });
+      });
+  }, []);
 
   // Audio Effects Refs
   const effects = useRef<{
@@ -747,26 +767,31 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
 
   // Initialize Audio Chain
   useEffect(() => {
+    if (!mpcConfig) return;
+
     // Create effects
     const vol = new Tone.Volume(0).toDestination();
     const reverb = new Tone.Reverb(0.5).connect(vol);
     const distortion = new Tone.Distortion(0).connect(reverb);
     const filter = new Tone.Filter(20000, "lowpass").connect(distortion);
 
-    // Load Players (Drums + Loop)
-    const players = new Tone.Players({
-      kick: "/samples/SLS_CSP_kick_father.wav",
-      snare: "/samples/SLS_CSP_snare_acoustic_intro.wav",
-      hihat: "/samples/SLS_CSP_hihat_grit_closed.wav",
-      openhat: "/samples/SLS_CSP_hihat_grit_open.wav",
-      loop: "/samples/SLS_CSP_78_songstarter_soul_thief_Cmin.wav"
-    }, () => {
-      console.log("Samples loaded");
-      // Setup Loop
-      const loop = players.player("loop");
-      loop.loop = true;
-      loop.sync().start(0);
-      Tone.Transport.bpm.value = 78;
+    // Build sample map from config
+    const sampleMap: Record<string, string> = {};
+    for (const [key, filename] of Object.entries(mpcConfig.pads)) {
+      sampleMap[key] = `/samples/${filename}`;
+    }
+    if (mpcConfig.loop) {
+      sampleMap['_loop'] = `/samples/${mpcConfig.loop}`;
+    }
+
+    const players = new Tone.Players(sampleMap, () => {
+      console.log("Samples loaded from config");
+      if (mpcConfig.loop && players.has('_loop')) {
+        const loop = players.player('_loop');
+        loop.loop = true;
+        loop.sync().start(0);
+      }
+      Tone.Transport.bpm.value = mpcConfig.bpm;
     }).connect(filter);
 
     effects.current = { filter, distortion, reverb, vol, players };
@@ -783,8 +808,9 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
       reverb.dispose();
       vol.dispose();
       players.dispose();
+      effects.current = null;
     };
-  }, [synth]);
+  }, [synth, mpcConfig]);
 
   const handlePlay = async () => {
     if (Tone.context.state !== 'running') await Tone.start();
@@ -863,22 +889,16 @@ const MPC: React.FC<{ synth: Tone.PolySynth; onDragChange: (dragging: boolean) =
             const x = (col - 1.5) * stride;
             const z = (row - 1.5) * stride;
 
-            // Determine trigger logic
-            const isDrum = i >= 12; // Bottom row
-            const drumSamples = ['kick', 'snare', 'hihat', 'openhat'];
-
             const handleTrigger = () => {
-              if (isDrum) {
-                if (effects.current?.players?.loaded) {
-                  const sampleName = drumSamples[i - 12];
-                  if (effects.current.players.has(sampleName)) {
-                    const player = effects.current.players.player(sampleName);
-                    player.stop();
-                    player.start();
-                    if (DEV_CONTROLS_ENABLED) console.log(`Triggered drum: ${sampleName}`);
-                  }
+              // Check if this pad has a sample assigned via config
+              if (mpcConfig && mpcConfig.pads[pad.key] && effects.current?.players?.loaded) {
+                if (effects.current.players.has(pad.key)) {
+                  const player = effects.current.players.player(pad.key);
+                  player.stop();
+                  player.start();
                 }
               } else {
+                // No sample assigned — use synth
                 synth.triggerAttackRelease(pad.note, "8n");
               }
             };
