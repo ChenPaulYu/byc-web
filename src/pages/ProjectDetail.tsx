@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { loadProject, ProjectContent } from '../utils/contentLoader';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const ProjectDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [project, setProject] = useState<ProjectContent | null>(null);
+  usePageTitle(project?.metadata?.title || 'Projects');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

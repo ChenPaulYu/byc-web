@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { usePageTitle } from '../utils/usePageTitle';
 
 interface Education {
   school: string;
@@ -107,6 +108,7 @@ const ExperienceSection: React.FC<{ title: string; items: Experience[] }> = ({ t
 );
 
 const CV: React.FC = () => {
+  usePageTitle('CV');
   const [config, setConfig] = useState<CvConfig | null>(null);
 
   useEffect(() => {

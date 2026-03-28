@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { loadBlogPost, BlogContent } from '../utils/contentLoader';
 import MarkdownRenderer from '../components/MarkdownRenderer';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogContent | null>(null);
+  usePageTitle(post?.metadata?.title || 'Blog');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

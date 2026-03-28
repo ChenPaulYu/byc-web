@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PROJECTS } from '../constants';
 import { Project } from '../types';
 import { ArrowUpRight, Github, FileText, Play } from 'lucide-react';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
 };
 
 const Projects: React.FC = () => {
+  usePageTitle('Projects');
   const [filter, setFilter] = useState<'All' | 'Research' | 'Engineering' | 'Creative'>('All');
 
   const filteredProjects = filter === 'All' 

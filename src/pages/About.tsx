@@ -2,8 +2,10 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SOCIAL_LINKS } from '../constants';
 import { ExternalLink, Mail } from 'lucide-react';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const About: React.FC = () => {
+  usePageTitle('About');
   // Manual "Now" section - update this whenever you want!
   const nowSection = {
     // Announcement banner (blue box with emoji)

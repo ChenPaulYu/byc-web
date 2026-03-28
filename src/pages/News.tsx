@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { loadAllNews, NewsContent } from '../utils/contentLoader';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const News: React.FC = () => {
+  usePageTitle('News');
   const [items, setItems] = useState<NewsContent[]>([]);
   const [loading, setLoading] = useState(true);
 

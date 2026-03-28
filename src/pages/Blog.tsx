@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { loadAllBlogPosts, BlogContent } from '../utils/contentLoader';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const Blog: React.FC = () => {
+  usePageTitle('Blog');
   const [posts, setPosts] = useState<BlogContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
