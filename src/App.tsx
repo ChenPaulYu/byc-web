@@ -7,6 +7,7 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import News from './pages/News';
 import CV from './pages/CV';
 // Chat temporarily disabled
 // import Chat from './pages/Chat';
@@ -28,6 +29,7 @@ const App: React.FC = () => {
               <Route path="/projects/:slug" element={<ProjectDetail />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/news" element={<News />} />
               <Route path="/cv" element={<CV />} />
             </Routes>
           </Layout>

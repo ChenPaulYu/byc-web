@@ -1206,6 +1206,12 @@ const LandingScene: React.FC = () => {
               Blog
             </button>
             <button
+              onClick={() => navigate('/news')}
+              className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
+            >
+              News
+            </button>
+            <button
               onClick={() => navigate('/cv')}
               className="text-base sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal px-3 py-2 sm:px-0 sm:py-0 min-w-[80px] sm:min-w-0 touch-manipulation"
             >
