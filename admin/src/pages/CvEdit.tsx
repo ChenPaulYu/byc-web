@@ -77,11 +77,11 @@ const CvEdit: React.FC = () => {
 
   const removeItem = <T,>(arr: T[], index: number): T[] => arr.filter((_, i) => i !== index);
 
-  if (loading) return <div className="p-8 text-neutral-400">Loading...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-neutral-400">Loading...</div>;
   if (!config) return null;
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-neutral-900">CV</h2>
         <div className="flex items-center gap-3">
@@ -93,7 +93,7 @@ const CvEdit: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className={labelClass}>Name</label>
           <input type="text" value={config.header.name} onChange={(e) => setConfig({ ...config, header: { ...config.header, name: e.target.value } })} className={inputClass} />
@@ -114,7 +114,7 @@ const CvEdit: React.FC = () => {
       {config.education.map((edu, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, education: removeItem(config.education, i) })} /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>School</label><input type="text" value={edu.school} onChange={(e) => setConfig({ ...config, education: updateField(config.education, i, 'school', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Degree</label><input type="text" value={edu.degree} onChange={(e) => setConfig({ ...config, education: updateField(config.education, i, 'degree', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Duration</label><input type="text" value={edu.duration} onChange={(e) => setConfig({ ...config, education: updateField(config.education, i, 'duration', e.target.value) })} className={inputClass} /></div>
@@ -139,7 +139,7 @@ const CvEdit: React.FC = () => {
           {config[key].map((exp: Experience, i: number) => (
             <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
               <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, [key]: removeItem(config[key], i) })} /></div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 <div><label className={labelClass}>Company / Lab</label><input type="text" value={exp.company} onChange={(e) => setConfig({ ...config, [key]: updateField(config[key], i, 'company', e.target.value) })} className={inputClass} /></div>
                 <div><label className={labelClass}>Role</label><input type="text" value={exp.role} onChange={(e) => setConfig({ ...config, [key]: updateField(config[key], i, 'role', e.target.value) })} className={inputClass} /></div>
                 <div><label className={labelClass}>Duration</label><input type="text" value={exp.duration} onChange={(e) => setConfig({ ...config, [key]: updateField(config[key], i, 'duration', e.target.value) })} className={inputClass} /></div>
@@ -186,7 +186,7 @@ const CvEdit: React.FC = () => {
       {config.publications.map((pub, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, publications: removeItem(config.publications, i) })} /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={pub.title} onChange={(e) => setConfig({ ...config, publications: updateField(config.publications, i, 'title', e.target.value) })} className={inputClass} /></div>
             <div className="col-span-2"><label className={labelClass}>Authors (HTML ok)</label><input type="text" value={pub.authors} onChange={(e) => setConfig({ ...config, publications: updateField(config.publications, i, 'authors', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Venue</label><input type="text" value={pub.venue} onChange={(e) => setConfig({ ...config, publications: updateField(config.publications, i, 'venue', e.target.value) })} className={inputClass} /></div>
@@ -206,7 +206,7 @@ const CvEdit: React.FC = () => {
       {config.theses.map((thesis, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, theses: removeItem(config.theses, i) })} /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={thesis.title} onChange={(e) => setConfig({ ...config, theses: updateField(config.theses, i, 'title', e.target.value) })} className={inputClass} /></div>
             <div className="col-span-2"><label className={labelClass}>Authors (HTML ok)</label><input type="text" value={thesis.authors} onChange={(e) => setConfig({ ...config, theses: updateField(config.theses, i, 'authors', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Institution</label><input type="text" value={thesis.institution} onChange={(e) => setConfig({ ...config, theses: updateField(config.theses, i, 'institution', e.target.value) })} className={inputClass} /></div>
@@ -225,7 +225,7 @@ const CvEdit: React.FC = () => {
       {config.awards.map((award, i) => (
         <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setConfig({ ...config, awards: removeItem(config.awards, i) })} /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className={labelClass}>Title</label><input type="text" value={award.title} onChange={(e) => setConfig({ ...config, awards: updateField(config.awards, i, 'title', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Venue</label><input type="text" value={award.venue} onChange={(e) => setConfig({ ...config, awards: updateField(config.awards, i, 'venue', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Year</label><input type="text" value={award.year} onChange={(e) => setConfig({ ...config, awards: updateField(config.awards, i, 'year', e.target.value) })} className={inputClass} /></div>

@@ -97,10 +97,10 @@ const NewsEdit: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-neutral-400">Loading...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-neutral-400">Loading...</div>;
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate('/news')}
@@ -127,7 +127,7 @@ const NewsEdit: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="col-span-2">
           <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Title</label>
           <input

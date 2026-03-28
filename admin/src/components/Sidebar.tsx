@@ -27,7 +27,12 @@ const sections = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2.5 px-4 py-2 rounded-md text-sm transition-colors ${
       isActive
@@ -36,40 +41,55 @@ const Sidebar: React.FC = () => {
     }`;
 
   return (
-    <aside className="w-56 h-screen fixed left-0 top-0 bg-neutral-50 border-r border-neutral-200 flex flex-col">
-      <div className="px-5 py-5 border-b border-neutral-200">
-        <h1 className="text-sm font-bold tracking-tight text-neutral-900">BYC Admin</h1>
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <nav className="flex-1 px-3 py-3 overflow-y-auto">
-        {sections.map((section) => (
-          <div key={section.label} className="mb-4">
-            <p className="px-4 mb-1 text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
-              {section.label}
-            </p>
-            <div className="space-y-0.5">
-              {section.items.map((item) => (
-                <NavLink key={item.to} to={item.to} className={linkClass}>
-                  <span className="text-sm">{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              ))}
+      <aside className={`w-56 h-screen fixed left-0 top-0 bg-neutral-50 border-r border-neutral-200 flex flex-col z-50
+        transition-transform duration-200 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0`}
+      >
+        <div className="px-5 py-5 border-b border-neutral-200 flex items-center justify-between">
+          <h1 className="text-sm font-bold tracking-tight text-neutral-900">BYC Admin</h1>
+          <button onClick={onClose} className="md:hidden text-neutral-400 hover:text-neutral-600 text-lg">×</button>
+        </div>
+
+        <nav className="flex-1 px-3 py-3 overflow-y-auto">
+          {sections.map((section) => (
+            <div key={section.label} className="mb-4">
+              <p className="px-4 mb-1 text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                {section.label}
+              </p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <NavLink key={item.to} to={item.to} className={linkClass} onClick={onClose}>
+                    <span className="text-sm">{item.icon}</span>
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </nav>
+          ))}
+        </nav>
 
-      <div className="px-5 py-3 border-t border-neutral-200">
-        <a
-          href="http://localhost:3000"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors"
-        >
-          View site →
-        </a>
-      </div>
-    </aside>
+        <div className="px-5 py-3 border-t border-neutral-200">
+          <a
+            href="http://localhost:3000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            View site →
+          </a>
+        </div>
+      </aside>
+    </>
   );
 };
 

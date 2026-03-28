@@ -127,10 +127,10 @@ const ProjectEdit: React.FC = () => {
     setMetadata({ ...metadata, links: metadata.links.filter((_, i) => i !== index) });
   };
 
-  if (loading) return <div className="p-8 text-neutral-400">Loading...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-neutral-400">Loading...</div>;
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate('/projects')}
@@ -157,7 +157,7 @@ const ProjectEdit: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="col-span-2">
           <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Title</label>
           <input type="text" value={metadata.title} onChange={(e) => setMetadata({ ...metadata, title: e.target.value })} className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" placeholder="Project title" />

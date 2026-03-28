@@ -41,10 +41,10 @@ const Settings: React.FC = () => {
   const setSocial = (field: string, value: string) =>
     setConfig({ ...config, about: { ...config.about, social: { ...config.about.social, [field]: value || undefined } } });
 
-  if (loading) return <div className="p-8 text-neutral-400">Loading...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-neutral-400">Loading...</div>;
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-neutral-900">Site Settings</h2>
         <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ const Settings: React.FC = () => {
       <div className="space-y-8">
         <div>
           <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-4">Site</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Title</label>
               <input
@@ -108,7 +108,7 @@ const Settings: React.FC = () => {
 
         <div>
           <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-4">Social Links</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Email</label>
               <input

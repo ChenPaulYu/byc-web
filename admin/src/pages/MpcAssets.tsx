@@ -79,10 +79,10 @@ const MpcAssets: React.FC = () => {
     finally { setUploading(null); if (videoInputRef.current) videoInputRef.current.value = ''; }
   };
 
-  if (loading) return <div className="p-8 text-neutral-400">Loading...</div>;
+  if (loading) return <div className="p-4 md:p-8 text-neutral-400">Loading...</div>;
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <h2 className="text-xl font-semibold text-neutral-900 mb-8">MPC Assets</h2>
 
       {/* Pad Configuration */}
@@ -103,7 +103,7 @@ const MpcAssets: React.FC = () => {
 
         {mpcConfig && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">BPM</label>
                 <input
@@ -130,7 +130,7 @@ const MpcAssets: React.FC = () => {
 
             <div>
               <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-2">Pad Assignments</label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {['1','2','3','4','q','w','e','r','a','s','d','f','z','x','c','v'].map((key) => (
                   <div key={key} className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg">
                     <span className="text-xs font-mono font-bold text-neutral-900 w-5">{key.toUpperCase()}</span>
