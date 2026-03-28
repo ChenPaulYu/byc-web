@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { MarkdownRenderer } from '@shared/components/MarkdownRenderer';
+import '@shared/index.css';
 import InsertToolbar from './InsertToolbar';
 
 interface MarkdownEditorProps {

@@ -1,6 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import main site's markdown styles for preview */
-@import '../../src/index.css';
