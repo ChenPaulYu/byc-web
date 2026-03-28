@@ -34,5 +34,15 @@ export const getMpcConfig = api.getMpcConfig;
 export const updateMpcConfig = api.updateMpcConfig;
 export const triggerDeploy = api.triggerDeploy;
 export const hasDeployHook = api.hasDeployHook;
+export const hasZhContent = api.hasZhContent;
+export const getZhContent = api.getZhContent;
+export const saveZhContent = api.saveZhContent;
+export const deleteZhContent = api.deleteZhContent;
+export const hasZhAbout = api.hasZhAbout;
+export const getZhAbout = api.getZhAbout;
+export const saveZhAbout = api.saveZhAbout;
+export const hasZhCv = api.hasZhCv;
+export const getZhCvConfig = api.getZhCvConfig;
+export const saveZhCvConfig = api.saveZhCvConfig;
 
 export type { ContentItem, ContentConfig, MpcAssets, MpcConfig } from './local-api';

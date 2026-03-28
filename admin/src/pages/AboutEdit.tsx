@@ -1,24 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import MarkdownEditor from '../components/MarkdownEditor';
-import { getAbout, updateAbout } from '../api';
+import { getAbout, updateAbout, hasZhAbout, getZhAbout, saveZhAbout } from '../api';
 
 const AboutEdit: React.FC = () => {
   const [content, setContent] = useState('');
+  const [zhContent, setZhContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
 
   useEffect(() => {
-    getAbout()
-      .then((res) => setContent(res.content))
+    Promise.all([
+      getAbout(),
+      hasZhAbout(),
+    ])
+      .then(([res, zh]) => {
+        setContent(res.content);
+        setHasZh(zh);
+      })
       .catch((err) => alert(`Failed to load about page: ${err}`))
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (lang === 'zh' && hasZh && !zhContent) {
+      getZhAbout()
+        .then((res) => setZhContent(res.content))
+        .catch(() => { /* new zh file, start empty */ });
+    }
+  }, [lang, hasZh]);
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateAbout(content);
+      if (lang === 'zh') {
+        await saveZhAbout(zhContent);
+      } else {
+        await updateAbout(content);
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -46,7 +67,16 @@ const AboutEdit: React.FC = () => {
         </div>
       </div>
 
-      <MarkdownEditor value={content} onChange={setContent} />
+      {/* Language tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="inline-flex items-center border border-neutral-200 rounded-md text-xs overflow-hidden">
+          <button type="button" onClick={() => setLang('en')} className={`px-3 py-1.5 transition-colors ${lang === 'en' ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:text-neutral-900'}`}>EN</button>
+          <button type="button" onClick={() => { setLang('zh'); if (!hasZh) setHasZh(true); }} className={`px-3 py-1.5 transition-colors ${lang === 'zh' ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:text-neutral-900'}`}>ZH</button>
+        </div>
+        {lang === 'zh' && !hasZh && <span className="text-xs text-neutral-400">Creating Chinese version</span>}
+      </div>
+
+      <MarkdownEditor value={lang === 'zh' ? zhContent : content} onChange={lang === 'zh' ? setZhContent : setContent} />
     </div>
   );
 };

@@ -120,6 +120,45 @@ export const uploadVideo = async (file: File): Promise<{ filename: string }> => 
   return res.json();
 };
 
+// --- Chinese content ---
+
+export const hasZhContent = async (type: ContentType, slug: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`/api/content/${type}/${slug}.zh`);
+    return res.ok;
+  } catch { return false; }
+};
+
+export const getZhContent = (type: ContentType, slug: string) =>
+  request<ContentItem>(`/content/${type}/${slug}.zh`);
+
+export const saveZhContent = (type: ContentType, slug: string, metadata: Record<string, unknown>, content: string) =>
+  request<void>(`/content/${type}/${slug}.zh`, {
+    method: 'PUT',
+    body: JSON.stringify({ metadata, content }),
+  });
+
+export const deleteZhContent = (type: ContentType, slug: string) =>
+  request<void>(`/content/${type}/${slug}.zh`, { method: 'DELETE' });
+
+export const hasZhAbout = async (): Promise<boolean> => {
+  try { const res = await fetch('/api/about/zh'); return res.ok; } catch { return false; }
+};
+
+export const getZhAbout = () => request<{ content: string }>('/about/zh');
+
+export const saveZhAbout = (content: string) =>
+  request<void>('/about/zh', { method: 'PUT', body: JSON.stringify({ content }) });
+
+export const hasZhCv = async (): Promise<boolean> => {
+  try { const res = await fetch('/api/cv-config/zh'); return res.ok; } catch { return false; }
+};
+
+export const getZhCvConfig = () => request<Record<string, unknown>>('/cv-config/zh');
+
+export const saveZhCvConfig = (config: Record<string, unknown>) =>
+  request<void>('/cv-config/zh', { method: 'PUT', body: JSON.stringify(config) });
+
 // CV Config
 export const getCvConfig = () => request<Record<string, unknown>>('/cv-config');
 

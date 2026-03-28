@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MarkdownEditor from '../components/MarkdownEditor';
-import { getContent, createContent, updateContent, deleteContent } from '../api';
+import { getContent, createContent, updateContent, deleteContent, hasZhContent, getZhContent, saveZhContent } from '../api';
 
 interface ProjectLink {
   label: string;
@@ -45,6 +45,9 @@ const ProjectEdit: React.FC = () => {
   const [tagsInput, setTagsInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
+  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [hasZh, setHasZh] = useState(false);
+  const [zhContent, setZhContent] = useState('');
 
   useEffect(() => {
     if (!isNew && slug) {
@@ -67,10 +70,24 @@ const ProjectEdit: React.FC = () => {
           setTagsInput((meta.tags || []).join(', '));
           setContent(item.content);
         })
+        .then(async () => {
+          if (!isNew && slug) {
+            const zh = await hasZhContent('projects', slug);
+            setHasZh(zh);
+          }
+        })
         .catch((err) => alert(`Failed to load: ${err}`))
         .finally(() => setLoading(false));
     }
   }, [slug, isNew]);
+
+  useEffect(() => {
+    if (lang === 'zh' && hasZh && slug && !isNew && !zhContent) {
+      getZhContent('projects', slug)
+        .then((item) => setZhContent(item.content))
+        .catch(() => { /* new zh file, start empty */ });
+    }
+  }, [lang, hasZh, slug, isNew]);
 
   const generateSlug = (title: string) =>
     title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -89,12 +106,14 @@ const ProjectEdit: React.FC = () => {
     };
 
     try {
-      if (isNew) {
+      if (lang === 'zh') {
+        await saveZhContent('projects', finalSlug, finalMetadata, zhContent);
+      } else if (isNew) {
         await createContent('projects', finalSlug, finalMetadata, content);
       } else {
         await updateContent('projects', finalSlug, finalMetadata, content);
       }
-      navigate('/projects');
+      if (lang !== 'zh') navigate('/projects');
     } catch (err) {
       alert(`Failed to save: ${err}`);
     } finally {
@@ -221,7 +240,18 @@ const ProjectEdit: React.FC = () => {
         </div>
       </div>
 
-      <MarkdownEditor value={content} onChange={setContent} />
+      {/* Language tabs */}
+      {!isNew && (
+        <div className="flex items-center gap-2 mb-4">
+          <div className="inline-flex items-center border border-neutral-200 rounded-md text-xs overflow-hidden">
+            <button type="button" onClick={() => setLang('en')} className={`px-3 py-1.5 transition-colors ${lang === 'en' ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:text-neutral-900'}`}>EN</button>
+            <button type="button" onClick={() => { setLang('zh'); if (!hasZh) setHasZh(true); }} className={`px-3 py-1.5 transition-colors ${lang === 'zh' ? 'bg-neutral-900 text-white' : 'text-neutral-500 hover:text-neutral-900'}`}>ZH</button>
+          </div>
+          {lang === 'zh' && !hasZh && <span className="text-xs text-neutral-400">Creating Chinese version</span>}
+        </div>
+      )}
+
+      <MarkdownEditor value={lang === 'zh' ? zhContent : content} onChange={lang === 'zh' ? setZhContent : setContent} />
     </div>
   );
 };
