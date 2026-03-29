@@ -82,6 +82,11 @@ const About: React.FC = () => {
                 }
                 return <p {...props} className="mb-4">{children}</p>;
               },
+              h2: ({ node, children, ...props }: any) => (
+                <div className="not-prose mt-12 pt-8 border-t border-neutral-100 mb-6">
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400">{children}</h2>
+                </div>
+              ),
               strong: ({ node, ...props }) => (
                 <strong {...props} className="text-neutral-900 font-semibold" />
               ),
