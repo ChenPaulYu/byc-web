@@ -1251,7 +1251,7 @@ const LandingScene: React.FC = () => {
         </header>
 
         {/* Footer Area */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between w-full mt-auto gap-2 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between w-full mt-auto gap-2 sm:gap-0 pb-6 sm:pb-0">
           {/* Mobile: Center everything, Desktop: Left Spacer */}
           <div className="hidden sm:block sm:w-1/3"></div>
 
