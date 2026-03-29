@@ -24,7 +24,7 @@ interface CvConfig {
   customSections: CustomSection[];
 }
 
-const SectionHeader: React.FC<{ title: string; onAdd: () => void; visible?: boolean; onToggle?: () => void }> = ({ title, onAdd, visible, onToggle }) => (
+const SectionHeader: React.FC<{ title: string; onAdd?: () => void; visible?: boolean; onToggle?: () => void }> = ({ title, onAdd, visible, onToggle }) => (
   <div className="flex items-center justify-between mb-3 mt-8 first:mt-0">
     <div className="flex items-center gap-3">
       <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">{title}</h3>
@@ -34,7 +34,7 @@ const SectionHeader: React.FC<{ title: string; onAdd: () => void; visible?: bool
         </button>
       )}
     </div>
-    <button type="button" onClick={onAdd} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add</button>
+    {onAdd && <button type="button" onClick={onAdd} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add</button>}
   </div>
 );
 
