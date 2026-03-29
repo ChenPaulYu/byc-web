@@ -10,10 +10,10 @@ Recent explorations include agent-based music production workflows, auditory rea
 
 ## 📍 Background
 
-- 🏢 **[Rhythm Culture Corporation](https://rhythmculture.com)** — Technical Lead (2023–present). AI-powered music education tools and agent-based production systems. Recognized at NeurIPS Creative AI Track 2024.
+- 🏢 **[Rhythm Culture Corporation](https://rhythmculture.com)** — Technical Lead (2023–present). AI-powered music education tools and agent-based production systems. Built [AITrackMate](https://github.com/chenpaulyu), an AI music feedback system recognized at NeurIPS Creative AI Track 2024 — now a core module of Music Agent OS.
 - 🎓 **National Taiwan University** — M.S. in Networking and Multimedia (2021–2025). Developed [FlueBricks](/projects/fluebricks), accepted at CHI 2026, Best Paper Award at TAICHI 2025. Advised by Prof. Lung-Pan Cheng.
 - 🎧 **Sony Group Corporation** — Research Intern, Creative AI Lab, Tokyo (2020–2021). Developed [DJTransGAN](/projects/djtransgan), the first AI model for DJ transitions. Published at ICASSP 2022.
-- 🔬 **Academia Sinica** — Research Assistant, Music and AI Lab (2019–2023). 5+ papers at ISMIR and ICASSP. Advised by Prof. Yi-Hsuan Yang.
+- 🔬 **Academia Sinica** — Research Assistant, Music and AI Lab (2019–2023). Pioneered [Neural Loop Combiner](https://github.com/chenpaulyu), the first work to frame loop compatibility as a deep learning problem (ISMIR 2020). 5+ papers at ISMIR and ICASSP. Advised by Prof. Yi-Hsuan Yang.
 
 Outside of research, I play right back for Mixxing FC in Taiwan's Sunday league ([TBSL](https://www.facebook.com/tbsl.league)) ⚽, and I'm currently picking up finger drumming 🥁 and trumpet 🎺.
 
