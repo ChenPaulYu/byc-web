@@ -3,15 +3,16 @@
     "title": "Bo-Yu Chen",
     "description": "Researcher // Engineer // Creator",
     "author": "Bo-Yu Chen",
-    "url": "https://your-site.com"
+    "url": "https://boyuchen.dev"
   },
   "about": {
     "source": "about.md",
     "social": {
-      "email": "your.email@example.com",
-      "github": "https://github.com/yourusername",
-      "linkedin": "https://linkedin.com/in/yourusername",
-      "twitter": "https://twitter.com/yourusername"
+      "email": "bernie40916@gmail.com",
+      "github": "https://github.com/chenpaulyu",
+      "linkedin": "https://www.linkedin.com/in/bo-yu-chen-bb074989/",
+      "twitter": "https://x.com/Chen_Paul_u",
+      "scholar": "https://scholar.google.com/citations?user=ydsKndkAAAAJ"
     }
   },
   "projects": [

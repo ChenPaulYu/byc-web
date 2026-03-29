@@ -3,8 +3,9 @@ import { Project, Experience, Education, Publication, Thesis, Award } from './ty
 export const SOCIAL_LINKS = {
   email: "bernie40916@gmail.com",
   github: "https://github.com/chenpaulyu",
-  scholar: "https://scholar.google.com",
-  twitter: "https://twitter.com/Chen_Paul_u",
+  scholar: "https://scholar.google.com/citations?user=ydsKndkAAAAJ",
+  linkedin: "https://www.linkedin.com/in/bo-yu-chen-bb074989/",
+  twitter: "https://x.com/Chen_Paul_u",
 };
 
 export const EDUCATION: Education[] = [

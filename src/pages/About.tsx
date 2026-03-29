@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SOCIAL_LINKS } from '../constants';
-import { GitHubIcon, ScholarIcon, MailIcon, TwitterIcon } from '../components/SocialIcons';
+import { GitHubIcon, ScholarIcon, MailIcon, TwitterIcon, LinkedInIcon } from '../components/SocialIcons';
 import { usePageTitle } from '../utils/usePageTitle';
 import LanguageToggle from '../components/LanguageToggle';
 import { hasChineseAbout, loadAboutContent, loadAboutContentZh, loadAllNews, NewsContent } from '../utils/contentLoader';
@@ -124,6 +124,10 @@ const About: React.FC = () => {
           <a href={SOCIAL_LINKS.github} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
             <GitHubIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
             <span>GitHub</span>
+          </a>
+          <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
+            <LinkedInIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
+            <span>LinkedIn</span>
           </a>
           <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-neutral-800 hover:text-blue-600 transition-colors group">
             <TwitterIcon size={18} className="text-neutral-400 group-hover:text-blue-600" />
