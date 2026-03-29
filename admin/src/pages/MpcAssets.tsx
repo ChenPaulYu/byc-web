@@ -132,8 +132,8 @@ const MpcAssets: React.FC = () => {
               <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-2">Pad Assignments</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {['1','2','3','4','q','w','e','r','a','s','d','f','z','x','c','v'].map((key) => (
-                  <div key={key} className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg">
-                    <span className="text-xs font-mono font-bold text-neutral-900 w-5">{key.toUpperCase()}</span>
+                  <div key={key} className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg min-w-0 overflow-hidden">
+                    <span className="text-xs font-mono font-bold text-neutral-900 w-5 shrink-0">{key.toUpperCase()}</span>
                     <select
                       value={mpcConfig.pads[key] || ''}
                       onChange={(e) => {
@@ -145,10 +145,10 @@ const MpcAssets: React.FC = () => {
                         }
                         setMpcConfig({ ...mpcConfig, pads: newPads });
                       }}
-                      className="flex-1 px-2 py-1 border border-neutral-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-neutral-300"
+                      className="flex-1 min-w-0 px-2 py-1 border border-neutral-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-neutral-300 truncate"
                     >
                       <option value="">Synth</option>
-                      {assets?.samples.map((s) => <option key={s} value={s}>{s}</option>)}
+                      {assets?.samples.map((s) => <option key={s} value={s}>{s.replace(/\.[^.]+$/, '')}</option>)}
                     </select>
                   </div>
                 ))}
@@ -179,13 +179,23 @@ const MpcAssets: React.FC = () => {
           <div className="space-y-2">
             {assets?.samples.map((filename) => (
               <div key={filename} className="flex items-center justify-between px-4 py-2.5 border border-neutral-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">🎵</span>
-                  <span className="text-sm text-neutral-700">{filename}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const audio = new Audio(`/public/samples/${filename}`);
+                      audio.play().catch(() => {});
+                    }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors shrink-0"
+                    title="Preview"
+                  >
+                    <svg width="10" height="12" viewBox="0 0 10 12" fill="#171717"><polygon points="0,0 10,6 0,12" /></svg>
+                  </button>
+                  <span className="text-sm text-neutral-700 truncate">{filename}</span>
                 </div>
                 <button
                   onClick={() => handleDeleteSample(filename)}
-                  className="text-xs text-neutral-400 hover:text-red-500 transition-colors"
+                  className="text-xs text-neutral-400 hover:text-red-500 transition-colors shrink-0 ml-2"
                 >
                   Delete
                 </button>
