@@ -56,9 +56,10 @@ const About: React.FC = () => {
               ),
               p: ({ node, children, ...props }: any) => {
                 // Support ::announcement[text] custom component
-                const textContent = typeof children === 'string' ? children.trim()
-                  : (Array.isArray(children) && children.length === 1 && typeof children[0] === 'string') ? children[0].trim()
-                  : null;
+                const childArray = Array.isArray(children) ? children : [children];
+                const textContent = childArray.every((c: unknown) => typeof c === 'string')
+                  ? childArray.join('').trim()
+                  : (typeof children === 'string' ? children.trim() : null);
                 if (textContent) {
                   const match = textContent.match(/^::announcement\[(.+)\]$/);
                   if (match) {
