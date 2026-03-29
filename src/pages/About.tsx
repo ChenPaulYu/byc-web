@@ -87,6 +87,13 @@ const About: React.FC = () => {
                   <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400">{children}</h2>
                 </div>
               ),
+              em: ({ node, children, ...props }: any) => {
+                const text = typeof children === 'string' ? children : Array.isArray(children) ? children.join('') : '';
+                if (text.startsWith('Last updated')) {
+                  return <p className="not-prose text-[11px] text-neutral-300 mt-16 text-right">{text}</p>;
+                }
+                return <em {...props}>{children}</em>;
+              },
               strong: ({ node, ...props }) => (
                 <strong {...props} className="text-neutral-900 font-semibold" />
               ),
