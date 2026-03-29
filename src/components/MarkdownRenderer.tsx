@@ -203,7 +203,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                         <AudioPlayer src={custom.content} />
                       </Suspense>
                     );
-                  // Add more custom components here in the future
+                  case 'announcement':
+                    return (
+                      <div className="my-6 p-4 bg-blue-50 border-l-4 border-blue-600 rounded-r">
+                        <div className="flex items-start gap-3">
+                          <span className="text-lg">📢</span>
+                          <p className="text-base text-neutral-900 font-medium">{custom.content}</p>
+                        </div>
+                      </div>
+                    );
                   default:
                     break;
                 }

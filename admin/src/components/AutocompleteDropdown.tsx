@@ -8,10 +8,7 @@ interface AutocompleteItem {
 
 const CUSTOM_COMPONENTS: AutocompleteItem[] = [
   { label: 'audio', syntax: '::audio[/path/to/file.wav]', description: 'Waveform audio player' },
-  // Future components can be added here:
-  // { label: 'spectrogram', syntax: '::spectrogram[/path/to/file.wav]', description: 'Frequency spectrogram' },
-  // { label: 'compare', syntax: '::compare[/audio/a.wav|/audio/b.wav]', description: 'A/B audio comparison' },
-  // { label: 'model3d', syntax: '::model3d[/models/file.glb]', description: '3D model viewer' },
+  { label: 'announcement', syntax: '::announcement[Your announcement text here]', description: 'Blue announcement badge' },
 ];
 
 interface AutocompleteDropdownProps {
