@@ -1,4 +1,4 @@
-I am a researcher, engineer, and creator at the intersection of **AI Music**, **Musical Acoustics**, and **Human-Computer Interaction**.
+I am a researcher, engineer, and creator at the intersection of **Music Information Retrieval (MIR)**, **AI Music**, **Musical Acoustics**, and **Human-Computer Interaction**.
 
 At [Rhythm Culture Corporation](https://rhythmculture.com), I lead engineering on AI-powered music education tools and agent-based music production systems. Our work was recognized at the **NeurIPS Creative AI Track 2024**.
 
