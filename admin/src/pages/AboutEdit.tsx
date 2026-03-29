@@ -10,6 +10,8 @@ const AboutEdit: React.FC = () => {
   const [saved, setSaved] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
+  const [enStatus, setEnStatus] = useState<'published' | 'draft'>('published');
+  const [zhStatus, setZhStatus] = useState<'published' | 'draft'>('draft');
 
   useEffect(() => {
     Promise.all([
@@ -67,6 +69,18 @@ const AboutEdit: React.FC = () => {
               History
             </a>
           )}
+          <select
+            value={lang === 'zh' ? zhStatus : enStatus}
+            onChange={(e) => {
+              const s = e.target.value as 'published' | 'draft';
+              if (lang === 'zh') setZhStatus(s);
+              else setEnStatus(s);
+            }}
+            className="px-3 py-2 border border-neutral-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-neutral-300"
+          >
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
           <button
             onClick={handleSave}
             disabled={saving}
