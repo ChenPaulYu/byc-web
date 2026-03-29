@@ -1099,10 +1099,10 @@ const StaticFallback: React.FC = () => {
   );
 };
 
-const WelcomeScreen: React.FC<{ onEnter: () => void }> = ({ onEnter }) => {
+const WelcomeScreen: React.FC<{ onEnter: () => void; fadeOut?: boolean }> = ({ onEnter, fadeOut }) => {
   return (
     <div
-      className="absolute inset-0 z-30 bg-[#f9fafb] flex flex-col items-center justify-center cursor-pointer select-none"
+      className={`absolute inset-0 z-30 bg-[#f9fafb] flex flex-col items-center justify-center cursor-pointer select-none transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
       onClick={onEnter}
     >
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3">
@@ -1131,6 +1131,7 @@ const LandingScene: React.FC = () => {
   const navigate = useNavigate();
   const synth = useMemo(() => createSynth(), []);
   const [entered, setEntered] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [videoReady, setVideoReady] = useState(!VIDEO_ENABLED);
 
@@ -1143,7 +1144,8 @@ const LandingScene: React.FC = () => {
 
   const handleEnter = async () => {
     await Tone.start();
-    setEntered(true);
+    setFadeOut(true);
+    setTimeout(() => setEntered(true), 500);
   };
 
   // Responsive camera positioning
@@ -1192,7 +1194,7 @@ const LandingScene: React.FC = () => {
   return (
     <CanvasErrorBoundary fallback={<StaticFallback />}>
     <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden">
-      {!entered && <WelcomeScreen onEnter={handleEnter} />}
+      {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
       {entered && <LoadingOverlay extraReady={videoReady} />}
       <Canvas
         shadows

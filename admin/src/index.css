@@ -109,6 +109,15 @@ select {
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 28px !important;
+  background-color: white;
+}
+
+select:hover {
+  border-color: #a3a3af;
+}
+
+select option {
+  padding: 8px 12px;
 }
 
 /* Tab active indicator transition */

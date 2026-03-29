@@ -246,9 +246,37 @@ const ProjectEdit: React.FC = () => {
               <option value="draft">Draft</option>
             </select>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-neutral-700">Importance</label>
-            <input type="number" min={0} max={10} value={metadata.importance} onChange={(e) => setMetadata({ ...metadata, importance: parseInt(e.target.value) || 0 })} className="w-16 px-2 py-1 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" />
+          <div>
+            <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Importance</label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMetadata({ ...metadata, importance: Math.max(0, metadata.importance - 1) })}
+                className="w-7 h-7 flex items-center justify-center rounded-md border border-neutral-200 text-neutral-500 hover:bg-neutral-100 transition-colors text-sm"
+              >
+                -
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setMetadata({ ...metadata, importance: i + 1 })}
+                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                      i < metadata.importance ? 'bg-neutral-900' : 'bg-neutral-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMetadata({ ...metadata, importance: Math.min(10, metadata.importance + 1) })}
+                className="w-7 h-7 flex items-center justify-center rounded-md border border-neutral-200 text-neutral-500 hover:bg-neutral-100 transition-colors text-sm"
+              >
+                +
+              </button>
+              <span className="text-xs text-neutral-400 ml-1 tabular-nums w-4">{metadata.importance}</span>
+            </div>
           </div>
         </div>
         <div className="col-span-2">
