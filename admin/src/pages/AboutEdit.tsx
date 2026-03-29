@@ -34,13 +34,27 @@ const AboutEdit: React.FC = () => {
     }
   }, [lang, hasZh]);
 
+  const autoUpdateDate = (text: string): string => {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    const pattern = /\*Last updated:.*\*/;
+    const dateLine = `*Last updated: ${date}*`;
+    if (pattern.test(text)) {
+      return text.replace(pattern, dateLine);
+    }
+    return text.trimEnd() + '\n\n' + dateLine + '\n';
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       if (lang === 'zh') {
-        await saveZhAbout(zhContent);
+        const updated = autoUpdateDate(zhContent);
+        setZhContent(updated);
+        await saveZhAbout(updated);
       } else {
-        await updateAbout(content);
+        const updated = autoUpdateDate(content);
+        setContent(updated);
+        await updateAbout(updated);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
