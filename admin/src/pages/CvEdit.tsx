@@ -55,6 +55,7 @@ const CvEdit: React.FC = () => {
   const [hasZh, setHasZh] = useState(false);
   const [enStatus, setEnStatus] = useState<'published' | 'draft'>('published');
   const [zhStatus, setZhStatus] = useState<'published' | 'draft'>('draft');
+  const [lastAddedSection, setLastAddedSection] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -171,12 +172,21 @@ const CvEdit: React.FC = () => {
       {/* Education */}
       <SectionHeader
         title="Education"
-        onAdd={() => setActiveConfig({ ...activeConfig, education: [...activeConfig.education, { school: '', degree: '', duration: '', location: '' }] })}
+        onAdd={() => {
+          setActiveConfig({ ...activeConfig, education: [...activeConfig.education, { school: '', degree: '', duration: '', location: '' }] });
+          setLastAddedSection('education');
+          setTimeout(() => { setLastAddedSection(null); }, 700);
+          setTimeout(() => { document.getElementById('education-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+        }}
         visible={activeConfig.visibility?.education}
         onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), education: !(activeConfig.visibility?.education !== false) } })}
       />
       {activeConfig.education.map((edu, i) => (
-        <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div
+          key={i}
+          id={i === activeConfig.education.length - 1 ? 'education-last' : undefined}
+          className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === 'education' && i === activeConfig.education.length - 1 ? ' animate-item-added' : ''}`}
+        >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, education: removeItem(activeConfig.education, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>School</label><input type="text" value={edu.school} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'school', e.target.value) })} className={inputClass} /></div>
@@ -196,12 +206,21 @@ const CvEdit: React.FC = () => {
         <React.Fragment key={key}>
           <SectionHeader
             title={title}
-            onAdd={() => setActiveConfig({ ...activeConfig, [key]: [...activeConfig[key], { company: '', role: '', duration: '', location: '', description: [''] }] })}
+            onAdd={() => {
+              setActiveConfig({ ...activeConfig, [key]: [...activeConfig[key], { company: '', role: '', duration: '', location: '', description: [''] }] });
+              setLastAddedSection(key);
+              setTimeout(() => { setLastAddedSection(null); }, 700);
+              setTimeout(() => { document.getElementById(`${key}-last`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+            }}
             visible={activeConfig.visibility?.[key]}
             onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), [key]: !(activeConfig.visibility?.[key] !== false) } })}
           />
           {activeConfig[key].map((exp: Experience, i: number) => (
-            <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+            <div
+              key={i}
+              id={i === activeConfig[key].length - 1 ? `${key}-last` : undefined}
+              className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === key && i === activeConfig[key].length - 1 ? ' animate-item-added' : ''}`}
+            >
               <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, [key]: removeItem(activeConfig[key], i) })} /></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 <div><label className={labelClass}>Company / Lab</label><input type="text" value={exp.company} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField(activeConfig[key], i, 'company', e.target.value) })} className={inputClass} /></div>
@@ -243,12 +262,21 @@ const CvEdit: React.FC = () => {
       {/* Publications */}
       <SectionHeader
         title="Publications"
-        onAdd={() => setActiveConfig({ ...activeConfig, publications: [...activeConfig.publications, { title: '', authors: '', venue: '', year: '', acceptanceRate: '' }] })}
+        onAdd={() => {
+          setActiveConfig({ ...activeConfig, publications: [...activeConfig.publications, { title: '', authors: '', venue: '', year: '', acceptanceRate: '' }] });
+          setLastAddedSection('publications');
+          setTimeout(() => { setLastAddedSection(null); }, 700);
+          setTimeout(() => { document.getElementById('publications-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+        }}
         visible={activeConfig.visibility?.publications}
         onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), publications: !(activeConfig.visibility?.publications !== false) } })}
       />
       {activeConfig.publications.map((pub, i) => (
-        <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div
+          key={i}
+          id={i === activeConfig.publications.length - 1 ? 'publications-last' : undefined}
+          className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === 'publications' && i === activeConfig.publications.length - 1 ? ' animate-item-added' : ''}`}
+        >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, publications: removeItem(activeConfig.publications, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={pub.title} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'title', e.target.value) })} className={inputClass} /></div>
@@ -263,12 +291,21 @@ const CvEdit: React.FC = () => {
       {/* Theses */}
       <SectionHeader
         title="Thesis"
-        onAdd={() => setActiveConfig({ ...activeConfig, theses: [...activeConfig.theses, { title: '', authors: '', institution: '', year: '' }] })}
+        onAdd={() => {
+          setActiveConfig({ ...activeConfig, theses: [...activeConfig.theses, { title: '', authors: '', institution: '', year: '' }] });
+          setLastAddedSection('theses');
+          setTimeout(() => { setLastAddedSection(null); }, 700);
+          setTimeout(() => { document.getElementById('theses-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+        }}
         visible={activeConfig.visibility?.theses}
         onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), theses: !(activeConfig.visibility?.theses !== false) } })}
       />
       {activeConfig.theses.map((thesis, i) => (
-        <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div
+          key={i}
+          id={i === activeConfig.theses.length - 1 ? 'theses-last' : undefined}
+          className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === 'theses' && i === activeConfig.theses.length - 1 ? ' animate-item-added' : ''}`}
+        >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, theses: removeItem(activeConfig.theses, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={thesis.title} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'title', e.target.value) })} className={inputClass} /></div>
@@ -282,12 +319,21 @@ const CvEdit: React.FC = () => {
       {/* Awards */}
       <SectionHeader
         title="Awards"
-        onAdd={() => setActiveConfig({ ...activeConfig, awards: [...activeConfig.awards, { title: '', venue: '', year: '', detail: '' }] })}
+        onAdd={() => {
+          setActiveConfig({ ...activeConfig, awards: [...activeConfig.awards, { title: '', venue: '', year: '', detail: '' }] });
+          setLastAddedSection('awards');
+          setTimeout(() => { setLastAddedSection(null); }, 700);
+          setTimeout(() => { document.getElementById('awards-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+        }}
         visible={activeConfig.visibility?.awards}
         onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), awards: !(activeConfig.visibility?.awards !== false) } })}
       />
       {activeConfig.awards.map((award, i) => (
-        <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div
+          key={i}
+          id={i === activeConfig.awards.length - 1 ? 'awards-last' : undefined}
+          className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === 'awards' && i === activeConfig.awards.length - 1 ? ' animate-item-added' : ''}`}
+        >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, awards: removeItem(activeConfig.awards, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div><label className={labelClass}>Title</label><input type="text" value={award.title} onChange={(e) => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'title', e.target.value) })} className={inputClass} /></div>
@@ -301,12 +347,21 @@ const CvEdit: React.FC = () => {
       {/* Reviewer */}
       <SectionHeader
         title="Reviewer"
-        onAdd={() => setActiveConfig({ ...activeConfig, reviewer: [...activeConfig.reviewer, { venue: '', years: '' }] })}
+        onAdd={() => {
+          setActiveConfig({ ...activeConfig, reviewer: [...activeConfig.reviewer, { venue: '', years: '' }] });
+          setLastAddedSection('reviewer');
+          setTimeout(() => { setLastAddedSection(null); }, 700);
+          setTimeout(() => { document.getElementById('reviewer-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+        }}
         visible={activeConfig.visibility?.reviewer}
         onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), reviewer: !(activeConfig.visibility?.reviewer !== false) } })}
       />
       {activeConfig.reviewer.map((rev, i) => (
-        <div key={i} className="flex gap-3 mb-2 items-end">
+        <div
+          key={i}
+          id={i === activeConfig.reviewer.length - 1 ? 'reviewer-last' : undefined}
+          className={`flex gap-3 mb-2 items-end${lastAddedSection === 'reviewer' && i === activeConfig.reviewer.length - 1 ? ' animate-item-added' : ''}`}
+        >
           <div className="flex-1"><label className={labelClass}>Venue</label><input type="text" value={rev.venue} onChange={(e) => setActiveConfig({ ...activeConfig, reviewer: updateField(activeConfig.reviewer, i, 'venue', e.target.value) })} className={inputClass} /></div>
           <div className="w-32"><label className={labelClass}>Years</label><input type="text" value={rev.years} onChange={(e) => setActiveConfig({ ...activeConfig, reviewer: updateField(activeConfig.reviewer, i, 'years', e.target.value) })} className={inputClass} /></div>
           <RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, reviewer: removeItem(activeConfig.reviewer, i) })} />
@@ -351,7 +406,11 @@ const CvEdit: React.FC = () => {
           </div>
 
           {section.items.map((item, ii) => (
-            <div key={ii} className="flex gap-2 mb-2">
+            <div
+              key={ii}
+              id={ii === section.items.length - 1 ? `customSection-${si}-last` : undefined}
+              className={`flex gap-2 mb-2${lastAddedSection === `customSection-${si}` && ii === section.items.length - 1 ? ' animate-item-added' : ''}`}
+            >
               <input type="text" value={item.text} onChange={(e) => {
                 const updated = [...activeConfig.customSections];
                 const items = [...updated[si].items];
@@ -377,6 +436,9 @@ const CvEdit: React.FC = () => {
             const updated = [...activeConfig.customSections];
             updated[si] = { ...updated[si], items: [...updated[si].items, { text: '', detail: '' }] };
             setActiveConfig({ ...activeConfig, customSections: updated });
+            setLastAddedSection(`customSection-${si}`);
+            setTimeout(() => { setLastAddedSection(null); }, 700);
+            setTimeout(() => { document.getElementById(`customSection-${si}-last`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
           }} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors mt-1">+ Add item</button>
         </div>
       ))}

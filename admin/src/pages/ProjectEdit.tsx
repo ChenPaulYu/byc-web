@@ -45,6 +45,7 @@ const ProjectEdit: React.FC = () => {
   const [tagsInput, setTagsInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
+  const [linkAdded, setLinkAdded] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [zhContent, setZhContent] = useState('');
@@ -144,6 +145,9 @@ const ProjectEdit: React.FC = () => {
 
   const addLink = () => {
     setMetadata({ ...metadata, links: [...metadata.links, { label: '', url: '', icon: 'demo' }] });
+    setLinkAdded(true);
+    setTimeout(() => { setLinkAdded(false); }, 700);
+    setTimeout(() => { document.getElementById('project-link-last')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
   };
 
   const updateLink = (index: number, field: keyof ProjectLink, value: string) => {
@@ -285,7 +289,11 @@ const ProjectEdit: React.FC = () => {
             <button type="button" onClick={addLink} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add Link</button>
           </div>
           {metadata.links.map((link, i) => (
-            <div key={i} className="flex gap-2 mb-2">
+            <div
+              key={i}
+              id={i === metadata.links.length - 1 ? 'project-link-last' : undefined}
+              className={`flex gap-2 mb-2${linkAdded && i === metadata.links.length - 1 ? ' animate-item-added' : ''}`}
+            >
               <input type="text" value={link.label} onChange={(e) => updateLink(i, 'label', e.target.value)} className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" placeholder="Label" />
               <input type="text" value={link.url} onChange={(e) => updateLink(i, 'url', e.target.value)} className="flex-[2] px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300" placeholder="URL" />
               <select value={link.icon || 'demo'} onChange={(e) => updateLink(i, 'icon', e.target.value)} className="w-24 px-2 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300">
