@@ -4,13 +4,14 @@ import { SOCIAL_LINKS } from '../constants';
 import { GitHubIcon, ScholarIcon, MailIcon, TwitterIcon } from '../components/SocialIcons';
 import { usePageTitle } from '../utils/usePageTitle';
 import LanguageToggle from '../components/LanguageToggle';
-import { hasChineseAbout, loadAboutContent, loadAboutContentZh } from '../utils/contentLoader';
+import { hasChineseAbout, loadAboutContent, loadAboutContentZh, loadAllNews, NewsContent } from '../utils/contentLoader';
 
 const About: React.FC = () => {
   usePageTitle('About');
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [aboutContent, setAboutContent] = useState<string>('');
+  const [news, setNews] = useState<NewsContent[]>([]);
 
   // Manual "Now" section - update this whenever you want!
   const nowSection = {
@@ -37,6 +38,8 @@ Also teaching workshops on interactive music systems and contributing to open-so
       setHasZh(zhExists);
       const content = await loadAboutContent();
       setAboutContent(content);
+      const newsData = await loadAllNews();
+      setNews(newsData);
     };
     init();
   }, []);
@@ -144,6 +147,31 @@ Also teaching workshops on interactive music systems and contributing to open-so
           </ReactMarkdown>
         </div>
       </section>
+
+      {/* News Section */}
+      {news.length > 0 && (
+        <section className="mt-12 pt-8 border-t border-neutral-100">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-neutral-400 mb-6">News</h2>
+          <div className="space-y-3">
+            {news.map((item) => (
+              <div key={item.slug} className="flex gap-4 text-sm">
+                <span className="text-neutral-400 font-mono tabular-nums shrink-0 w-24">
+                  {new Date(item.metadata.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                </span>
+                <span className="text-neutral-700">
+                  {item.metadata.url ? (
+                    <a href={item.metadata.url} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
+                      {item.metadata.title} ↗
+                    </a>
+                  ) : (
+                    item.metadata.title
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Connect Section */}
       <section className="mt-12 pt-8 border-t border-neutral-100">

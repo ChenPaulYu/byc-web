@@ -1085,7 +1085,7 @@ const StaticFallback: React.FC = () => {
         Researcher // Engineer // Creator
       </p>
       <nav className="flex flex-wrap gap-4 justify-center">
-        {['About', 'Projects', 'Blog', 'News', 'CV'].map((page) => (
+        {['About', 'Projects', 'Blog', 'CV'].map((page) => (
           <button
             key={page}
             onClick={() => navigate(`/${page.toLowerCase()}`)}
@@ -1284,12 +1284,6 @@ const LandingScene: React.FC = () => {
               className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
             >
               Blog
-            </button>
-            <button
-              onClick={() => navigate('/news')}
-              className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
-            >
-              News
             </button>
             <button
               onClick={() => navigate('/cv')}

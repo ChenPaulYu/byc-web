@@ -20,7 +20,6 @@ const NavBar: React.FC = () => {
           <NavLink to="/about" className={linkClass}>About</NavLink>
           <NavLink to="/projects" className={linkClass}>Projects</NavLink>
           <NavLink to="/blog" className={linkClass}>Blog</NavLink>
-          <NavLink to="/news" className={linkClass}>News</NavLink>
           <NavLink to="/cv" className={linkClass}>CV</NavLink>
         </div>
       </div>
