@@ -51,7 +51,14 @@ const About: React.FC = () => {
               a: ({ node, ...props }) => (
                 <a
                   {...props}
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-neutral-900 no-underline hover:text-blue-600 transition-colors duration-200"
+                  style={{
+                    backgroundImage: 'linear-gradient(#2563eb, #2563eb)',
+                    backgroundSize: '100% 1px',
+                    backgroundPosition: '0 100%',
+                    backgroundRepeat: 'no-repeat',
+                    paddingBottom: '1px',
+                  }}
                 />
               ),
               p: ({ node, children, ...props }: any) => {

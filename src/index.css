@@ -126,15 +126,20 @@ h4 {
 /* Links */
 .markdown-content a,
 .markdown-link {
-  color: #2563eb; /* Blue-600 */
+  color: #171717;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
+  background-image: linear-gradient(#2563eb, #2563eb);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  padding-bottom: 1px;
+  transition: background-size 0.25s ease, color 0.2s ease;
 }
 
 .markdown-content a:hover,
 .markdown-link:hover {
-  border-bottom-color: #2563eb;
+  color: #2563eb;
+  background-size: 100% 2px;
 }
 
 /* Lists */
