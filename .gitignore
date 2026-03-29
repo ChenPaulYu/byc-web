@@ -21,6 +21,9 @@ dist-ssr
 # Superpowers planning docs
 docs/superpowers/
 
+# Content drafting docs
+docs/content/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
