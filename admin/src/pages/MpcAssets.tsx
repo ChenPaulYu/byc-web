@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getMpcAssets, uploadSample, deleteSample, uploadModel, uploadVideo, getMpcConfig, updateMpcConfig, type MpcAssets as MpcAssetsType, type MpcConfig } from '../api';
+import MpcTester from '../components/MpcTester';
 
 const MpcAssets: React.FC = () => {
   const [assets, setAssets] = useState<MpcAssetsType | null>(null);
@@ -128,32 +129,18 @@ const MpcAssets: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-2">Pad Assignments</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {['1','2','3','4','q','w','e','r','a','s','d','f','z','x','c','v'].map((key) => (
-                  <div key={key} className="flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg min-w-0 overflow-hidden">
-                    <span className="text-xs font-mono font-bold text-neutral-900 w-5 shrink-0">{key.toUpperCase()}</span>
-                    <select
-                      value={mpcConfig.pads[key] || ''}
-                      onChange={(e) => {
-                        const newPads = { ...mpcConfig.pads };
-                        if (e.target.value) {
-                          newPads[key] = e.target.value;
-                        } else {
-                          delete newPads[key];
-                        }
-                        setMpcConfig({ ...mpcConfig, pads: newPads });
-                      }}
-                      className="flex-1 min-w-0 px-2 py-1 border border-neutral-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-neutral-300 truncate"
-                    >
-                      <option value="">Synth</option>
-                      {assets?.samples.map((s) => <option key={s} value={s}>{s.replace(/\.[^.]+$/, '')}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <MpcTester
+              config={mpcConfig}
+              samples={assets?.samples || []}
+              onPadAssign={(key, sample) => {
+                setMpcConfig({ ...mpcConfig, pads: { ...mpcConfig.pads, [key]: sample } });
+              }}
+              onPadClear={(key) => {
+                const newPads = { ...mpcConfig.pads };
+                delete newPads[key];
+                setMpcConfig({ ...mpcConfig, pads: newPads });
+              }}
+            />
           </div>
         )}
       </section>
@@ -178,7 +165,15 @@ const MpcAssets: React.FC = () => {
         ) : (
           <div className="space-y-2">
             {assets?.samples.map((filename) => (
-              <div key={filename} className="flex items-center justify-between px-4 py-2.5 border border-neutral-200 rounded-lg">
+              <div
+                key={filename}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', filename);
+                  e.dataTransfer.effectAllowed = 'copy';
+                }}
+                className="flex items-center justify-between px-4 py-2.5 border border-neutral-200 rounded-lg cursor-grab active:cursor-grabbing"
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <button
                     type="button"
