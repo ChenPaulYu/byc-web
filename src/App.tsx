@@ -29,7 +29,11 @@ const HashRedirect: React.FC = () => {
 
 const PageLoading = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <p className="text-neutral-400 text-sm">Loading...</p>
+    <div className="w-[200px]">
+      <div className="h-1 rounded bg-neutral-100 overflow-hidden">
+        <div className="h-full bg-neutral-800 rounded animate-progress" />
+      </div>
+    </div>
   </div>
 );
 

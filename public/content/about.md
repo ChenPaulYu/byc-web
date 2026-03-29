@@ -1,4 +1,4 @@
-::announcement[🎉 FlueBricks accepted at CHI 2026 (Acceptance rate: 25%)]
+::announcement[🎉 Presenting FlueBricks at CHI 2026 in Barcelona (Apr 13–17)]
 
 I am a researcher, engineer, and creator at the intersection of **Music Information Retrieval (MIR)**, **AI Music**, **Musical Acoustics**, and **Human-Computer Interaction**.
 
