@@ -15,6 +15,6 @@ Recent explorations include agent-based music production workflows, auditory rea
 - 🎧 **Sony Group Corporation** — Research Intern, Creative AI Lab, Tokyo (2020–2021). Developed [DJTransGAN](/projects/djtransgan), the first AI model for DJ transitions. Published at ICASSP 2022.
 - 🔬 **Academia Sinica** — Research Assistant, Music and AI Lab (2019–2023). 5+ papers at ISMIR and ICASSP. Advised by Prof. Yi-Hsuan Yang.
 
-⚽ I also play right back for Mixxing FC in Taiwan's Sunday league ([TBSL](https://www.facebook.com/tbsl.league)).
+Outside of research, I play right back for Mixxing FC in Taiwan's Sunday league ([TBSL](https://www.facebook.com/tbsl.league)) ⚽, and I'm currently picking up finger drumming 🥁 and trumpet 🎺.
 
 *Last updated: March 2026*

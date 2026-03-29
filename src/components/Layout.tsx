@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <TwitterIcon size={16} />
             </a>
           </div>
-          <p>© {new Date().getFullYear()} Bo-Yu Chen. Minimal, calm, credible.</p>
+          <p>© {new Date().getFullYear()} Bo-Yu Chen</p>
         </footer>
       )}
     </div>
