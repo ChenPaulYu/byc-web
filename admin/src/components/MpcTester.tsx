@@ -45,7 +45,7 @@ const MpcTester: React.FC<MpcTesterProps> = ({ config, samples, onPadAssign, onP
 
   // Play a sample file
   const playSample = useCallback((filename: string) => {
-    const url = `/public/samples/${filename}`;
+    const url = `/samples/${filename}`;
     let audio = audioCache.current.get(url);
     if (!audio) {
       audio = new Audio(url);
@@ -125,7 +125,7 @@ const MpcTester: React.FC<MpcTesterProps> = ({ config, samples, onPadAssign, onP
       if (loopAudioRef.current) loopAudioRef.current.currentTime = 0;
       setIsPlaying(false);
     } else if (config.loop) {
-      const audio = new Audio(`/public/samples/${config.loop}`);
+      const audio = new Audio(`/samples/${config.loop}`);
       audio.loop = true;
       audio.play().catch(() => {});
       loopAudioRef.current = audio;

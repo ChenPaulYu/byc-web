@@ -10,6 +10,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3002',
       '/public': 'http://localhost:3002',
+      '/samples': { target: 'http://localhost:3002', rewrite: (path: string) => `/public${path}` },
     },
   },
   build: {

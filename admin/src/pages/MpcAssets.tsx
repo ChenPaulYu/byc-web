@@ -178,7 +178,7 @@ const MpcAssets: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      const audio = new Audio(`/public/samples/${filename}`);
+                      const audio = new Audio(`/samples/${filename}`);
                       audio.play().catch(() => {});
                     }}
                     className="w-7 h-7 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors shrink-0"
