@@ -74,5 +74,18 @@
       "enabled": true
     }
   ],
-  "news": []
+  "news": [
+    {
+      "slug": "chi-2026",
+      "enabled": true
+    },
+    {
+      "slug": "taichi-2025",
+      "enabled": true
+    },
+    {
+      "slug": "neurips-2024",
+      "enabled": true
+    }
+  ]
 }
