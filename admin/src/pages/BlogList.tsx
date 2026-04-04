@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentTable, { Column } from '../components/ContentTable';
+import DeleteDialog from '../components/DeleteDialog';
 import { listContent, deleteContent, getContent, updateContent, type ContentItem } from '../api';
 
 const staticColumns: Column[] = [
-  { key: 'title', label: 'Title', render: (_, item) => (item.metadata as Record<string, unknown>)?.title as string ?? item.slug },
-  { key: 'date', label: 'Date', render: (_, item) => (item.metadata as Record<string, unknown>)?.date as string ?? '' },
+  { key: 'title', label: 'Title', render: (_, item) => ((item.metadata as Record<string, unknown>)?.title as string) ?? (item.slug as string) },
+  { key: 'date', label: 'Date', render: (_, item) => ((item.metadata as Record<string, unknown>)?.date as string) ?? '' },
   {
     key: 'tags',
     label: 'Tags',
@@ -34,6 +35,9 @@ const BlogList: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<{ slug: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<unknown | null>(null);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -83,14 +87,36 @@ const BlogList: React.FC = () => {
     },
   ];
 
-  const handleDelete = async (slug: string) => {
-    if (!window.confirm(`Delete blog post "${slug}"? This cannot be undone.`)) return;
+  const requestDelete = (slug: string) => {
+    const item = items.find((entry) => entry.slug === slug);
+    if (!item) return;
+    setDeleteError(null);
+    setDeleteTarget({
+      slug,
+      name: ((item.metadata as Record<string, unknown>)?.title as string) ?? slug,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    setDeleteError(null);
     try {
-      await deleteContent('blog', slug);
+      await deleteContent('blog', deleteTarget.slug);
+      setDeleteTarget(null);
       await fetchItems();
     } catch (err) {
-      alert(`Failed to delete: ${err}`);
+      setDeleteError(err);
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleting) return;
+    setDeleteError(null);
+    setDeleteTarget(null);
   };
 
   const rows = items.map((item) => ({
@@ -121,9 +147,18 @@ const BlogList: React.FC = () => {
           columns={columns}
           rows={rows}
           onEdit={(slug) => navigate(`/blog/${slug}`)}
-          onDelete={handleDelete}
+          onDelete={requestDelete}
         />
       )}
+      <DeleteDialog
+        isOpen={Boolean(deleteTarget)}
+        type="blog"
+        itemName={deleteTarget?.name ?? ''}
+        isDeleting={deleting}
+        error={deleteError}
+        onConfirm={confirmDelete}
+        onClose={closeDeleteDialog}
+      />
     </div>
   );
 };

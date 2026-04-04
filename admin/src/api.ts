@@ -1,7 +1,7 @@
 import * as localApi from './local-api';
 import * as githubApi from './github-api';
 
-const useGitHub = !!import.meta.env.VITE_GITHUB_TOKEN;
+const useGitHub = !!import.meta.env?.VITE_GITHUB_TOKEN;
 
 const api = useGitHub ? githubApi : localApi;
 

@@ -1,3 +1,5 @@
+import deleteContentWithRetry from './lib/deleteContentFlow';
+
 // Simple frontmatter parser (browser-compatible, no Node.js Buffer dependency)
 function parseFrontmatter(raw: string): { data: Record<string, unknown>; content: string } {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
@@ -73,10 +75,10 @@ function stringifyFrontmatter(content: string, metadata: Record<string, unknown>
 }
 
 const GITHUB_API = 'https://api.github.com';
-const OWNER = import.meta.env.VITE_GITHUB_OWNER || 'ChenPaulYu';
-const REPO = import.meta.env.VITE_GITHUB_REPO || 'byc-web';
-const BRANCH = import.meta.env.VITE_GITHUB_BRANCH || 'main';
-const TOKEN = import.meta.env.VITE_GITHUB_TOKEN || '';
+const OWNER = import.meta.env?.VITE_GITHUB_OWNER || 'ChenPaulYu';
+const REPO = import.meta.env?.VITE_GITHUB_REPO || 'byc-web';
+const BRANCH = import.meta.env?.VITE_GITHUB_BRANCH || 'main';
+const TOKEN = import.meta.env?.VITE_GITHUB_TOKEN || '';
 
 export interface ContentItem {
   slug: string;
@@ -214,11 +216,15 @@ export const updateContent = async (
 };
 
 export const deleteContent = async (type: ContentType, slug: string): Promise<{ deleted: string }> => {
-  await deleteFile(`public/content/${type}/${slug}.md`, `delete: ${type}/${slug}`);
-  // Update config
-  const config = await getConfig();
-  (config as any)[type] = (config as any)[type].filter((item: { slug: string }) => item.slug !== slug);
-  await updateConfig(config);
+  await deleteContentWithRetry(
+    {
+      deleteRemoteFile: deleteFile,
+      readConfigFile: getConfigFile,
+      writeConfigFile: putConfigFile,
+    },
+    type,
+    slug,
+  );
   return { deleted: slug };
 };
 
@@ -237,14 +243,23 @@ export const updateAbout = async (content: string): Promise<{ success: boolean }
 
 // --- Config ---
 
+async function getConfigFile(): Promise<{ config: ContentConfig; sha: string }> {
+  const { content, sha } = await getFileContent('public/content.config.json');
+  return { config: JSON.parse(content), sha };
+}
+
+async function putConfigFile(config: ContentConfig, sha: string): Promise<void> {
+  await putFile('public/content.config.json', JSON.stringify(config, null, 2) + '\n', 'update: content config', sha);
+}
+
 export const getConfig = async (): Promise<ContentConfig> => {
-  const { content } = await getFileContent('public/content.config.json');
-  return JSON.parse(content);
+  const { config } = await getConfigFile();
+  return config;
 };
 
 export const updateConfig = async (config: ContentConfig): Promise<{ success: boolean }> => {
-  const { sha } = await getFileContent('public/content.config.json');
-  await putFile('public/content.config.json', JSON.stringify(config, null, 2) + '\n', 'update: content config', sha);
+  const { sha } = await getConfigFile();
+  await putConfigFile(config, sha);
   return { success: true };
 };
 
@@ -441,7 +456,7 @@ export const updateMpcConfig = async (config: MpcConfig): Promise<{ success: boo
 
 // --- Deploy ---
 
-const DEPLOY_HOOK = import.meta.env.VITE_VERCEL_DEPLOY_HOOK || '';
+const DEPLOY_HOOK = import.meta.env?.VITE_VERCEL_DEPLOY_HOOK || '';
 
 export const triggerDeploy = async (): Promise<{ success: boolean }> => {
   if (!DEPLOY_HOOK) throw new Error('No deploy hook configured. Set VITE_VERCEL_DEPLOY_HOOK.');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { triggerDeploy, hasDeployHook } from '../api';
+import getViewSiteUrl from '../lib/siteUrl';
 
 const sections = [
   {
@@ -67,6 +68,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const viewSiteUrl = typeof window === 'undefined' ? '/' : getViewSiteUrl(window.location.origin);
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2.5 px-4 py-2 rounded-md text-sm transition-colors ${
       isActive
@@ -115,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="px-4 py-3 border-t border-neutral-200 space-y-2">
           {hasDeployHook() && <DeployButton />}
           <a
-            href="http://localhost:3000"
+            href={viewSiteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="block text-[11px] text-neutral-400 hover:text-neutral-600 transition-colors"

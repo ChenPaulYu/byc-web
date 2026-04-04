@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DeleteDialog from '../components/DeleteDialog';
 import MarkdownEditor from '../components/MarkdownEditor';
 import { getContent, createContent, updateContent, deleteContent, hasZhContent, getZhContent, saveZhContent, getGitHubHistoryUrl } from '../api';
 
@@ -30,6 +31,9 @@ const NewsEdit: React.FC = () => {
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<unknown>(null);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [hasZh, setHasZh] = useState(false);
   const [zhContent, setZhContent] = useState('');
@@ -116,14 +120,30 @@ const NewsEdit: React.FC = () => {
     }
   };
 
+  const openDeleteDialog = () => {
+    setDeleteError(null);
+    setDeleteOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleting) return;
+    setDeleteError(null);
+    setDeleteOpen(false);
+  };
+
   const handleDelete = async () => {
     if (!slug || isNew) return;
-    if (!window.confirm(`Delete "${metadata.title}"? This cannot be undone.`)) return;
+
+    setDeleting(true);
+    setDeleteError(null);
+
     try {
       await deleteContent('news', slug);
       navigate('/news');
     } catch (err) {
-      alert(`Failed to delete: ${err}`);
+      setDeleteError(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -151,7 +171,7 @@ const NewsEdit: React.FC = () => {
           )}
           {!isNew && (
             <button
-              onClick={handleDelete}
+              onClick={openDeleteDialog}
               className="px-4 py-2 text-sm font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
             >
               Delete
@@ -249,6 +269,16 @@ const NewsEdit: React.FC = () => {
       )}
 
       <MarkdownEditor key={lang} value={lang === 'zh' ? zhContent : content} onChange={lang === 'zh' ? setZhContent : setContent} />
+
+      <DeleteDialog
+        isOpen={deleteOpen}
+        type="news"
+        itemName={metadata.title || slug || 'Untitled news item'}
+        isDeleting={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onClose={closeDeleteDialog}
+      />
     </div>
   );
 };
