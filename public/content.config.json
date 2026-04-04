@@ -43,10 +43,6 @@
       "enabled": true
     },
     {
-      "slug": "ai-music-reflections",
-      "enabled": true
-    },
-    {
       "slug": "web-audio-api-learnings",
       "enabled": true
     },
