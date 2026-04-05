@@ -33,40 +33,7 @@
       "enabled": true
     }
   ],
-  "blog": [
-    {
-      "slug": "markdown-features-demo",
-      "enabled": true
-    },
-    {
-      "slug": "on-instrument-design",
-      "enabled": true
-    },
-    {
-      "slug": "web-audio-api-learnings",
-      "enabled": true
-    },
-    {
-      "slug": "ddsp-breakthrough",
-      "enabled": true
-    },
-    {
-      "slug": "creative-constraints",
-      "enabled": true
-    },
-    {
-      "slug": "gan-training-tricks",
-      "enabled": true
-    },
-    {
-      "slug": "tokyo-remote-work",
-      "enabled": true
-    },
-    {
-      "slug": "loop-based-composition",
-      "enabled": true
-    }
-  ],
+  "blog": [],
   "news": [
     {
       "slug": "chi-2026",
