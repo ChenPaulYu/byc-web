@@ -1,14 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" fill="none">
   <style>
     .box { fill: #262626; rx: 6; }
-    .box-outline { fill: none; stroke: #262626; stroke-width: 1.5; rx: 6; }
     .label { font-family: 'Inter', 'Helvetica Neue', sans-serif; font-size: 15px; fill: white; text-anchor: middle; dominant-baseline: central; font-weight: 500; }
-    .label-dark { font-family: 'Inter', 'Helvetica Neue', sans-serif; font-size: 15px; fill: #262626; text-anchor: middle; dominant-baseline: central; font-weight: 500; }
     .label-sub { font-family: 'Inter', 'Helvetica Neue', sans-serif; font-size: 13px; fill: #9ca3af; text-anchor: middle; dominant-baseline: central; font-weight: 400; }
     .arrow { stroke: #a3a3a3; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
     .arrow-curve { stroke: #a3a3a3; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
-    .dotted { stroke: #a3a3a3; stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
-    .title { font-family: 'Inter', 'Helvetica Neue', sans-serif; font-size: 13px; fill: #6b7280; text-anchor: middle; dominant-baseline: central; }
   </style>
 
   <defs>
@@ -17,42 +13,34 @@
     </marker>
   </defs>
 
-  <!-- observe/target label + dotted arrow down -->
-  <text x="138" y="50" class="label-sub">observe / target</text>
-  <line x1="138" y1="64" x2="138" y2="100" class="dotted"/>
-  <path d="M134,96 L138,104 L142,96" fill="none" stroke="#a3a3a3" stroke-width="1.5"/>
-
   <!-- Hypothesize box -->
-  <rect x="68" y="110" width="140" height="48" class="box"/>
-  <text x="138" y="134" class="label">Hypothesize</text>
+  <rect x="40" y="70" width="140" height="48" class="box"/>
+  <text x="110" y="94" class="label">Hypothesize</text>
 
   <!-- Arrow 1 -->
-  <line x1="218" y1="134" x2="258" y2="134" class="arrow"/>
+  <line x1="190" y1="94" x2="220" y2="94" class="arrow"/>
 
   <!-- Configure box -->
-  <rect x="268" y="110" width="140" height="48" class="box"/>
-  <text x="338" y="134" class="label">Configure</text>
+  <rect x="230" y="70" width="140" height="48" class="box"/>
+  <text x="300" y="94" class="label">Configure</text>
 
   <!-- Arrow 2 -->
-  <line x1="418" y1="134" x2="458" y2="134" class="arrow"/>
+  <line x1="380" y1="94" x2="410" y2="94" class="arrow"/>
 
-  <!-- Evaluate box -->
-  <rect x="468" y="110" width="140" height="48" class="box"/>
-  <text x="538" y="134" class="label">Evaluate</text>
+  <!-- Play box -->
+  <rect x="420" y="70" width="110" height="48" class="box"/>
+  <text x="475" y="94" class="label">Play</text>
 
   <!-- Arrow 3 -->
-  <line x1="618" y1="134" x2="640" y2="134" class="arrow"/>
+  <line x1="540" y1="94" x2="570" y2="94" class="arrow"/>
 
-  <!-- Conclude box (outline) -->
-  <rect x="650" y="114" width="56" height="40" class="box-outline"/>
-  <text x="678" y="134" class="label-dark" font-size="12">✓</text>
+  <!-- Refine box -->
+  <rect x="580" y="70" width="110" height="48" class="box"/>
+  <text x="635" y="94" class="label">Refine</text>
 
-  <!-- Conclude label -->
-  <text x="678" y="174" class="label-sub">Conclude</text>
+  <!-- Revise curve arrow (from Refine back to Hypothesize) -->
+  <path d="M635,128 C635,195 110,195 110,128" class="arrow-curve"/>
 
-  <!-- Revise curve arrow (from Evaluate back to Hypothesize) -->
-  <path d="M538,168 C538,230 138,230 138,168" class="arrow-curve"/>
-
-  <!-- Revise label -->
-  <text x="338" y="240" class="label-sub">revise</text>
+  <!-- iterate label -->
+  <text x="372" y="200" class="label-sub">iterate</text>
 </svg>

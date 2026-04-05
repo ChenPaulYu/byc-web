@@ -65,7 +65,7 @@ FlueBricks is built around the *designer–player loop*: users **iteratively swi
 
 ## Acoustic Reasoning
 
-![The acoustic reasoning cycle. Users observe a target sound, hypothesize how structure might produce it, configure modules, evaluate by playing, and either conclude with a reusable principle — or revise and iterate.](/content/projects/fluebricks/acoustic-reasoning-cycle.svg)
+![The acoustic reasoning cycle. Users hypothesize how structure might shape sound, configure modules to test, play to hear the result, and refine their understanding — then iterate.](/content/projects/fluebricks/acoustic-reasoning-cycle.svg)
 
 In our study, participants didn't just "use" the system — they began to form and test hypotheses about how structure shapes sound. This emergent process manifested in four behaviors:
 
