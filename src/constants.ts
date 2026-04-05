@@ -186,52 +186,15 @@ export const PROJECTS: Project[] = [
     id: "fluebricks",
     title: "FlueBricks",
     category: "Research",
-    year: "2025",
+    year: "2026",
     role: "Lead Researcher",
-    description: "A modular toolkit for designing customizable flute-like instruments, enabling both traditional replication and novel designs via 3D printing.",
-    tags: ["HCI", "Digital Fabrication", "Acoustics", "Python"],
-    links: [],
-    image: "https://picsum.photos/600/400?grayscale"
-  },
-  {
-    id: "djtransgan",
-    title: "DJTransGAN",
-    category: "Research",
-    year: "2022",
-    role: "AI Researcher",
-    description: "The first AI model for generating smooth DJ-like transitions between audio tracks. Published at ICASSP 2022.",
-    tags: ["AI Music", "GANs", "Python", "Audio Processing"],
+    description: "A construction kit for acoustic reasoning via building and customizing flute-like instruments. Accepted at CHI 2026.",
+    tags: ["HCI", "Instrument Design", "Acoustics", "CHI 2026"],
     links: [
-      { label: "Paper", url: "#", icon: "paper" },
-      { label: "Code", url: "#", icon: "code" }
+      { label: "Paper", url: "/papers/chi2026-fluebricks.pdf", icon: "paper" },
+      { label: "Video", url: "https://www.youtube.com/watch?v=00xJnwGVffU", icon: "demo" }
     ],
-    image: "https://picsum.photos/600/401?grayscale"
-  },
-  {
-    id: "tmc-cl1",
-    title: "TMC-CL1",
-    category: "Engineering",
-    year: "2024",
-    role: "Tech Lead",
-    description: "A Taipei Music Center-funded beat-making tool for novices, aligning musicians, designers, and engineers on DSP integration.",
-    tags: ["Web Audio", "React", "DSP", "Education"],
-    links: [
-      { label: "Demo", url: "#", icon: "demo" }
-    ],
-    image: "https://picsum.photos/600/402?grayscale"
-  },
-  {
-    id: "taptap",
-    title: "Taptap",
-    category: "Creative",
-    year: "2019",
-    role: "Interactive Engineer",
-    description: "An interactive interface using O-KAI SINGERS' a cappella samples and Tone.js. Exhibited at Vocal Asia Festival, Japan.",
-    tags: ["Tone.js", "Interactive", "Web Audio"],
-    links: [
-      { label: "Demo", url: "#", icon: "demo" }
-    ],
-    image: "https://picsum.photos/600/403?grayscale"
+    image: "/content/projects/fluebricks/thumbnail.jpg"
   }
 ];
 

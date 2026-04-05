@@ -24,6 +24,7 @@ interface Publication {
   venue: string;
   year: string;
   acceptanceRate?: string;
+  pdf?: string;
 }
 
 interface Thesis {
@@ -145,15 +146,8 @@ const CV: React.FC = () => {
           <h1 className="text-4xl print:text-3xl font-bold mb-2">{config.header.name}</h1>
           <p className="text-neutral-500 print:text-sm">{config.header.tagline}</p>
         </div>
-        <div className="flex gap-2 items-center print:hidden">
+        <div className="print:hidden">
           <LanguageToggle lang={lang} hasZh={hasZh} onChange={setLang} />
-          <a
-            href="/cv.pdf"
-            className="text-xs font-mono border border-neutral-200 px-3 py-1 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
-            download
-          >
-            Download
-          </a>
         </div>
       </div>
 
@@ -217,6 +211,16 @@ const CV: React.FC = () => {
                       Acceptance rate: {pub.acceptanceRate}
                     </span>
                   )}
+                  {pub.pdf && (
+                    <a
+                      href={pub.pdf}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="print:hidden border border-neutral-200 bg-neutral-50 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded px-2 py-0.5 transition-colors"
+                    >
+                      PDF
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
@@ -277,6 +281,16 @@ const CV: React.FC = () => {
           </div>
         </section>
       ))}
+
+      <div className="mt-16 print:hidden flex justify-center">
+        <a
+          href="/cv.pdf"
+          className="text-xs font-mono border border-neutral-200 px-4 py-2 rounded hover:bg-neutral-50 transition-colors text-neutral-500"
+          download
+        >
+          Download PDF
+        </a>
+      </div>
     </div>
   );
 };

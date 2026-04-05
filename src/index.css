@@ -98,6 +98,10 @@ h4 {
   color: #171717;
 }
 
+.markdown-content.academic-content {
+  max-width: 860px;
+}
+
 /* Headings */
 .markdown-content h1 {
   font-size: 2.25rem; /* 36px */
@@ -253,10 +257,26 @@ h4 {
 /* Images */
 .markdown-content img {
   max-width: 100%;
+  width: 100%;
   height: auto;
   border-radius: 6px;
   margin: 2rem auto;
   display: block;
+}
+
+.markdown-figure-captioned {
+  margin: 2rem 0;
+}
+
+.markdown-figure-captioned .markdown-img {
+  margin-bottom: 0;
+}
+
+.markdown-figcaption-auto {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin-top: 0.75rem;
+  line-height: 1.6;
 }
 
 /* Horizontal rules */
@@ -288,6 +308,57 @@ h4 {
 
 .markdown-content td {
   color: #171717;
+}
+
+/* BibTeX */
+.bibtex-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bibtex-heading h2 {
+  margin-bottom: 0 !important;
+}
+
+.bibtex-heading + .bibtex-wrapper {
+  margin-top: 1rem;
+}
+
+.bibtex-copy-btn {
+  background: #171717;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.bibtex-copy-btn:hover {
+  background: #404040;
+}
+
+.bibtex-wrapper {
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.bibtex-wrapper .bibtex-code,
+.bibtex-wrapper .bibtex-code * {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.7 !important;
+  color: #171717 !important;
+  background: transparent !important;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: block;
 }
 
 /* ============================================

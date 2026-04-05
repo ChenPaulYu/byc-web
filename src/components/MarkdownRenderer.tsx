@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -91,6 +91,70 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
   );
 };
 
+// BibTeX copy button (next to heading)
+const BibtexCopyButton: React.FC<{ contentRef: React.RefObject<string> }> = ({ contentRef }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    if (contentRef.current) {
+      navigator.clipboard.writeText(contentRef.current);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+  return (
+    <button onClick={handleCopy} className="bibtex-copy-btn">
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  );
+};
+
+// Switchable Figure/Video component
+const VideoFigure: React.FC<{ videoUrl: string; imageSrc: string; caption: string }> = ({ videoUrl, imageSrc, caption }) => {
+  const [mode, setMode] = useState<'figure' | 'video'>('figure');
+  const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  const videoId = videoIdMatch?.[1];
+  const dotIdx = caption.indexOf('. ');
+  const captionContent = dotIdx > 0 ? (
+    <><strong>{caption.slice(0, dotIdx + 1)}</strong>{caption.slice(dotIdx + 1)}</>
+  ) : caption;
+
+  return (
+    <figure className="markdown-figure-captioned">
+      <div className="flex justify-center mb-3">
+        <div className="inline-flex rounded-full border border-neutral-200 overflow-hidden">
+          <button
+            onClick={() => setMode('figure')}
+            className={`px-5 py-2 text-sm font-medium transition-colors ${mode === 'figure' ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
+          >
+            Figure
+          </button>
+          <button
+            onClick={() => setMode('video')}
+            className={`px-5 py-2 text-sm font-medium transition-colors ${mode === 'video' ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-600 hover:bg-neutral-50'}`}
+          >
+            Video
+          </button>
+        </div>
+      </div>
+      {mode === 'figure' ? (
+        <img src={imageSrc} alt={caption} className="markdown-img" style={{ margin: 0 }} />
+      ) : videoId ? (
+        <div className="relative w-full rounded-md overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title="Video"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      ) : null}
+      <figcaption className="markdown-figcaption-auto">{captionContent}</figcaption>
+    </figure>
+  );
+};
+
 interface MarkdownRendererProps {
   content: string;
   className?: string;
@@ -103,6 +167,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
   const [images, setImages] = React.useState<string[]>([]);
+  const bibtexRef = React.useRef<string>('');
 
   // Extract all images from markdown content for lightbox
   const extractImages = React.useCallback((html: string) => {
@@ -130,6 +195,31 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           a: ({ node, href, ...props }) => (
             <a {...props} href={href} className="markdown-link" target="_blank" rel="noopener noreferrer" />
           ),
+          // H2: add copy button next to BibTeX heading
+          h2: ({ node, children, ...props }: any) => {
+            const text = String(children);
+            if (text === 'BibTeX') {
+              return (
+                <div className="bibtex-heading">
+                  <h2 {...props}>{children}</h2>
+                  <BibtexCopyButton contentRef={bibtexRef} />
+                </div>
+              );
+            }
+            return <h2 {...props}>{children}</h2>;
+          },
+          // Pre blocks: detect bibtex to override dark background
+          pre: ({ node, children, ...props }: any) => {
+            const codeChild = Array.isArray(children) ? children[0] : children;
+            if (React.isValidElement(codeChild)) {
+              const childProps = codeChild.props as any;
+              const text = String(childProps?.children || '');
+              if (text.trimStart().startsWith('@')) {
+                return <div className="bibtex-wrapper">{children}</div>;
+              }
+            }
+            return <pre {...props}>{children}</pre>;
+          },
           // Code blocks with syntax highlighting and Mermaid support
           code: ({ node, inline, className: codeClassName, children, ...props }: any) => {
             const match = /language-(\w+)/.exec(codeClassName || '');
@@ -139,6 +229,12 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             // Handle Mermaid diagrams
             if (language === 'mermaid') {
               return <MermaidDiagram code={code} />;
+            }
+
+            // Handle BibTeX blocks
+            if (!inline && code.trimStart().startsWith('@')) {
+              bibtexRef.current = code;
+              return <code className="bibtex-code">{children}</code>;
             }
 
             return inline ? (
@@ -167,9 +263,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           figcaption: ({ node, ...props }) => (
             <figcaption className="markdown-figcaption" {...props} />
           ),
-          // Images with lightbox
+          // Images with lightbox and caption
           img: ({ node, src, alt, title, ...props }: any) => {
-            return (
+            const imgEl = (
               <img
                 {...props}
                 src={src}
@@ -185,6 +281,23 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 style={{ cursor: 'pointer' }}
               />
             );
+            // If title is a YouTube URL, render switchable Figure/Video
+            if (title && isYouTubeUrl(title) && alt) {
+              return <VideoFigure videoUrl={title} imageSrc={src} caption={alt} />;
+            }
+            if (alt && alt !== src) {
+              const dotIdx = alt.indexOf('. ');
+              const captionContent = dotIdx > 0 ? (
+                <><strong>{alt.slice(0, dotIdx + 1)}</strong>{alt.slice(dotIdx + 1)}</>
+              ) : alt;
+              return (
+                <figure className="markdown-figure-captioned">
+                  {imgEl}
+                  <figcaption className="markdown-figcaption-auto">{captionContent}</figcaption>
+                </figure>
+              );
+            }
+            return imgEl;
           },
           // Paragraph with custom component and YouTube URL detection
           p: ({ node, children }: any) => {

@@ -16,6 +16,27 @@ export interface ProjectMetadata {
     url: string;
     icon?: 'video' | 'paper' | 'code' | 'demo';
   }>;
+  venue?: string;
+  venueLogo?: string;
+  authors?: string;
+  affiliations?: string;
+  authorList?: Array<{
+    name: string;
+    sup?: string;
+    bold?: boolean;
+    url?: string;
+  }>;
+  affiliationList?: Array<{
+    sup: string;
+    name: string;
+    logo?: string;
+  }>;
+  coverCaption?: string;
+  abstract?: string;
+  videos?: Array<{
+    label: string;
+    url: string;
+  }>;
 }
 
 export interface BlogMetadata {
