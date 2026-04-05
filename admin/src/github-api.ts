@@ -1,3 +1,4 @@
+import createContentWithRetry from './lib/createContentFlow';
 import deleteContentWithRetry from './lib/deleteContentFlow';
 
 // Simple frontmatter parser (browser-compatible, no Node.js Buffer dependency)
@@ -195,11 +196,16 @@ export const createContent = async (
   content: string,
 ): Promise<{ slug: string }> => {
   const fileContent = stringifyFrontmatter(content, metadata);
-  await putFile(`public/content/${type}/${slug}.md`, fileContent, `feat: create ${type}/${slug}`);
-  // Update config
-  const config = await getConfig();
-  (config as any)[type].push({ slug, enabled: true });
-  await updateConfig(config);
+  await createContentWithRetry(
+    {
+      writeRemoteFile: (path, body, message) => putFile(path, body, message),
+      readConfigFile: getConfigFile,
+      writeConfigFile: putConfigFile,
+    },
+    type,
+    slug,
+    fileContent,
+  );
   return { slug };
 };
 
