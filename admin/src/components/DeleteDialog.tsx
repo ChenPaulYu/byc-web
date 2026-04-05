@@ -114,7 +114,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   };
 
   return (
-    <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/30 px-4">
+    <div className="dialog-overlay fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 px-4">
       <div
         ref={dialogRef}
         role="dialog"
@@ -123,58 +123,59 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         aria-describedby={descriptionId}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="dialog-content w-full max-w-lg rounded-3xl border border-red-100 bg-white p-6 shadow-2xl shadow-neutral-950/10"
+        className="dialog-content w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl shadow-neutral-950/15 ring-1 ring-neutral-950/5"
       >
-        <div className="mb-6 flex items-start gap-4">
-          <div className="mt-1 h-10 w-1 rounded-full bg-red-300" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-red-500">
-              Delete {noun}
-            </p>
-            <h2 id={titleId} className="mt-3 text-2xl font-semibold tracking-tight text-neutral-950">{itemName}</h2>
-            {!isFailed && (
-              <p id={descriptionId} className="mt-3 text-sm leading-6 text-neutral-600">
-                This action cannot be undone. The published content and its admin entry will be permanently removed.
-              </p>
-            )}
-            {isFailed && (
-              <div id={descriptionId} className="mt-4 space-y-3 text-sm leading-6 text-neutral-700">
-                {error instanceof DeleteContentError && error.kind === 'partial-delete' && (
-                  <p>The content file may already be deleted, but the site index still needs to be updated.</p>
-                )}
-                {detail && <p>{detail}</p>}
-              </div>
-            )}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div
+            className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 ring-1 ring-red-100"
+            aria-hidden="true"
+          >
+            <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+            </svg>
           </div>
+
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-red-500">
+            Delete {noun}
+          </p>
+          <h2 id={titleId} className="mt-2 text-xl font-semibold tracking-tight text-neutral-950">{itemName}</h2>
+
+          {!isFailed && (
+            <p id={descriptionId} className="mt-3 text-sm leading-relaxed text-neutral-500">
+              This action cannot be undone. The published content and its admin entry will be permanently removed.
+            </p>
+          )}
+          {isFailed && (
+            <div id={descriptionId} className="mt-4 space-y-2 text-sm leading-relaxed text-neutral-600">
+              {error instanceof DeleteContentError && error.kind === 'partial-delete' && (
+                <p>The content file may already be deleted, but the site index still needs to be updated.</p>
+              )}
+              {detail && <p>{detail}</p>}
+            </div>
+          )}
         </div>
 
-        {!isFailed && (
-          <div className="rounded-2xl border border-red-100 bg-red-50/60 p-4 text-sm leading-6 text-neutral-700">
-            The admin will retry once if the content index changed underneath you before showing a failure.
-          </div>
-        )}
-
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            ref={closeButtonRef}
-            type="button"
-            onClick={onClose}
-            disabled={isDeleting}
-            className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:text-neutral-950 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isFailed ? 'Close' : 'Cancel'}
-          </button>
+        <div className="flex flex-col gap-2.5">
           {!isFailed && (
             <button
               ref={confirmButtonRef}
               type="button"
               onClick={onConfirm}
               disabled={isDeleting}
-              className="rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-red-300"
+              className="w-full rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-red-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-red-300"
             >
-              {isDeleting ? 'Deleting...' : `Delete ${noun}`}
+              {isDeleting ? 'Deleting\u2026' : `Delete ${noun}`}
             </button>
           )}
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            disabled={isDeleting}
+            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm font-medium text-neutral-600 transition-all hover:bg-neutral-100 hover:text-neutral-950 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isFailed ? 'Close' : 'Cancel'}
+          </button>
         </div>
       </div>
     </div>

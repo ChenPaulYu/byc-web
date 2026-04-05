@@ -159,11 +159,23 @@ button:active:not(:disabled) {
 
 /* Confirmation dialog overlay */
 .dialog-overlay {
-  animation: fadeIn 150ms ease-out;
+  animation: overlayFadeIn 200ms ease-out;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .dialog-content {
-  animation: scaleIn 200ms ease-out;
+  animation: dialogSlideIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* New item added animation */
