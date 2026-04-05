@@ -9,8 +9,27 @@
   100% { width: 95%; }
 }
 
+@keyframes progressDone {
+  0% { width: 95%; }
+  100% { width: 100%; }
+}
+
+@keyframes progressFade {
+  0% { opacity: 1; }
+  60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .animate-progress {
   animation: progress 2s ease-out forwards;
+}
+
+.animate-progress-done {
+  animation: progressDone 200ms ease-out forwards;
+}
+
+.animate-progress-fade {
+  animation: progressFade 400ms ease-out forwards;
 }
 
 body {
