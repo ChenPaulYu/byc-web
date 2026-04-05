@@ -123,3 +123,7 @@ In the final phase, participants were asked to **design a "classroom flute for e
   doi       = {10.1145/3772318.3790595}
 }
 ```
+
+---
+
+Interested in FlueBricks or acoustic reasoning? Feel free to reach out — [bernie40916@gmail.com](mailto:bernie40916@gmail.com)
