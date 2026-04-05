@@ -16,6 +16,7 @@ authorList:
     bold: true
   - name: "Chiao-Wei Huang"
     sup: "2"
+    url: "https://www.linkedin.com/in/chiao-wei-huang-21566a1aa/"
   - name: "Lung-Pan Cheng"
     sup: "1"
     url: "https://www.lungpancheng.tw/"
