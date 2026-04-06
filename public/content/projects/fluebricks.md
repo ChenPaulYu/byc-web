@@ -29,7 +29,7 @@ affiliationList:
 coverCaption: "FlueBricks and the designer–player loop. (A–C) Users browse tangible building blocks, select a mouthpiece, and breathe into it to hear the sound. (D) As designers, they connect modules to assemble a resonator body. (E) As players, they immediately test the sound. (F–H) Based on what they hear, users reconfigure modules and play again."
 videos:
   - label: "Preview"
-    url: "https://www.youtube.com/watch?v=9fLEwIG5ofM"
+    url: "https://youtu.be/Ts8PxBYnt_Y"
   - label: "Full Video"
     url: "https://www.youtube.com/watch?v=00xJnwGVffU"
 abstract: "We present FlueBricks, **a construction kit for acoustic reasoning via building and customizing flute-like instruments**. By assembling *generator*, *resonator*, and *connector* modules that embody various aeroacoustic properties, users gain deeper understanding of how blowhole, tube length, and tone-hole placement alter onset, pitch, and timbre through hands-on experimentation. This forms a **designer–player loop** of configuring and playing to form, test, and refine acoustic behaviors — **acoustic reasoning** — shifting acoustic instruments from static artifacts to dynamic systems. To understand how users engage with this system, we conducted **an exploratory study with 12 participants** ranging from novices to professional musicians. During their explorations, we observed participants fluently switching between designer and player roles, **scaffolding designs from familiar instruments**, forming and refining their acoustic understanding, **reinterpreting modules beyond their intended functions**, and using their creations for **performative acts** such as pedagogical showing and musical expression. These collectively demonstrated FlueBricks's potential as **a pedagogical tool for embodied acoustic reasoning**."
@@ -61,7 +61,7 @@ FlueBricks is a modular toolkit that **decomposes flute-making into interchangea
 
 FlueBricks is built around the *designer–player loop*: users **iteratively switch between configuring instruments and playing them**, using each sonic outcome as evidence to refine their understanding. This tight interleaving of making and listening — **hypothesizing, configuring, playing, and refining** — is what drives *acoustic reasoning*.
 
-![The designer–player loop in action. P12 probes resonator length limits, discovers multiphonics near the resonance threshold, then experiments with tone-hole placement — finding that position, not just size, governs pitch bending.](/content/projects/fluebricks/14-result-designer-player.jpg "https://youtu.be/PlZRS0iijbg")
+![The designer–player loop in action. P12 probes resonator length limits, discovers multiphonics near the resonance threshold, then experiments with tone-hole placement — finding that position, not just size, governs pitch bending.](/content/projects/fluebricks/14-result-designer-player.jpg "https://youtu.be/wpzu-779MMA")
 
 ## Acoustic Reasoning
 
@@ -88,7 +88,7 @@ Participants **articulated generalizable acoustic principles**. P5 hypothesized,
 
 Participants **repurposed modules beyond their intended acoustic roles**, revealing the toolkit's modular flexibility.
 
-![User reinterpretations. (a) Tuning node reimagined as a standalone dizi-like generator. (b) Tweak ring used as a glissando controller. (c) Air hub configured for dual-player use. (d) Bridge connector as a free-floating pitch slider.](/content/projects/fluebricks/16-result-reinterpreted.jpg "https://youtu.be/Pe8k3IFLhOw")
+![User reinterpretations. (a) Tuning node reimagined as a standalone dizi-like generator. (b) Tweak ring used as a glissando controller. (c) Air hub configured for dual-player use. (d) Bridge connector as a free-floating pitch slider.](/content/projects/fluebricks/16-result-reinterpreted.jpg "https://youtu.be/QH59DMERAac")
 
 ## Performative Acts
 
@@ -110,7 +110,7 @@ P12 (Pro Woodwind) configured a **custom multi-note setup** and performed *My He
 
 In the final phase, participants were asked to **design a "classroom flute for elementary students"** — a concrete scenario requiring them to apply everything they had learned. Their strategies varied widely: some reused earlier prototypes, while others **built entirely new instruments drawing on acoustic principles** discovered during exploration. P7 submerged a resonator in water for *"strange and fun"* timbres; P8 reinterpreted the bridge connector as a tunable resonator; P6 and P10 emphasized imaginative shapes — a gun, a castle — to appeal to young learners. **11 out of 12 participants produced musically or pedagogically intentional instruments**, affirming FlueBricks's capacity to support creative, goal-driven instrument construction.
 
-![Completed instruments from the scenario-based design task. All participants except P3, regardless of musical background, successfully built playable flutes using FlueBricks.](/content/projects/fluebricks/19-result-works.jpg "https://youtu.be/Gcw9wUSN-W8")
+![Completed instruments from the scenario-based design task. All participants except P3, regardless of musical background, successfully built playable flutes using FlueBricks.](/content/projects/fluebricks/19-result-works.jpg "https://youtu.be/q0YwIxh4yYs")
 
 ## BibTeX
 
