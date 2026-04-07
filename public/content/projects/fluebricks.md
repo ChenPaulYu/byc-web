@@ -35,7 +35,7 @@ videos:
 abstract: "We present FlueBricks, **a construction kit for acoustic reasoning via building and customizing flute-like instruments**. By assembling *generator*, *resonator*, and *connector* modules that embody various aeroacoustic properties, users gain deeper understanding of how blowhole, tube length, and tone-hole placement alter onset, pitch, and timbre through hands-on experimentation. This forms a **designer–player loop** of configuring and playing to form, test, and refine acoustic behaviors — **acoustic reasoning** — shifting acoustic instruments from static artifacts to dynamic systems. To understand how users engage with this system, we conducted **an exploratory study with 12 participants** ranging from novices to professional musicians. During their explorations, we observed participants fluently switching between designer and player roles, **scaffolding designs from familiar instruments**, forming and refining their acoustic understanding, **reinterpreting modules beyond their intended functions**, and using their creations for **performative acts** such as pedagogical showing and musical expression. These collectively demonstrated FlueBricks's potential as **a pedagogical tool for embodied acoustic reasoning**."
 links:
   - label: "Paper"
-    url: "/papers/chi2026-fluebricks.pdf"
+    url: "https://arxiv.org/abs/2604.03636"
     icon: "paper"
   - label: "Video"
     url: "https://www.youtube.com/watch?v=00xJnwGVffU"
@@ -61,7 +61,7 @@ FlueBricks is a modular toolkit that **decomposes flute-making into interchangea
 
 FlueBricks is built around the *designer–player loop*: users **iteratively switch between configuring instruments and playing them**, using each sonic outcome as evidence to refine their understanding. This tight interleaving of making and listening — **hypothesizing, configuring, playing, and refining** — is what drives *acoustic reasoning*.
 
-![The designer–player loop in action. P12 probes resonator length limits, discovers multiphonics near the resonance threshold, then experiments with tone-hole placement — finding that position, not just size, governs pitch bending.](/content/projects/fluebricks/14-result-designer-player.jpg "https://youtu.be/wpzu-779MMA")
+![The designer–player loop in action. P12 probes resonator length limits, discovers multiphonics near the resonance threshold, then experiments with tone-hole placement — finding that position, not just size, governs pitch bending.](/content/projects/fluebricks/14-result-designer-player.jpg "https://youtu.be/SfmGL8LrplE")
 
 ## Acoustic Reasoning
 
@@ -88,7 +88,7 @@ Participants **articulated generalizable acoustic principles**. P5 hypothesized,
 
 Participants **repurposed modules beyond their intended acoustic roles**, revealing the toolkit's modular flexibility.
 
-![User reinterpretations. (a) Tuning node reimagined as a standalone dizi-like generator. (b) Tweak ring used as a glissando controller. (c) Air hub configured for dual-player use. (d) Bridge connector as a free-floating pitch slider.](/content/projects/fluebricks/16-result-reinterpreted.jpg "https://youtu.be/QH59DMERAac")
+![User reinterpretations. (a) Tuning node reimagined as a standalone dizi-like generator. (b) Tweak ring used as a glissando controller. (c) Air hub configured for dual-player use. (d) Bridge connector as a free-floating pitch slider.](/content/projects/fluebricks/16-result-reinterpreted.jpg "https://youtu.be/yPV7X42EXFA")
 
 ## Performative Acts
 
