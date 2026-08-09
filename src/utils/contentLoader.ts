@@ -1,181 +1,32 @@
+/**
+ * Coordinates public content loading, localization fallback, collection ordering, and search.
+ * Reads: the content registry and Markdown files through the focused content boundary modules.
+ */
+
 import matter from 'gray-matter';
+import type {
+  BlogContent,
+  BlogMetadata,
+  NewsContent,
+  NewsMetadata,
+  ProjectContent,
+  ProjectMetadata,
+} from '../types/content';
+import { loadConfig } from './contentConfig';
+import { extractExcerpt } from './contentExcerpt';
+import { isRealFile, loadBlogMarkdown, loadNewsMarkdown, loadProjectMarkdown } from './contentSource';
 
-// Types for content metadata
-export interface ProjectMetadata {
-  title: string;
-  date: string;
-  year: string;
-  category: 'Research' | 'Engineering' | 'Creative';
-  role: string;
-  tags: string[];
-  cover: string;
-  pinned?: boolean;
-  importance?: number;
-  links?: Array<{
-    label: string;
-    url: string;
-    icon?: 'video' | 'paper' | 'code' | 'demo';
-  }>;
-  venue?: string;
-  venueLogo?: string;
-  authors?: string;
-  affiliations?: string;
-  authorList?: Array<{
-    name: string;
-    sup?: string;
-    bold?: boolean;
-    url?: string;
-  }>;
-  affiliationList?: Array<{
-    sup: string;
-    name: string;
-    logo?: string;
-  }>;
-  coverCaption?: string;
-  abstract?: string;
-  videos?: Array<{
-    label: string;
-    url: string;
-  }>;
-}
+export { loadConfig } from './contentConfig';
 
-export interface BlogMetadata {
-  title: string;
-  date: string;
-  updated?: string;
-  tags: string[];
-  category: string;
-  pinned?: boolean;
-  draft?: boolean;
-}
-
-export interface NewsMetadata {
-  title: string;
-  date: string;
-  updated?: string;
-  type: 'update' | 'release' | 'announcement' | 'event';
-  url?: string;
-}
-
-export interface ProjectContent {
-  slug: string;
-  metadata: ProjectMetadata;
-  content: string;
-  excerpt?: string;
-}
-
-export interface BlogContent {
-  slug: string;
-  metadata: BlogMetadata;
-  content: string;
-  excerpt?: string;
-}
-
-export interface NewsContent {
-  slug: string;
-  metadata: NewsMetadata;
-  content: string;
-}
-
-export interface ContentConfig {
-  site: {
-    title: string;
-    description: string;
-    author: string;
-    url: string;
-  };
-  about: {
-    source: string;
-    social: {
-      email?: string;
-      github?: string;
-      linkedin?: string;
-      twitter?: string;
-      [key: string]: string | undefined;
-    };
-  };
-  projects: Array<{ slug: string; enabled: boolean }>;
-  blog: Array<{ slug: string; enabled: boolean }>;
-  news: Array<{ slug: string; enabled: boolean }>;
-}
-
-// Cache for config to avoid repeated fetches
-let configCache: ContentConfig | null = null;
-
-// Load content configuration
-export const loadConfig = async (): Promise<ContentConfig> => {
-  if (configCache) return configCache;
-
-  try {
-    const response = await fetch('/content.config.json');
-    if (!response.ok) {
-      throw new Error('Failed to load content configuration');
-    }
-    configCache = await response.json();
-    return configCache!;
-  } catch (error) {
-    console.error('Error loading config:', error);
-    // Return default empty config
-    return {
-      site: { title: '', description: '', author: '', url: '' },
-      about: { source: 'about.md', social: {} },
-      projects: [],
-      blog: [],
-      news: []
-    };
-  }
-};
-
-// Dynamic imports for markdown files
-const loadProjectMarkdown = async (slug: string): Promise<{ metadata: ProjectMetadata; content: string }> => {
-  try {
-    const response = await fetch(`/content/projects/${slug}.md`);
-    if (!response.ok) throw new Error(`Failed to load project: ${slug}`);
-    const raw = await response.text();
-    const { data, content } = matter(raw);
-    return {
-      metadata: data as ProjectMetadata,
-      content
-    };
-  } catch (error) {
-    console.error(`Error loading project ${slug}:`, error);
-    throw error;
-  }
-};
-
-const loadBlogMarkdown = async (slug: string): Promise<{ metadata: BlogMetadata; content: string }> => {
-  try {
-    const response = await fetch(`/content/blog/${slug}.md`);
-    if (!response.ok) {
-      throw new Error(`Failed to load blog post: ${slug} (${response.status})`);
-    }
-    const raw = await response.text();
-    const { data, content } = matter(raw);
-    return {
-      metadata: data as BlogMetadata,
-      content
-    };
-  } catch (error) {
-    console.error(`Error loading blog post ${slug}:`, error);
-    throw error;
-  }
-};
-
-const loadNewsMarkdown = async (slug: string): Promise<{ metadata: NewsMetadata; content: string }> => {
-  try {
-    const response = await fetch(`/content/news/${slug}.md`);
-    if (!response.ok) throw new Error(`Failed to load news: ${slug}`);
-    const raw = await response.text();
-    const { data, content } = matter(raw);
-    return {
-      metadata: data as NewsMetadata,
-      content
-    };
-  } catch (error) {
-    console.error(`Error loading news ${slug}:`, error);
-    throw error;
-  }
-};
+export type {
+  BlogContent,
+  BlogMetadata,
+  ContentConfig,
+  NewsContent,
+  NewsMetadata,
+  ProjectContent,
+  ProjectMetadata,
+} from '../types/content';
 
 // Load About page content
 export const loadAboutContent = async (): Promise<string> => {
@@ -192,19 +43,6 @@ export const loadAboutContent = async (): Promise<string> => {
     console.error('Error loading about content:', error);
     return '';
   }
-};
-
-// Extract excerpt from markdown content (first paragraph)
-const extractExcerpt = (content: string, maxLength: number = 150): string => {
-  const firstParagraph = content
-    .split('\n\n')[0]
-    .replace(/^#+\s+/, '') // Remove heading markers
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
-    .replace(/[*_`]/g, '') // Remove formatting
-    .trim();
-
-  if (firstParagraph.length <= maxLength) return firstParagraph;
-  return firstParagraph.substring(0, maxLength).trim() + '...';
 };
 
 // Load single project by slug
@@ -330,15 +168,6 @@ export const loadAllNews = async (): Promise<NewsContent[]> => {
     const bDate = new Date(b.metadata.date);
     return bDate.getTime() - aDate.getTime();
   });
-};
-
-// Verify a fetch response is actually a file, not the SPA HTML fallback
-const isRealFile = async (response: Response): Promise<boolean> => {
-  if (!response.ok) return false;
-  const contentType = response.headers.get('content-type') || '';
-  // If server returns text/html, it's the SPA fallback, not the actual file
-  if (contentType.includes('text/html')) return false;
-  return true;
 };
 
 // Check if a Chinese version of content exists

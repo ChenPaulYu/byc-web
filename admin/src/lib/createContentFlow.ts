@@ -1,6 +1,11 @@
-import type { ContentConfig } from '../local-api';
+/**
+ * Coordinates content creation with a stale-config retry and partial-failure reporting.
+ * Reads: API dependency callbacks supplied by the active admin backend.
+ */
 
-export type ContentType = 'blog' | 'projects' | 'news';
+import type { ContentConfig, ContentType } from '../api-types';
+
+export type { ContentType } from '../api-types';
 
 export type CreateContentErrorKind = 'create-failed' | 'partial-create';
 

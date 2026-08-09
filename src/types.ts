@@ -1,3 +1,8 @@
+/**
+ * Defines the legacy curated project-card contract used by the public Projects page.
+ * Reads: none.
+ */
+
 export interface Project {
   id: string;
   title: string;
@@ -12,42 +17,4 @@ export interface Project {
     icon?: 'video' | 'paper' | 'code' | 'demo';
   }[];
   image?: string;
-}
-
-export interface Experience {
-  company: string;
-  role: string;
-  duration: string;
-  location: string;
-  description: string[];
-}
-
-export interface Education {
-  school: string;
-  degree: string;
-  duration: string;
-  location: string;
-}
-
-export interface Publication {
-  title: string;
-  authors: string;
-  venue: string;
-  year: string;
-  acceptanceRate?: string;
-  link?: string;
-}
-
-export interface Thesis {
-  title: string;
-  authors: string;
-  institution: string;
-  year: string;
-}
-
-export interface Award {
-  title: string;
-  venue: string;
-  year: string;
-  detail?: string;
 }

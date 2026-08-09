@@ -82,23 +82,29 @@ byc-web/
 │       └── news/                 # News/update markdown files
 ├── src/                          # Public site
 │   ├── components/
-│   │   ├── LandingScene.tsx      # 3D MPC interface
+│   │   ├── LandingScene.tsx      # Landing route, Canvas, camera, and nav shell
+│   │   ├── landing/              # MPC composition, layout, audio, primitives, overlays
 │   │   ├── MarkdownRenderer.tsx  # Markdown display
 │   │   └── NavBar.tsx            # Navigation
 │   ├── pages/                    # Route pages
 │   └── utils/
-│       └── contentLoader.ts      # Content loading
+│       ├── contentLoader.ts      # Content orchestration
+│       ├── contentSource.ts      # Markdown fetchers
+│       └── contentConfig.ts      # Content registry loader
 ├── admin/                        # Admin dashboard (separate Vite app)
 │   └── src/
 │       ├── App.tsx               # Dashboard shell + auth gate
 │       ├── api.ts                # API switcher (local/GitHub)
 │       ├── local-api.ts          # Express API client
-│       ├── github-api.ts         # GitHub Contents API client
+│       ├── github-api.ts         # Compatibility facade
+│       ├── api-types.ts          # Shared API contracts
+│       └── github/               # Focused GitHub transport modules
 │       ├── components/           # Sidebar, editor, table, toolbar
 │       └── pages/                # Dashboard pages
 ├── server/                       # Local API server (dev only)
 │   ├── index.ts                  # Express entry point
-│   ├── routes.ts                 # REST endpoints
+│   ├── routes.ts                 # Route composer
+│   ├── routes/                   # Content, asset, and settings routes
 │   └── storage/                  # Storage abstraction
 │       ├── adapter.ts            # Interface
 │       └── local.ts              # Filesystem implementation
@@ -121,6 +127,10 @@ All content is in `public/content/` as markdown with YAML frontmatter. See [docs
 - **Projects**: `pinned` → `importance` (0-10) → alphabetical
 - **Blog**: `pinned` → newest date → alphabetical
 - **News**: newest date first
+
+## Design contract
+
+The site's visual language and review checklist live in [docs/core/site-style.md](./docs/core/site-style.md). Use it when adding or changing public pages, admin screens, components, or visual tokens.
 
 ## Tech Stack
 

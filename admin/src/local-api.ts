@@ -1,20 +1,13 @@
+/**
+ * Provides the local Express-backed admin content and asset operations.
+ * Reads: the local `/api` backend through browser fetch requests.
+ */
+
+import type { ContentConfig, ContentItem, ContentType, MpcAssets, MpcConfig } from './api-types';
+
+export type { ContentConfig, ContentItem, ContentType, MpcAssets, MpcConfig } from './api-types';
+
 const API_BASE = '/api';
-
-export interface ContentItem {
-  slug: string;
-  metadata: Record<string, unknown>;
-  content: string;
-}
-
-export interface ContentConfig {
-  site: { title: string; description: string; author: string; url: string };
-  about: { source: string; social: Record<string, string | undefined> };
-  projects: Array<{ slug: string; enabled: boolean }>;
-  blog: Array<{ slug: string; enabled: boolean }>;
-  news: Array<{ slug: string; enabled: boolean }>;
-}
-
-type ContentType = 'blog' | 'projects' | 'news';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${url}`, {
@@ -85,12 +78,6 @@ export const deleteImage = (filename: string) =>
   request<{ deleted: string }>(`/images/${filename}`, { method: 'DELETE' });
 
 // MPC Assets
-export interface MpcAssets {
-  samples: string[];
-  hasModel: boolean;
-  hasVideo: boolean;
-}
-
 export const getMpcAssets = () => request<MpcAssets>('/assets/mpc');
 
 export const uploadSample = async (file: File): Promise<{ filename: string }> => {
@@ -169,12 +156,6 @@ export const updateCvConfig = (config: Record<string, unknown>) =>
   });
 
 // MPC Config
-export interface MpcConfig {
-  bpm: number;
-  loop: string;
-  pads: Record<string, string>;
-}
-
 export const getMpcConfig = () => request<MpcConfig>('/mpc-config');
 
 export const updateMpcConfig = (config: MpcConfig) =>

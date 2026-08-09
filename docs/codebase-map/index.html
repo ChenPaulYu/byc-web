@@ -1,0 +1,219 @@
+<!doctype html>
+<!--
+  CODEBASE MAP · GROUNDING AUDIT
+  Last audit: 2026-08-08
+
+  ✓ VERIFIED — mechanically checked against the source
+    • Stack: React 19 + TypeScript + Vite 6, a second Vite admin app, and an Express local API.
+    • Domains: src/components, src/pages, src/utils, shared source files, admin/src, server, scripts, and public/content.
+    • Edges: every master-graph edge represents a local import or an explicit same-domain dependency.
+    • Load-bearing sizes: Mpc.tsx (231 LOC), LandingScene.tsx (195 LOC), useLayoutControls.ts (247 LOC), CvEdit.tsx (449 LOC), ProjectDetail.tsx (352 LOC), and contentLoader.ts (266 LOC) are the largest active modules.
+  ⚠ FIXED in this revision
+    1. Added the repo-level shape/nav workflow, style contract, blueprint board, and this navigation map.
+    2. Split the public content boundary and GitHub admin transport while preserving their existing entrypoints.
+    3. Removed confirmed dead dependencies, static CV data, unreachable chat surfaces, and unused landing primitives.
+    4. Wired the test and typecheck commands; production public and admin builds now complete.
+    5. Split the landing surface behind a stable default route import into focused layout, control, audio, primitive, overlay, and composition modules.
+  ⚖ JUDGMENT (not mechanically verifiable)
+    • The public UI, content pipeline, and admin content workflow are the three most useful teaching anatomies for a new maintainer.
+    • Runtime fetches from public/content are shown in anatomy callouts, not as import edges.
+  TO RE-AUDIT
+    • Run nav-sync when load-bearing file headers are added or changed, then refresh this file with nav-map.
+    • Recheck LOC, import edges, and browser interactions after a substantial feature wave.
+    • LandingScene is now a route-level orchestrator; `src/components/landing/` owns the named MPC boundaries.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>byc-web — codebase map</title>
+  <style>
+    :root{
+      --bg:#f7f4ec;--panel:#fffdf8;--ink:#2a211c;--muted:#8a7d6e;--line:#e7e0d2;
+      --accent:#10b981;--caramel:#b5894e;--rose:#f43f5e;--foundation:#6c8fb5;
+      --state:#7a9e6e;--ui:#b5894e;--radius:14px;
+      --mono:'SF Mono',ui-monospace,'JetBrains Mono',Menlo,monospace;
+      --sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;
+    }
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55}
+    .layout{display:grid;grid-template-columns:240px 1fr;max-width:1240px;margin:0 auto}
+    nav.side{position:sticky;top:0;height:100vh;padding:24px 18px;border-right:1px solid var(--line);overflow:auto;background:color-mix(in srgb,var(--bg) 92%,transparent)}
+    .brand{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;letter-spacing:-.02em}.brand-mark{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px #10b9811c}.brand-name{display:flex;align-items:center;gap:10px;flex:1}
+    .lang-toggle{display:flex;gap:3px}.lang-btn{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:7px;padding:3px 6px;font-size:10px;cursor:pointer}.lang-btn.active{background:var(--ink);color:#fff}
+    .side-desc{font-size:11px;color:var(--muted);margin:13px 10px 18px}.side a{display:block;color:var(--muted);text-decoration:none;padding:7px 10px;border-radius:8px;font-size:12px}.side a:hover,.side a.active{background:#10b9811a;color:#0c7a59}.subhead{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--caramel);font-weight:700;margin:18px 10px 4px;padding-top:14px;border-top:1px dashed var(--line)}.side a.indent{padding-left:22px}.side-meta{margin:28px 10px 0;padding-top:14px;border-top:1px solid var(--line);font:10px/1.6 var(--mono);color:var(--caramel)}
+    main{padding:36px 44px 120px;min-width:0}section{margin-bottom:60px;scroll-margin-top:24px}h1,h2,h3{line-height:1.15;letter-spacing:-.035em}h1{font-size:clamp(32px,5vw,54px);margin:0 0 14px}h2{font-size:27px;margin:0 0 10px}h3{font-size:16px;margin:0 0 7px}.lede{max-width:780px;font-size:16px;color:#5f5348}.small{font-size:12px}.muted{color:var(--muted)}.mono,code{font-family:var(--mono)}
+    .callout{border-left:4px solid var(--accent);background:#10b9810d;padding:13px 16px;border-radius:0 10px 10px 0;margin:18px 0;max-width:850px}.callout b{color:#0c7a59}.stack-note{font:11px var(--mono);color:var(--muted)}
+    .layers{display:grid;gap:8px;margin:24px 0}.layer-card,.archlayer{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px 14px 22px}.layer-card:before,.archlayer:before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:14px 0 0 14px}.layer-card.foundation:before,.archlayer.foundation:before{background:var(--foundation)}.layer-card.state:before,.archlayer.state:before{background:var(--state)}.layer-card.ui:before,.archlayer.ui:before{background:var(--ui)}.layer-label{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--caramel)}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.chip{font:11px var(--mono);background:var(--bg);border:1px solid var(--line);padding:2px 8px;border-radius:7px}
+    .archdiag{display:flex;flex-direction:column;gap:4px}.archconn{display:flex;gap:24px;padding:2px 24px;font-size:11.5px;color:var(--muted)}.archconn .arrow{color:var(--caramel);font-weight:700}.archdesc{font-size:13px;margin-top:7px}
+    .graphwrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px;align-items:stretch;margin-top:18px}.graph{width:100%;min-height:300px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.graph .edge{stroke:#b9aa96;stroke-width:1.5;marker-end:url(#arrow)}.graph .node{cursor:pointer}.graph rect{stroke:var(--line);stroke-width:1.2;rx:9}.graph text{font-family:var(--mono);font-size:11px;fill:var(--ink);pointer-events:none}.graph .node.selected rect{stroke:var(--accent);stroke-width:2.5}.panel{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:15px;min-height:130px;font-size:12px}.panel h3{font:700 13px var(--mono);margin-bottom:7px}.panel p{margin:7px 0;color:#5f5348}.panel .wire{font:11px var(--mono);color:#0c7a59;display:block;margin-top:4px}
+    .rules,.anat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.rule,.anat-card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:13px 15px;display:flex;gap:11px}.rule .n{flex:0 0 26px;height:26px;border-radius:8px;background:#10b9811a;color:#0c7a59;font-weight:800;display:flex;align-items:center;justify-content:center}.rule p,.anat-card p{margin:3px 0 0;color:#66594e;font-size:12px}.anat-card{display:block;border-left:4px solid var(--caramel);text-decoration:none;color:inherit;transition:transform .15s}.anat-card:hover{transform:translateY(-2px)}.anat-card .layer-chip{margin-bottom:9px}.layer-chip{display:inline-block;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:5px;color:#fff;font-weight:700}.layer-chip.foundation{background:var(--foundation)}.layer-chip.state{background:var(--state)}.layer-chip.ui{background:var(--ui)}
+    .toolbar{display:flex;gap:10px;align-items:center;margin:15px 0}.toolbar input{width:min(520px,100%);border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--panel);color:var(--ink);font:12px var(--mono)}.count{font:11px var(--mono);color:var(--muted)}details.dom{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:9px 0;overflow:hidden}details.dom summary{cursor:pointer;list-style:none;padding:12px 15px;font:700 12px var(--mono)}details.dom summary::-webkit-details-marker{display:none}.dom-body{padding:0 15px 13px}.dom-body p{font-size:12px;color:#66594e}.file{display:grid;grid-template-columns:minmax(180px,235px) 45px 1fr;gap:10px;border-top:1px solid #eee8de;padding:7px 0;font-size:11px;align-items:baseline}.file small{font:10px var(--mono);color:var(--muted);text-align:right}.file .role{color:#66594e}.file.star .path:before{content:'★ ';color:var(--accent)}
+    .anatomy-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.anatomy-section .lede{max-width:850px}.footer-note{border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:11px}
+    @media(max-width:980px){.layout{grid-template-columns:1fr}nav.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}main{padding:28px 22px 80px}.graphwrap{grid-template-columns:1fr}.rules,.anat-grid{grid-template-columns:1fr}}
+    @media(max-width:620px){.file{grid-template-columns:1fr;gap:2px}.file small{text-align:left}.side-meta{display:none}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="side" id="side">
+      <div class="brand"><div class="brand-name"><span class="brand-mark"></span><span>byc-web</span></div><div class="lang-toggle"><button class="lang-btn active" data-lang="en">EN</button><button class="lang-btn" data-lang="zh">中</button></div></div>
+      <p class="side-desc" data-t="sideDesc"></p>
+      <a href="#tour" data-t="navTour"></a><a href="#architecture" data-t="navArchitecture"></a><a href="#codebase" data-t="navCodebase"></a><a href="#rules" data-t="navRules"></a><a href="#map" data-t="navModuleMap"></a>
+      <div class="subhead" data-t="navAnatomies"></div>
+      <a class="indent" href="#landing-anatomy">Landing interaction</a><a class="indent" href="#admin-anatomy">Admin workflow</a><a class="indent" href="#content-anatomy">Content pipeline</a>
+      <a href="#conventions" data-t="navConventions"></a>
+      <div class="side-meta">generated from<br><span>src/ · admin/ · server/</span><br>updated 2026-08-08</div>
+    </nav>
+    <main>
+      <section id="tour">
+        <h1>byc-web — codebase map</h1>
+        <p class="lede" data-t="tourLede"></p>
+        <div class="callout"><b data-t="readTitle"></b> <span data-t="readBody"></span></div>
+        <div class="layers" id="layers"></div>
+        <p class="stack-note">React 19 · TypeScript · Vite 6 · Tailwind CSS · Three.js / Tone.js · Express · Markdown content</p>
+      </section>
+
+      <section id="architecture">
+        <h2 data-t="architectureTitle"></h2><p class="lede" data-t="architectureLede"></p>
+        <div class="archdiag" id="architectureLayers"></div>
+      </section>
+
+      <section id="codebase">
+        <h2 data-t="codebaseTitle"></h2><p class="lede" data-t="codebaseLede"></p>
+        <div class="graphwrap"><svg class="graph" id="masterGraph" viewBox="0 0 780 470" aria-label="Codebase graph"></svg><div class="panel" id="masterPanel"></div></div>
+        <div class="callout"><b data-t="directionTitle"></b> <span data-t="directionBody"></span></div>
+      </section>
+
+      <section id="rules">
+        <h2 data-t="rulesTitle"></h2><p class="lede" data-t="rulesLede"></p><div class="rules" id="rulesList"></div>
+      </section>
+
+      <section id="map">
+        <h2 data-t="moduleMapTitle"></h2><p class="lede" data-t="moduleMapLede"></p>
+        <div class="toolbar"><input id="q" data-t-placeholder="filterPlaceholder"><span class="count" id="count"></span></div><div id="domains"></div>
+      </section>
+
+      <section id="anatomies-overview">
+        <h2 data-t="anatomiesTitle"></h2><p class="lede" data-t="anatomiesLede"></p><div class="anat-grid" id="anatGrid"></div>
+        <p class="small muted" data-t="anatomiesNote"></p>
+      </section>
+
+      <section id="landing-anatomy" class="anatomy-section">
+        <h2 class="anatomy-title"><span class="layer-chip ui">ui</span><span data-t="landingTitle"></span></h2>
+        <p class="lede" data-t="landingLede"></p><div class="graphwrap"><svg class="graph" id="landingGraph" viewBox="0 0 650 300"></svg><div class="panel" id="landingPanel"></div></div>
+        <div class="callout"><b data-t="landingCalloutTitle"></b> <span data-t="landingCalloutBody"></span></div>
+      </section>
+
+      <section id="admin-anatomy" class="anatomy-section">
+        <h2 class="anatomy-title"><span class="layer-chip state">state</span><span data-t="adminTitle"></span></h2>
+        <p class="lede" data-t="adminLede"></p><div class="graphwrap"><svg class="graph" id="adminGraph" viewBox="0 0 650 300"></svg><div class="panel" id="adminPanel"></div></div>
+        <div class="callout"><b data-t="adminCalloutTitle"></b> <span data-t="adminCalloutBody"></span></div>
+      </section>
+
+      <section id="content-anatomy" class="anatomy-section">
+        <h2 class="anatomy-title"><span class="layer-chip foundation">foundation</span><span data-t="contentTitle"></span></h2>
+        <p class="lede" data-t="contentLede"></p><div class="graphwrap"><svg class="graph" id="contentGraph" viewBox="0 0 650 300"></svg><div class="panel" id="contentPanel"></div></div>
+        <div class="callout"><b data-t="contentCalloutTitle"></b> <span data-t="contentCalloutBody"></span></div>
+      </section>
+
+      <section id="conventions">
+        <h2 data-t="conventionsTitle"></h2><p class="lede" data-t="conventionsLede"></p><div class="rules" id="conventionsList"></div>
+        <p class="footer-note">The workflow entry point is <code>AGENTS.md</code>. The maintained planning board is <code>docs/blueprints/plan.md</code>; refresh this map with <code>nav-map</code> after a substantial code wave.</p>
+      </section>
+    </main>
+  </div>
+  <script>
+    const T={
+      sideDesc:{en:'Personal portfolio · public site + admin CMS',zh:'個人作品集 · 公開網站＋管理後台'},
+      navTour:{en:'Tour',zh:'總覽'},navArchitecture:{en:'Architecture',zh:'架構'},navCodebase:{en:'Codebase map',zh:'程式庫地圖'},navRules:{en:'Design rules',zh:'設計規則'},navModuleMap:{en:'Module map',zh:'模組索引'},navAnatomies:{en:'Anatomies',zh:'系統剖面'},navConventions:{en:'Conventions',zh:'慣例'},
+      tourLede:{en:'A personal portfolio for Bo-Yu Chen — Researcher // Engineer // Creator. The public site presents projects, writing, news, CV, and an interactive MPC landing scene; the admin app edits the content that drives it.',zh:'Bo-Yu Chen 的個人作品集網站——研究者／工程師／創作者。公開網站呈現作品、文章、消息與履歷，首頁有互動式 MPC 場景；管理後台負責編輯這些內容。'},
+      readTitle:{en:'How to read this:',zh:'閱讀方式：'},readBody:{en:'Start with the three layers, then use the module map to find a file. The anatomies explain the three subsystems where a new maintainer needs the most context.',zh:'先看三層架構，再用模組索引定位檔案。三個系統剖面說明新維護者最需要理解的核心區域。'},
+      architectureTitle:{en:'Architecture — three working layers',zh:'架構——三個工作層'},architectureLede:{en:'The repo has two frontends and one local API. The layer view is a teaching model: it groups code by the kind of knowledge it owns, not by runtime order.',zh:'這個 repo 有兩個前端和一個本機 API。這個分層是閱讀模型：按照程式碼掌握的知識分組，而不是按照執行順序分組。'},
+      codebaseTitle:{en:'Codebase map — domains at a glance',zh:'程式庫地圖——一眼看懂各領域'},codebaseLede:{en:'Each box is a load-bearing domain. The arrows are local imports; network calls between the admin and local API are intentionally described in the anatomy callout instead of drawn as fake TypeScript edges.',zh:'每個方塊是一個承擔主要責任的領域。箭頭代表本機 import；管理後台與本機 API 之間的網路呼叫，刻意放在剖面說明中，而不是假裝成 TypeScript 依賴。'},
+      directionTitle:{en:'Arrow direction:',zh:'箭頭方向：'},directionBody:{en:'consumer → consumed. Click a node for its role and direct wires.',zh:'使用者 → 被使用者。點擊節點可以查看責任和直接連線。'},
+      rulesTitle:{en:'Design rules — the bar every module clears',zh:'設計規則——每個模組都要過的門檻'},rulesLede:{en:'These are the navigation rules used when planning or refactoring: make the interface easy to see, keep knowledge owned in one place, and keep structure proportional to the job.',zh:'這些是規劃和 refactor 時採用的導覽規則：讓介面容易看見、讓知識由單一地方負責，並讓結構和工作量相稱。'},
+      moduleMapTitle:{en:'Module map — search and expand',zh:'模組索引——搜尋後展開'},moduleMapLede:{en:'★ marks a load-bearing file worth opening first. Thin leaves stay visible but do not receive a separate anatomy.',zh:'★ 代表值得先讀的主要檔案。小型葉節點仍會列出，但不另外畫系統剖面。'},filterPlaceholder:{en:'Filter modules and files…',zh:'篩選模組與檔案…'},
+      anatomiesTitle:{en:'Anatomies — three worked examples',zh:'系統剖面——三個值得先理解的範例'},anatomiesLede:{en:'These are not a replacement for the module map. They are the shortest path through the parts that combine several responsibilities or external systems.',zh:'這些不是模組索引的替代品，而是理解多責任或連接外部系統區域的最短路徑。'},anatomiesNote:{en:'Why these three? They are the public interaction core, the admin editing boundary, and the content boundary. Smaller folders stay in the module map.',zh:'為什麼選這三個？因為它們分別是公開互動核心、管理編輯邊界和內容邊界；較小的資料夾留在模組索引即可。'},
+      landingTitle:{en:'Landing interaction — 3D scene + audio controls',zh:'首頁互動——3D 場景＋音訊控制'},landingLede:{en:'LandingScene is now the route-level shell. The focused landing domain separates the MPC composition, layout data, dat.gui controls, Tone.js state, reusable primitives, and overlays while preserving the public entrypoint.',zh:'LandingScene 現在是路由層外殼。聚焦後的 landing domain 將 MPC 組合、layout 資料、dat.gui 控制、Tone.js 狀態、可重用 primitives 與 overlays 分開，同時保留公開入口。'},landingCalloutTitle:{en:'Boundary worth protecting:',zh:'值得保護的邊界：'},landingCalloutBody:{en:'keep navigation and Canvas lifecycle in LandingScene; keep MPC geometry in layout.ts, audio lifecycle in useMpcAudio.ts, and reusable 3D behavior in primitives.tsx. The split has typecheck, tests, build, and browser gates.',zh:'導航與 Canvas lifecycle 留在 LandingScene；MPC 幾何放在 layout.ts、音訊生命週期放在 useMpcAudio.ts、可重用 3D 行為放在 primitives.tsx。這次拆分有 typecheck、測試、build 和瀏覽器門檻。'},
+      adminTitle:{en:'Admin workflow — edit → transport → persist',zh:'管理流程——編輯 → 傳輸 → 儲存'},adminLede:{en:'The admin UI talks to one API facade. The facade selects the local Express client during development or the GitHub Contents client when deployed; the GitHub path delegates retryable content mutations to small flow modules.',zh:'管理後台只對一個 API facade 溝通。facade 在開發時選本機 Express client，部署時選 GitHub Contents client；GitHub 路徑把可重試的內容修改交給小型流程模組。'},adminCalloutTitle:{en:'Boundary worth protecting:',zh:'值得保護的邊界：'},adminCalloutBody:{en:'pages should know the content operation they need, not which transport is active. The current api.ts facade is the useful door for future changes.',zh:'頁面應該只知道需要哪種內容操作，不需要知道目前使用哪個傳輸方式。現在的 api.ts facade 是未來變更可依靠的入口。'},
+      contentTitle:{en:'Content pipeline — config + Markdown + rendering',zh:'內容管線——設定＋Markdown＋呈現'},contentLede:{en:'The public pages request content through contentLoader. It reads the JSON registry, fetches Markdown from public/content, parses frontmatter, and applies collection ordering before pages render the result.',zh:'公開頁面透過 contentLoader 取得內容。它讀取 JSON registry、從 public/content 抓 Markdown、解析 frontmatter，再排序集合後交給頁面呈現。'},contentCalloutTitle:{en:'Runtime data flow:',zh:'執行時資料流：'},contentCalloutBody:{en:'public/content is data, not a TypeScript import edge. Keep the file format and ordering rules owned by the content boundary when this module is refactored.',zh:'public/content 是資料，不是 TypeScript import 邊。若要 refactor，檔案格式和排序規則應繼續由內容邊界負責。'},
+      conventionsTitle:{en:'Conventions — the repo’s standing rules',zh:'慣例——這個 repo 的固定規則'},conventionsLede:{en:'These rules are the current operating contract. If a future decision changes one, record why in docs/blueprints/decisions.md before changing the code.',zh:'這些是目前的工作契約。未來若要改變其中一項，先在 docs/blueprints/decisions.md 記錄原因，再改程式。'},
+      files:{en:'files',zh:'檔案'},loc:{en:'LOC',zh:'行數'},usedBy:{en:'Used by',zh:'被使用於'},reads:{en:'Reads',zh:'讀取'},noSelection:{en:'Select a node to inspect it.',zh:'選一個節點查看內容。'},
+      layerUi:{en:'UI — public pages and interactive components',zh:'UI——公開頁面與互動元件'},layerState:{en:'State / transport — admin operations and persistence choices',zh:'狀態／傳輸——管理操作與儲存選擇'},layerFoundation:{en:'Foundation — content formats, server storage, and tooling',zh:'基礎——內容格式、伺服器儲存與工具'}
+    };
+    const ARCH=[
+      {id:'ui',label:{en:'UI',zh:'UI'},desc:'layerUi',chips:['src/pages','src/components','admin/src/pages','admin/src/components']},
+      {id:'state',label:{en:'STATE / TRANSPORT',zh:'狀態／傳輸'},desc:'layerState',chips:['admin/src/api.ts','admin/src/lib','server/routes.ts']},
+      {id:'foundation',label:{en:'FOUNDATION',zh:'基礎'},desc:'layerFoundation',chips:['src/utils','src/types','public/content','server/storage','docs/core','scripts']}
+    ];
+    const DOMAINS=[
+      {id:'public-components',layer:'ui',path:'src/components/',role:{en:'Interactive public-site components and the focused 3D/audio landing domain.',zh:'公開網站互動元件，以及拆分後的 3D／音訊首頁 domain。'},files:[
+        ['src/components/LandingScene.tsx',195,'Route-level landing shell: Canvas, camera, entry state, navigation, and composition.',1],['src/components/landing/Mpc.tsx',231,'MPC 3D composition and event wiring.',1],['src/components/landing/useLayoutControls.ts',247,'Responsive scale and development-only dat.gui state.',1],['src/components/landing/primitives.tsx',393,'Video, avatar, pad, knob, and button primitives.',1],['src/components/landing/useMpcAudio.ts',159,'MPC config, Tone.js effects, transport, and knob history.',1],['src/components/landing/layout.ts',86,'MPC geometry, defaults, pad mapping, and colors.',0],['src/components/landing/overlays.tsx',118,'Loading, welcome, static fallback, and Canvas error UI.',0],['src/components/MarkdownRenderer.tsx',271,'Markdown tree, syntax highlighting, custom blocks, and lightbox orchestration.',1],['src/components/markdown/blocks.tsx',140,'Mermaid, BibTeX, YouTube, and custom Markdown blocks.',1],['src/components/blog/AudioPlayer.tsx',99,'WaveSurfer-backed blog audio player.',0],['src/components/Layout.tsx',48,'Public page shell, navigation, and social footer.',1],['src/components/SocialIcons.tsx',45,'Social icon primitives.',0],['src/components/blog/Lightbox.tsx',37,'Blog image lightbox wrapper.',0],['src/components/NavBar.tsx',30,'Public route navigation links.',0],['src/components/LanguageToggle.tsx',30,'Language switch control.',0]
+      ]},
+      {id:'public-pages',layer:'ui',path:'src/pages/',role:{en:'Route-level public pages that compose the site shell and content services.',zh:'公開網站的路由頁面，組合網站外殼與內容服務。'},files:[
+        ['src/pages/CV.tsx',298,'CV page with bilingual visibility and sections.',1],['src/pages/ProjectDetail.tsx',352,'Single-project page with Markdown, links, media, and metadata.',1],['src/pages/About.tsx',162,'About page with Markdown, socials, and news.',0],['src/pages/BlogPost.tsx',139,'Single blog post page.',0],['src/pages/Blog.tsx',120,'Blog collection page.',0],['src/pages/Projects.tsx',113,'Project collection page and filters.',0],['src/pages/News.tsx',79,'News collection page.',0],['src/pages/Home.tsx',13,'Home route that mounts the landing scene.',0]
+      ]},
+      {id:'public-utils',layer:'foundation',path:'src/utils/',role:{en:'Public content loading and small rendering utilities.',zh:'公開網站內容載入與小型呈現工具。'},files:[
+        ['src/utils/contentLoader.ts',266,'Public content orchestration, localization fallback, ordering, and search.',1],['src/utils/contentSource.ts',70,'Fetches project, blog, and news Markdown files.',1],['src/utils/contentConfig.ts',31,'Loads and caches the content registry.',0],['src/utils/contentExcerpt.ts',16,'Derives plain-text content previews.',0],['src/utils/usePageTitle.ts',12,'Hook for synchronising document titles.',0]
+      ]},
+      {id:'public-shared',layer:'foundation',path:'src/{constants,types}/',role:{en:'Shared public-site data shapes and curated project metadata.',zh:'公開網站共用資料形狀與精選作品資料。'},files:[
+        ['src/constants.ts',31,'Social links and curated project cards.',1],['src/types.ts',20,'Legacy curated project-card contract.',0],['src/types/content.ts',102,'Markdown content and metadata contracts.',1]
+      ]},
+      {id:'admin-components',layer:'ui',path:'admin/src/components/',role:{en:'Reusable admin controls, tables, editors, and dialogs.',zh:'管理後台共用控制項、表格、編輯器與對話框。'},files:[
+        ['admin/src/components/MpcTester.tsx',225,'MPC asset tester and playback controls.',1],['admin/src/components/DeleteDialog.tsx',185,'Delete confirmation dialog and error presentation.',1],['admin/src/components/Sidebar.tsx',133,'Admin navigation and deploy action.',1],['admin/src/components/MarkdownEditor.tsx',120,'Markdown editor with shared renderer and insertion tools.',1],['admin/src/components/DeleteDialog.test.tsx',105,'Server-rendered delete-dialog test.',0],['admin/src/components/AutocompleteDropdown.tsx',85,'Editor autocomplete dropdown.',0],['admin/src/components/ContentTable.tsx',72,'Reusable content table.',0],['admin/src/components/InsertToolbar.tsx',92,'Markdown insertion toolbar.',0],['admin/src/components/Sidebar.test.tsx',21,'Sidebar rendering test.',0]
+      ]},
+      {id:'admin-pages',layer:'ui',path:'admin/src/pages/',role:{en:'CMS route pages for content and asset management.',zh:'內容與資產管理用的 CMS 路由頁面。'},files:[
+        ['admin/src/pages/CvEdit.tsx',449,'CV configuration editor.',1],['admin/src/pages/ProjectEdit.tsx',357,'Project Markdown and metadata editor.',1],['admin/src/pages/NewsEdit.tsx',286,'News editor with bilingual content operations.',1],['admin/src/pages/BlogEdit.tsx',280,'Blog editor with bilingual content operations.',1],['admin/src/pages/MpcAssets.tsx',254,'MPC model, video, sample, and config editor.',1],['admin/src/pages/ProjectList.tsx',172,'Project list and inline content actions.',0],['admin/src/pages/Settings.tsx',169,'Site settings editor.',0],['admin/src/pages/BlogList.tsx',166,'Blog list and inline content actions.',0],['admin/src/pages/ImageGallery.tsx',122,'Image browsing and upload page.',0],['admin/src/pages/AboutEdit.tsx',122,'About Markdown editor.',0],['admin/src/pages/NewsList.tsx',127,'News list and inline content actions.',0]
+      ]},
+      {id:'admin-api',layer:'state',path:'admin/src/{api,api-types,local-api,github-api}.ts + github/',role:{en:'One browser API facade over local Express or focused GitHub transport modules.',zh:'瀏覽器 API facade，統一本機 Express 與拆分後的 GitHub 傳輸模組。'},files:[
+        ['admin/src/api.ts',49,'Chooses and re-exports the active API implementation.',1],['admin/src/api-types.ts',32,'Shared contracts for both transports.',1],['admin/src/github-api.ts',10,'Compatibility facade for focused GitHub modules.',1],['admin/src/local-api.ts',177,'Local Express API client.',1],['admin/src/github/client.ts',67,'GitHub request and repository file transport.',1],['admin/src/github/content.ts',106,'GitHub content, about, and registry operations.',1],['admin/src/github/assets.ts',105,'GitHub image and MPC asset operations.',1],['admin/src/github/localization.ts',69,'GitHub Chinese content and CV operations.',0],['admin/src/github/settings.ts',47,'GitHub CV/MPC config, deploy, and history operations.',0],['admin/src/github/frontmatter.ts',77,'Admin Markdown frontmatter parser and serializer.',0]
+      ]},
+      {id:'admin-lib',layer:'state',path:'admin/src/lib/',role:{en:'Retryable content mutation flows and small admin helpers.',zh:'可重試的內容修改流程與管理後台小工具。'},files:[
+        ['admin/src/lib/createContentFlow.ts',87,'Retry and verify GitHub content creation.',1],['admin/src/lib/deleteContentFlow.ts',86,'Retry and verify GitHub content deletion.',1],['admin/src/lib/siteUrl.ts',13,'Derives the public-site URL.',0],['admin/src/lib/createContentFlow.test.ts',183,'Creation-flow tests.',0],['admin/src/lib/deleteContentFlow.test.ts',163,'Deletion-flow tests.',0],['admin/src/lib/siteUrl.test.ts',20,'Site URL tests.',0]
+      ]},
+      {id:'server',layer:'state',path:'server/',role:{en:'Development-only Express server and REST route composition.',zh:'僅供開發使用的 Express server 與 REST 路由組合。'},files:[
+        ['server/routes.ts',18,'Compatibility composer for the local admin API.',1],['server/routes/content.ts',162,'Content, about, and registry endpoints.',1],['server/routes/assets.ts',101,'Image and MPC asset upload endpoints.',1],['server/routes/settings.ts',56,'CV and MPC JSON configuration endpoints.',0],['server/index.ts',22,'Express entry point and storage wiring.',1],['server/storage/local.ts',95,'Filesystem storage implementation.',1],['server/storage/adapter.ts',42,'Storage interface and content types.',1]
+      ]},
+      {id:'scripts',layer:'foundation',path:'scripts/',role:{en:'Build-time asset generation.',zh:'建置時資產生成工具。'},files:[
+        ['scripts/render-cv-pdf.mjs',121,'Playwright script that generates the CV PDF.',1]
+      ]},
+      {id:'content',layer:'foundation',path:'public/content/',role:{en:'Markdown source and media assets consumed at runtime.',zh:'執行時讀取的 Markdown 來源與媒體資產。'},files:[
+        ['public/content/about.md','—','About-page source content.',0],['public/content/projects/','—','Project Markdown and FlueBricks media assets.',1],['public/content/news/','—','News Markdown entries.',0]
+      ]}
+    ];
+    const EDGES=[['public-pages','public-components'],['public-pages','public-utils'],['public-pages','public-shared'],['public-components','public-utils'],['public-components','public-shared'],['admin-pages','admin-components'],['admin-pages','admin-api'],['admin-components','admin-api'],['admin-components','admin-lib'],['admin-api','admin-lib'],['server','server-storage']];
+    const NODES=[
+      ['public-components',70,32,155,52],['public-pages',290,32,135,52],['public-utils',500,32,125,52],['public-shared',290,140,135,52],
+      ['admin-components',55,235,155,52],['admin-pages',275,235,125,52],['admin-api',475,235,125,52],['admin-lib',640,330,115,52],
+      ['server',65,390,115,52],['server-storage',275,390,145,52],['scripts',500,390,115,52]
+    ];
+    const ANATOMIES={
+      landing:{nodes:[['scene',20,112,135,54],['mpc',205,30,125,54],['overlays',205,190,125,54],['layout',390,20,125,54],['audio',390,92,125,54],['primitives',390,164,125,54],['assets',540,164,100,54]],edges:[['scene','mpc'],['scene','overlays'],['mpc','layout'],['mpc','audio'],['mpc','primitives'],['primitives','assets']],roles:{scene:['LandingScene.tsx','Route-level shell for Canvas lifecycle, camera, entry state, navigation, and composition.'],mpc:['src/components/landing/Mpc.tsx','Composes the MPC geometry and wires keyboard, pad, knob, video, and transport events.'],overlays:['src/components/landing/overlays.tsx','Owns welcome, loading, static fallback, and Canvas error UI.'],layout:['src/components/landing/layout.ts','Owns fixed MPC geometry, defaults, pad mapping, and visual colors.'],audio:['src/components/landing/useMpcAudio.ts','Owns config loading, Tone.js effects, transport, and knob history.'],primitives:['src/components/landing/primitives.tsx','Owns reusable 3D video, avatar, pad, knob, and button behavior.'],assets:['public/model.glb + public samples','Runtime assets loaded by the public scene.']}},
+      admin:{nodes:[['pages',40,110,125,54],['facade',240,110,125,54],['local',440,36,125,54],['github',440,184,125,54],['flows',240,210,125,54]],edges:[['pages','facade'],['facade','local'],['facade','github'],['github','flows']],roles:{pages:['admin/src/pages/','Editors ask for content operations.'],facade:['admin/src/api.ts','One transport-neutral browser API door.'],local:['admin/src/local-api.ts','Development client calling Express.'],github:['admin/src/github/','Focused GitHub transport modules behind the compatibility facade.'],flows:['admin/src/lib/','Retryable create/delete mutations.']}},
+      content:{nodes:[['pages',45,110,125,54],['loader',245,110,145,54],['config',470,35,125,54],['markdown',470,185,125,54]],edges:[['pages','loader'],['loader','config'],['loader','markdown']],roles:{pages:['src/pages/','Route pages request typed content.'],loader:['src/utils/contentLoader.ts','Orchestrates loading, localization fallback, ordering, and search.'],config:['src/utils/contentConfig.ts','Cached content registry loader.'],markdown:['src/utils/contentSource.ts + public/content/','Focused Markdown fetchers over runtime content files.']}}
+    };
+    const RULES=[
+      ['1','Deep modules','Hide significant complexity behind a small, useful interface.'],['2','Interface first','Let the file, domain, or repo explain itself before the reader opens the body.'],['3','Explicit dependencies','Make data sources and collaborators visible instead of ambient.'],['4','Right grain','Avoid both giant modules and structure that adds no value.'],['5','Fit the framework','Use idiomatic React, Vite, and server boundaries.'],['6','Rearrange, don’t rewrite','Structural refactors preserve behaviour until a behaviour change is intended.'],['7','Ask below 90%','Mark uncertainty instead of inventing a boundary or dependency.'],['8','Agent navigability','If a one-line role is hard to write, the module shape needs attention.']
+    ];
+    const CONVENTIONS=[
+      ['shape / nav workflow','`AGENTS.md` primes the verbs; `docs/blueprints/plan.md` is the single status board.'],['Two Vite apps','The public site and admin dashboard have separate Vite entry points and builds.'],['Content as data','Markdown, JSON config, and public assets are edited as site content, not hidden in components.'],['Transport facade','Admin pages call `admin/src/api.ts`; transport choice stays behind that door.'],['Canonical docs','Decision residue lives in `docs/blueprints/decisions.md`; grounded plans live in `docs/blueprints/plans/`.'],['Style contract','Visual decisions and review checks live in `docs/core/site-style.md`.'],['Verification','Use `npm run build` plus the relevant browser flow before calling a web change done.']
+    ];
+    let lang=localStorage.getItem('codebase-map-lang')||'en';
+    const tr=(key)=>T[key]?.[lang]||T[key]?.en||key;
+    function setLang(next){lang=next;localStorage.setItem('codebase-map-lang',next);document.documentElement.lang=next==='zh'?'zh-Hant':'en';document.querySelectorAll('[data-t]').forEach(el=>el.textContent=tr(el.dataset.t));document.querySelectorAll('[data-t-placeholder]').forEach(el=>el.placeholder=tr(el.dataset.tPlaceholder));document.querySelectorAll('.lang-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.lang===lang));renderLayers();renderArchitecture();renderDomains();renderRules();renderConventions();}
+    function renderLayers(){const root=document.querySelector('#layers');root.innerHTML=ARCH.map(a=>`<div class="layer-card ${a.id}"><div class="layer-label">${a.label[lang]}</div><div class="archdesc">${tr(a.desc)}</div><div class="chips">${a.chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>`).join('');}
+    function renderArchitecture(){const root=document.querySelector('#architectureLayers');root.innerHTML=ARCH.map((a,i)=>`${i?'<div class="archconn"><span class="arrow">↑</span><span>'+ (lang==='zh'?'組合上層功能':'feeds the layer above') +'</span></div>':''}<div class="archlayer ${a.id}"><div class="layer-label">${a.label[lang]}</div><div class="archdesc">${tr(a.desc)}</div><div class="chips">${a.chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>`).join('');}
+    function renderRules(){document.querySelector('#rulesList').innerHTML=RULES.map(([n,title,desc])=>`<div class="rule"><span class="n">${n}</span><div><h3>${title}</h3><p>${desc}</p></div></div>`).join('');}
+    function renderConventions(){document.querySelector('#conventionsList').innerHTML=CONVENTIONS.map(([title,desc])=>`<div class="rule"><span class="n">•</span><div><h3>${title}</h3><p>${desc}</p></div></div>`).join('');}
+    function domainName(id){return DOMAINS.find(d=>d.id===id)?.path||id;}
+    function renderDomains(query=''){const q=query.trim().toLowerCase();let shown=0;document.querySelector('#domains').innerHTML=DOMAINS.map(d=>{const files=d.files.filter(f=>(f[0]+' '+f[2]).toLowerCase().includes(q));if(q&&!files.length)return '';shown+=files.length;return `<details class="dom" ${q&&files.length?'open':''}><summary><span class="mono">${d.path}</span> · ${d.files.length} ${tr('files')}</summary><div class="dom-body"><p>${d.role[lang]}</p>${files.map(f=>`<div class="file ${f[3]?'star':''}"><span class="path mono">${f[0]}</span><small>${f[1]} ${f[1]==='—'?'':tr('loc')}</small><span class="role">${f[2]}</span></div>`).join('')}</div></details>`;}).join('');document.querySelector('#count').textContent=`${shown} ${tr('files')}`;}
+    function esc(value){return String(value).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+    function graph(svgId,panelId,nodes,edges,roles){const svg=document.querySelector('#'+svgId),panel=document.querySelector('#'+panelId);const ns='http://www.w3.org/2000/svg';svg.innerHTML='<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b9aa96"></path></marker></defs>';const positions=Object.fromEntries(nodes.map(n=>[n[0],n]));edges.forEach(([from,to])=>{const a=positions[from],b=positions[to],line=document.createElementNS(ns,'line');line.setAttribute('class','edge');line.setAttribute('x1',a[1]+a[3]/2);line.setAttribute('y1',a[2]+a[4]/2);line.setAttribute('x2',b[1]+b[3]/2);line.setAttribute('y2',b[2]+b[4]/2);svg.appendChild(line);});nodes.forEach(n=>{const g=document.createElementNS(ns,'g');g.setAttribute('class','node');g.dataset.id=n[0];const rect=document.createElementNS(ns,'rect');rect.setAttribute('x',n[1]);rect.setAttribute('y',n[2]);rect.setAttribute('width',n[3]);rect.setAttribute('height',n[4]);rect.setAttribute('fill',n[0].includes('admin')||n[0]==='facade'||n[0]==='github'?'#eef5ed':'#fffdf8');const text=document.createElementNS(ns,'text');text.setAttribute('x',n[1]+n[3]/2);text.setAttribute('y',n[2]+n[4]/2+4);text.setAttribute('text-anchor','middle');text.textContent=n[0];g.append(rect,text);g.addEventListener('click',()=>{svg.querySelectorAll('.node').forEach(x=>x.classList.remove('selected'));g.classList.add('selected');const data=roles[n[0]]||[domainName(n[0]),''];panel.innerHTML=`<h3>${esc(data[0])}</h3><p>${esc(data[1])}</p>`;});svg.appendChild(g);});}
+    function renderAnatomyGraphs(){graph('landingGraph','landingPanel',ANATOMIES.landing.nodes,ANATOMIES.landing.edges,ANATOMIES.landing.roles);graph('adminGraph','adminPanel',ANATOMIES.admin.nodes,ANATOMIES.admin.edges,ANATOMIES.admin.roles);graph('contentGraph','contentPanel',ANATOMIES.content.nodes,ANATOMIES.content.edges,ANATOMIES.content.roles);}
+    function renderAnatomyCards(){const cards=[['landing-anatomy','ui','Landing interaction','3D scene, gestures, navigation, and audio.'],['admin-anatomy','state','Admin workflow','One API door with two transports and retryable flows.'],['content-anatomy','foundation','Content pipeline','Config, Markdown, frontmatter, ordering, and rendering.']];document.querySelector('#anatGrid').innerHTML=cards.map(c=>`<a class="anat-card" href="#${c[0]}"><span class="layer-chip ${c[1]}">${c[1]}</span><h3>${c[2]}</h3><p>${c[3]}</p></a>`).join('');}
+    document.querySelectorAll('.lang-btn').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.dataset.lang)));document.querySelector('#q').addEventListener('input',e=>renderDomains(e.target.value));
+    setLang(lang);renderAnatomyCards();renderAnatomyGraphs();
+    const sections=[...document.querySelectorAll('main section')],links=[...document.querySelectorAll('.side a')];const spy=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+entry.target.id));}}),{rootMargin:'-20% 0px -70% 0px'});sections.forEach(s=>spy.observe(s));
+  </script>
+</body>
+</html>

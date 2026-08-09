@@ -59,7 +59,7 @@ test('deleting state disables both actions and updates the confirm label', () =>
   );
 
   assert.match(html, /Cancel/);
-  assert.match(html, /Deleting\.\.\./);
+  assert.match(html, /Deleting…/);
   assert.equal(html.match(/disabled=""/g)?.length, 2);
 });
 
