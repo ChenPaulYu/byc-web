@@ -34,3 +34,6 @@ docs/content/
 *.njsproj
 *.sln
 *.sw?
+
+# Scratch space for generation runs and throwaway probes
+tmp/
