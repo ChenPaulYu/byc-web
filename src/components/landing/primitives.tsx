@@ -175,13 +175,20 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
     const baseColor = new THREE.Color("#6b7280");
     const activeColor = new THREE.Color(color);
 
-    material.color.lerp(active ? activeColor : baseColor, delta * 20);
-    material.emissive.lerp(active ? activeColor : new THREE.Color("#000"), delta * 20);
+    // `delta * k` is not a valid interpolation factor: neither THREE.Color.lerp nor
+    // MathUtils.lerp clamps it, so on a slow frame it extrapolates instead of easing.
+    // Deltas of 1-7s were measured on a loaded machine, which drove the factor past 200
+    // and left the pads unrenderable. Exponential damping stays in [0, 1) for any delta
+    // and matches the old feel at 60fps.
+    const damp = (rate: number) => 1 - Math.exp(-rate * delta);
+
+    material.color.lerp(active ? activeColor : baseColor, damp(20));
+    material.emissive.lerp(active ? activeColor : new THREE.Color("#000"), damp(20));
     material.emissiveIntensity = active ? 1.0 : 0;
 
     const idleY = position[1];
     const pressedY = position[1] - 0.05;
-    meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, active ? pressedY : idleY, delta * 30);
+    meshRef.current.position.y = THREE.MathUtils.lerp(meshRef.current.position.y, active ? pressedY : idleY, damp(30));
   });
 
   useEffect(() => {
