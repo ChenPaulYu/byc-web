@@ -1,14 +1,15 @@
 /**
  * Hosts the public landing route, Canvas lifecycle, camera behavior, and navigation overlay.
- * Reads: Vite feature flags and the composed landing-scene modules; writes: navigation and entry state.
+ * Reads: Vite feature flags and the composed landing-scene modules (stage, MPC, overlays); writes: navigation and entry state.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ContactShadows, Environment, OrbitControls } from '@react-three/drei';
+import { Environment, OrbitControls } from '@react-three/drei';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
 import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
+import { Stage } from './landing/Stage';
 import Mpc from './landing/Mpc';
 
 const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
@@ -42,28 +43,29 @@ const LandingScene: React.FC = () => {
   };
 
   // Responsive camera positioning
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 12, 12]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 14, 14]);
 
   useEffect(() => {
     const updateCameraPosition = () => {
       const { innerWidth, innerHeight } = window;
       const aspectRatio = innerWidth / innerHeight;
 
-      // Base camera distance, adjusted by device type
-      let cameraDistance = 12;
+      // Base camera distance, adjusted by device type.
+      // A little further than the floating-instrument framing so the desk rim reads.
+      let cameraDistance = 14;
 
       if (innerWidth < 480) {
         // Mobile phones - closer view since MPC is scaled down
-        cameraDistance = 10;
+        cameraDistance = 11;
       } else if (innerWidth < 768) {
         // Large phones / small tablets
-        cameraDistance = 11;
+        cameraDistance = 12;
       } else if (innerWidth < 1024) {
         // Tablets
-        cameraDistance = 12;
+        cameraDistance = 13;
       } else {
         // Desktop
-        cameraDistance = 12;
+        cameraDistance = 14;
       }
 
       // Adjust for extreme aspect ratios
@@ -97,23 +99,23 @@ const LandingScene: React.FC = () => {
       >
         <color attach="background" args={['#f9fafb']} />
 
-        <ambientLight intensity={0.7} />
+        <ambientLight intensity={1.05} />
         <spotLight
-          position={[10, 20, 10]}
-          angle={0.3}
+          position={[8, 16, 10]}
+          angle={0.38}
           penumbra={1}
-          intensity={1}
+          intensity={1.15}
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <pointLight position={[-10, 10, -10]} intensity={0.5} />
+        <pointLight position={[-8, 8, 6]} intensity={0.45} />
 
         <OrbitControls
           enabled={!isDragging}
           enablePan={false}
           enableZoom={true}
-          minDistance={8}
-          maxDistance={20}
+          minDistance={9}
+          maxDistance={24}
           minPolarAngle={Math.PI / 4}
           maxPolarAngle={Math.PI / 2.5}
           // Fix azimuth to give that slightly angled front view
@@ -125,11 +127,12 @@ const LandingScene: React.FC = () => {
           dampingFactor={0.05}
         />
 
+        <Stage />
         <Mpc synth={synth} onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
-        <Environment preset="city" />
-        {/* Floor Shadow */}
-        <ContactShadows position={[0, -1.5, 0]} opacity={0.4} scale={40} blur={2} far={4.5} />
+        <Suspense fallback={null}>
+          <Environment preset="city" />
+        </Suspense>
       </Canvas>
 
       {/* --- RESPONSIVE UI OVERLAY --- */}

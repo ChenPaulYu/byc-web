@@ -12,12 +12,12 @@
 > its lessons are in [`2026-08-14-full-3d-room-postmortem.md`](thoughts/2026-08-14-full-3d-room-postmortem.md)
 > and its code on branch `experiment/homepage-core`.
 
-- **Decide what "polish" means here** — the scope is deliberately small and visual: materials,
-  lighting, micro-interaction, sound, type. Pick the specific list before writing code.
+- **Near-white desk stage (in flight)** — decided 2026-08-14: room feeling with the existing
+  MPC sitting on a desk, using the site palette (white walls, pale desk, `neutral-200` edges).
+  Not the abandoned warm studio. Instrument restyle comes after the stage reads.
 - **Re-wire the visual regression gate** — `scripts/visual-gate/compare-baseline.mjs` is carried
   over and unchanged; it needs a capture step against this homepage's single Canvas, waiting on
-  a real paint signal rather than a timeout. Worth doing first: every task in this phase is
-  visual, and this is what makes drift visible in review.
+  a real paint signal rather than a timeout. Worth doing once the stage composition settles.
 
 ## ▶ Next —— unify the project content boundary
 
