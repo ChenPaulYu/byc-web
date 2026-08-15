@@ -137,7 +137,7 @@ const LandingScene: React.FC = () => {
         />
 
         <Stage />
-        <DeskGear />
+        <DeskGear onDragChange={setIsDragging} />
         <Mpc onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces

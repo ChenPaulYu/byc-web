@@ -11,9 +11,11 @@
  * run an `AudioContext` before a user gesture, and constructing one eagerly logs a warning on
  * every page that imports this module, including ones that never touch audio.
  *
- * This file is not imported by the app yet — `index.ts` re-exports only its six public methods,
- * and `loadPadSample`/`loadBed` below are the seam a later step wires config into; nothing calls
- * them yet.
+ * Two channel strips feed one bus: pads and the background bed each have their own gain so a
+ * fader can hold one down without touching the other, while the filter, drive and reverb below
+ * them are shared, because on this machine those are master-bus effects.
+ *
+ * Nothing outside this folder ever sees a node — `index.ts` re-exports behaviour only.
  *
  * Reads: impulse.ts (reverb IR) · voice.ts (synth fallback + note math) · samples.ts (decode +
  * cache) · ../layout.ts (existing pad-key → note table, reused rather than duplicated)
@@ -42,6 +44,12 @@ function buildDistortionCurve(amount: number): Float32Array {
 class AudioEngine {
   private ctx: AudioContext | null = null;
 
+  // Two channel strips feeding one bus, which is what a two-channel mixer is. Pads and the
+  // background bed each get their own gain so a fader can hold one down without touching the
+  // other; everything downstream of them is shared, because the filter, drive and reverb on this
+  // machine are master-bus effects rather than per-channel ones.
+  private padBus: GainNode | null = null;
+  private bedBus: GainNode | null = null;
   private filter: BiquadFilterNode | null = null;
   private shaper: WaveShaperNode | null = null;
   private convolver: ConvolverNode | null = null;
@@ -57,7 +65,6 @@ class AudioEngine {
   private padSamples = new Map<string, AudioBuffer>();
   private bedBuffer: AudioBuffer | null = null;
   private bedSource: AudioBufferSourceNode | null = null;
-  private bedGain: GainNode | null = null;
 
   private ensureContext(): AudioContext {
     if (this.ctx) return this.ctx;
@@ -69,6 +76,13 @@ class AudioEngine {
   }
 
   private buildGraph(ctx: AudioContext): void {
+    const padBus = ctx.createGain();
+    padBus.gain.value = 0.85;
+    const bedBus = ctx.createGain();
+    // The bed enters quietly, per the decision that the scene should be alive on arrival without
+    // announcing itself. Before this there was no way to ask for that at all.
+    bedBus.gain.value = 0.3;
+
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 20000;
@@ -92,6 +106,8 @@ class AudioEngine {
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.6;
 
+    padBus.connect(filter);
+    bedBus.connect(filter);
     filter.connect(shaper);
     shaper.connect(dryGain);
     shaper.connect(convolver);
@@ -101,6 +117,8 @@ class AudioEngine {
     masterGain.connect(analyser);
     analyser.connect(ctx.destination);
 
+    this.padBus = padBus;
+    this.bedBus = bedBus;
     this.filter = filter;
     this.shaper = shaper;
     this.convolver = convolver;
@@ -123,7 +141,7 @@ class AudioEngine {
     if (sample) {
       const source = ctx.createBufferSource();
       source.buffer = sample;
-      source.connect(this.filter as AudioNode);
+      source.connect(this.padBus as AudioNode);
       source.start(); // no time arg — immediate, per the latency requirement
       source.onended = () => source.disconnect();
       return;
@@ -131,7 +149,7 @@ class AudioEngine {
 
     const note = PAD_NOTE_BY_KEY.get(key);
     if (!note) return; // unknown pad key — nothing assigned, nothing to fall back to
-    playVoice(ctx, this.filter as AudioNode, noteToFrequency(note));
+    playVoice(ctx, this.padBus as AudioNode, noteToFrequency(note));
   }
 
   setParam(index: number, value: number): void {
@@ -167,6 +185,13 @@ class AudioEngine {
     }
   }
 
+  /** Channel fader. 0 is the pads, 1 is the bed. */
+  setChannel(index: number, value: number): void {
+    const ctx = this.ensureContext();
+    const bus = index === 0 ? this.padBus : this.bedBus;
+    bus?.gain.setTargetAtTime(Math.min(1, Math.max(0, value)), ctx.currentTime, 0.02);
+  }
+
   startBed(): void {
     if (!this.bedBuffer || this.bedSource) return; // nothing loaded, or already running
     const ctx = this.ensureContext();
@@ -175,24 +200,17 @@ class AudioEngine {
     source.buffer = this.bedBuffer;
     source.loop = true;
 
-    const bedGain = ctx.createGain();
-    bedGain.gain.value = 1;
-
-    source.connect(bedGain);
-    bedGain.connect(this.filter as AudioNode);
+    source.connect(this.bedBus as AudioNode);
     source.start();
 
     this.bedSource = source;
-    this.bedGain = bedGain;
   }
 
   stopBed(): void {
     if (!this.bedSource) return;
     this.bedSource.stop();
     this.bedSource.disconnect();
-    this.bedGain?.disconnect();
     this.bedSource = null;
-    this.bedGain = null;
   }
 
   getLevel(): number {

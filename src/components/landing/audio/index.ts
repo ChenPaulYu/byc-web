@@ -12,6 +12,7 @@ import { engine } from './engine';
 export const resume = (): Promise<void> => engine.resume();
 export const triggerPad = (key: string): void => engine.triggerPad(key);
 export const setParam = (index: number, value: number): void => engine.setParam(index, value);
+export const setChannel = (index: number, value: number): void => engine.setChannel(index, value);
 export const startBed = (): void => engine.startBed();
 export const stopBed = (): void => engine.stopBed();
 export const getLevel = (): number => engine.getLevel();

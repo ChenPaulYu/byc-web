@@ -13,11 +13,12 @@
  * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y
  */
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RoundedBox } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { getLevel } from './audio';
+import { useDrag } from '@use-gesture/react';
+import { getLevel, setChannel } from './audio';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
 
@@ -312,10 +313,66 @@ const KNOB_ROWS = [
 const KNOB_COLS = [skX(0.26), skX(0.48)];
 const KNOB_R = cm(0.7);
 
+const FADER_TRAVEL = cm(4.6);
+const FADER_Z = skZ(0.79);
+
+/**
+ * One channel fader. Channel 0 is the pads, channel 1 is the background bed, so pushing one down
+ * leaves you the other — which is the only reason a mixer is on this desk rather than a picture
+ * of one.
+ *
+ * The cap measures about four pixels by three on screen, which is not a mouse target. The grab
+ * area is therefore a much larger invisible box around the whole travel. It cannot use
+ * `visible={false}` to hide it: three.js skips invisible objects when raycasting, so the handle
+ * would stop being clickable at the same moment it stopped being drawn.
+ */
+const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChange?: (dragging: boolean) => void }> = ({
+  x,
+  channel,
+  initial,
+  onDragChange,
+}) => {
+  const [value, setValue] = useState(initial);
+  const valueRef = useRef(initial);
+
+  const bind = useDrag(({ delta: [_, dy], event, first, last }) => {
+    event?.stopPropagation();
+    if (first) onDragChange?.(true);
+    if (last) onDragChange?.(false);
+    // Up is louder, so a downward drag lowers the channel.
+    const next = Math.min(1, Math.max(0, valueRef.current - dy * 0.006));
+    valueRef.current = next;
+    setValue(next);
+    setChannel(channel, next);
+  }, { eventOptions: { passive: false } });
+
+  return (
+    <group position={[x, 0, 0]}>
+      <mesh position={[0, SK_H + cm(0.05), FADER_Z]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[cm(0.55), FADER_TRAVEL + cm(1.1)]} />
+        <meshStandardMaterial color="#2a2c2f" roughness={0.8} />
+      </mesh>
+      <RoundedBox
+        args={[cm(1.7), cm(0.55), cm(1.1)]}
+        radius={cm(0.12)}
+        smoothness={3}
+        position={[0, SK_H + cm(0.35), FADER_Z + (0.5 - value) * FADER_TRAVEL]}
+        castShadow
+      >
+        <meshStandardMaterial color="#6f7378" roughness={0.45} metalness={0.08} />
+      </RoundedBox>
+      <mesh {...(bind() as any)} position={[0, SK_H + cm(0.7), FADER_Z]}>
+        <boxGeometry args={[cm(3.2), cm(1.8), FADER_TRAVEL + cm(2.4)]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+    </group>
+  );
+};
+
 const METER_W = cm(1.9);
 const METER_H = cm(2.4);
 
-const Sidekick: React.FC = () => {
+const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ onDragChange }) => {
   // The lit block grows from the display's near edge, so its origin has to sit at that edge
   // rather than at its centre — scaling happens about the origin.
   const meterGeometry = useMemo(() => {
@@ -408,19 +465,13 @@ const Sidekick: React.FC = () => {
     </mesh>
 
     {/* CUE, then the two channel faders, then FX and SELECT along the front. */}
-    {[skX(0.28), skX(0.44)].map((x) => (
+    {KNOB_COLS.map((x, i) => (
       <group key={`ch-${x}`}>
         <mesh position={[x, SK_H + cm(0.03), skZ(0.645)]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[cm(1.8), cm(1)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
         </mesh>
-        <mesh position={[x, SK_H + cm(0.05), skZ(0.79)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(0.55), cm(5.6)]} />
-          <meshStandardMaterial color="#2a2c2f" roughness={0.8} />
-        </mesh>
-        <RoundedBox args={[cm(1.7), cm(0.55), cm(1.1)]} radius={cm(0.12)} smoothness={3} position={[x, SK_H + cm(0.35), skZ(0.75)]} castShadow>
-          <meshStandardMaterial color="#6f7378" roughness={0.45} metalness={0.08} />
-        </RoundedBox>
+        <Fader x={x} channel={i} initial={i === 0 ? 0.85 : 0.3} onDragChange={onDragChange} />
         <mesh position={[x, SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[cm(1.8), cm(1)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
@@ -466,9 +517,9 @@ const Clutter: React.FC = () => (
   </group>
 );
 
-export const DeskGear: React.FC = () => (
+export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ onDragChange }) => (
   <group>
-    <Sidekick />
+    <Sidekick onDragChange={onDragChange} />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
     <Cables />

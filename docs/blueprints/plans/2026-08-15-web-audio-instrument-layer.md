@@ -184,8 +184,10 @@ inherit. None of them block step 1, and none are visible while nothing imports t
   navigating away from the homepage inside the SPA will unmount the scene and leave the loop
   playing over `/about`. Step 6 owns stopping it — an effect cleanup that calls `stopBed()`, and
   probably `suspend()` on the context too.
-- **The bed's gain is fixed at 1 and cannot be set from outside.** The decision was that it enters
-  *quietly*. Step 6 needs a seam for that; there is currently no way to ask for it.
+- ~~**The bed's gain is fixed at 1 and cannot be set from outside.**~~ Closed. Splitting the graph
+  into a pad channel and a bed channel for the Sidekick's faders gave the bed its own gain, which
+  now starts at 0.3 — so the seam this asked for exists, and the "enters quietly" decision is
+  implemented rather than merely recorded.
 - **The analyser sits after the master gain**, so turning the volume knob to zero will freeze the
   avatar. That is arguably correct — silence should mean stillness — but a scene that goes dead
   when someone only wanted it quieter may read as broken. Decide in step 5; moving the analyser
