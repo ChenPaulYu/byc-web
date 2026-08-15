@@ -1,101 +1,91 @@
 # Baton
 
-Branch `polish/landing-instrument` · HEAD `eaa8607` · 2026-08-15
+Branch `polish/landing-instrument` · HEAD `171f4b5` · 2026-08-16
 
 ## Goal
 
-Polish the existing single-MPC homepage into a bedroom-recording desk vignette — the feeling of
-looking over someone's shoulder at their workspace, henryheffernan.com's register with
-virtual.bbcmic.ro's interactivity. Procedural three.js only: no downloaded models, textures or
-HDRIs; canvas textures generated at runtime are fine. Site consistency is a standing constraint.
+The homepage is an instrument, not a room. Effort goes into how it feels to play; the scene is
+the setting and stops earning polish. Procedural three.js and raw Web Audio only — no downloaded
+models, textures, HDRIs or impulse responses.
 
-**Nothing is pushed, on the owner's instruction, until the scene is finished.**
+**Nothing has ever been pushed from this branch.** The live site is untouched at `origin/main`.
 
 ## Done
 
-The scene is rebuilt on real centimetres — the MPC's 46 cm is the anchor, so one scene unit is
-about 5.11 cm, and every dimension goes through `cm()`. This exists because the desk was once
-15 cm tall and nobody noticed, and it is the single most load-bearing decision here.
+**The audio layer is ours.** Tone.js is gone — 239 KB that loaded from the entry HTML on every
+page, including pages with no audio. Raw Web Audio in `landing/audio/`, behind a barrel that hands
+out behaviour and never a node. Two channel strips (pads, bed) into a shared filter, drive and
+reverb, with the reverb's impulse response synthesised from a decaying noise burst rather than
+downloaded. Trigger latency is gone by construction: Tone defaulted to a 100 ms lookahead, which
+was exactly as long as the pad's flash, so the sound used to arrive as the light went out.
 
-Desk in oak with a reconnected frame, no chair, no plant. Lit without any third-party asset.
-Entry is a power-on check rather than a plain button.
+**Everything that was decorative now does something.** The four knobs were connected to nothing at
+all; they are filter, drive, reverb and volume now, calibrated so no position sounds broken. The
+Sidekick's two faders are the two channels. Its display and the MPC's screen both read the audio —
+the MPC's replaced a 0.9 MB video loop with a live spectrum. The avatar takes his rate from the
+level, and drive and reverb reach him as shake and halo.
 
-The MPC was reshaped around the principle that at this size a machine is read by mass and light,
-not detail — then repainted at the owner's direction into a milk-tea / minimal register. Pads now
-sit a shade off the chassis cream, the grid is drawn entirely by the dark channels between them,
-and colour lives only in the press. The screen is the one saturated thing on the machine.
-
-The monitors were rebuilt from the Tannoy Gold 5 photograph that had been sitting unused in the
-archived branch, rather than from recollection — which corrected the driver layout, the ring size
-and what the panel below it actually is.
+**The scene was cut back and rebuilt.** Laptop and Launchpad gone with everything that existed
+only for them. Desk in walnut on a black steel frame, its wood generated from one height field so
+colour, relief and roughness cannot drift apart. Monitors are Tannoy Gold 5s built from the
+product photograph. The MPC has timber end cheeks.
 
 ## Now
 
-Making the monitors rounder. The cabinet is an extruded top-down profile so the upright corners
-can roll further than the top and bottom; it is at a 3.2 cm upright roll against a 1 cm bevel.
-
-**This is at its limit.** Rolling the uprights eats the flat front face, and it is now 12.6 cm
-across against a 12.4 cm brass ring. The owner has said "not round enough" twice; the next
-increment costs the ring its size, and that ring is the speaker's whole identity at this render
-size. That trade is the open question, and it is the owner's to make.
+Nothing in flight. The grounded plan
+(`plans/2026-08-15-web-audio-instrument-layer.md`) is complete — all eight steps, plus the two
+open items it recorded along the way.
 
 ## Open
 
-- **Rounder monitors vs. a smaller brass ring.** Waiting on the owner. Nothing else blocks.
-- **Camera distance.** A pad renders about 20 px. The whole MPC design was reasoned against a
-  measured 35 px, and the machine now occupies about a sixth of the frame rather than a quarter.
-  The design survived the shrink — which is what the principle predicted — but the number the
-  document rests on is no longer true. Raised with the owner, not decided.
-- **The monitors out-mass the hero.** They are the biggest, darkest objects in the frame and the
-  MPC reads as a prop beside them. Composition problem, deferred to the gear stage.
-- **Avatar behaviour.** Decided in the elicit, not built: breathing and weight-shift at rest,
-  dancing only while something plays. He is the instrument's output, not a person in the room.
-- **Ambient-occlusion bake.** `three-mesh-bvh` in Node is the chosen approach. Not started.
-- **Diegetic navigation** — About / Projects / Blog / CV as objects in the scene. Proposed only.
+- **Is the desk vignette the right frame at all?** Never decided. The instrument-only alternative
+  was rendered once and looked strong: a pad goes from 20 px to about 60, which is the difference
+  between a click target and a decoration. Deleting the desk still costs nothing.
+- **Navigation is still four text links in a corner** — the one thing both reference sites
+  explicitly do not do. The MPC's screen is now a canvas rather than a shader *specifically* so it
+  can carry a menu scrolled with a knob that already exists. That was the reason for the more
+  expensive choice, and it has not been taken up.
+- **The Sidekick's orange** is the only colour in the frame besides the two screens. Justified now
+  that its display responds to the music, but it sits opposite the MPC and still pulls the eye.
+- **Ambient-occlusion bake** with `three-mesh-bvh` in Node. Chosen approach, not started.
 - **`npm run dev` renders an empty canvas** (React StrictMode double-mount), verified at a clean
-  HEAD with no local changes. Unfixed. Work around it with a build plus `vite preview`, not dev.
+  HEAD. Unfixed. Work around it with a build plus `vite preview`.
+- `public/model.glb` is **2.7 MB**, larger than the whole three.js vendor chunk, and carries eleven
+  textures. If page weight ever becomes the subject, that file is the place to look.
 
 ## Next
 
-The owner's roadmap, in order: room and desk furniture ✓ → the MPC ✓ → **more gear**. The kit
-still to place is the EP-133 K.O. II and the PX8 headphones on a stand. Do not push.
+The owner's roadmap has the remaining kit as the EP-133 K.O. II and the PX8 headphones on a stand.
+Weigh that against the open question above first — more objects is the move the governing
+principle argues against, and the Sidekick only earned its place by being wired to the audio.
 
 ## Rejected — do not restart these
 
-The largest single risk to whoever picks this up is mistaking an abandoned path for unfinished
-work. These are closed:
+- **A full inhabited 3D studio room** (archived at `8d6d1c5`) and **generated 3D assets**; the
+  meshes came out ~5× too thick across two runs and prompting does not fix it.
+- **Tone.js and `audiorective`.** The library question is settled in
+  `thoughts/2026-08-15-instrument-over-scene.md`; do not re-open it.
+- **A paler or greyer desk.** Measured: the MPC separated from the old light oak by sixteen points
+  of luminance out of 255, almost entirely in the blue channel. Paler closes that gap and greyer
+  removes the hue difference carrying it. Walnut gives seventy-eight.
+- **Wooden desk legs**, for the same reason — one continuous warm mass eats the separation.
+- **Cheeks in the desk's own timber**, likewise: they would hand two of the machine's edges back
+  to the background. They are a paler ash on purpose.
+- **drei `<SoftShadows>`** (breaks the avatar) and **`<Environment preset="city">`** (fetches an
+  HDRI from a third-party CDN).
+- **A two-ring pad well**, a **grille on the MPC's top deck**, a **fifth large knob**, **printed
+  labels on anything**, and the **knobs' tick rings** — all of them either did not fit or rendered
+  as mush.
+- **Easing the avatar into view.** Reads as inflating. He is switched on, not grown.
 
-- **A full inhabited 3D studio room.** Four fidelity rounds could not fix it, because the defect
-  was silhouette, not materials. Archived at `8d6d1c5` and abandoned.
-- **Generated 3D assets** via an image-to-mesh service. Two runs with different seeds and inputs
-  both came out roughly five times too thick; prompting does not fix it.
-- **drei `<SoftShadows>`.** Breaks the avatar — it patches the shadow shader globally. Bisected
-  and measured. `PCFSoftShadowMap` is the answer.
-- **`<Environment preset="city">`.** Fetches an HDRI from a third-party CDN. Replaced with
-  `<Lightformer>` children building the cube map at runtime.
-- **A two-ring pad well** (dark floor inside a pale rim). Does not fit: the pad grid clears the
-  chassis edge by 1.5 cm. The cream chassis is the pale surround.
-- **A speaker grille on the MPC's top deck.** Does not fit either — about 2 cm of front edge is
-  left once the pad well and transport row have taken theirs. It is on the front vertical face.
-- **Printed labels on the transport keys, and the PROFESSIONAL sub-line.** Ten pixels of mush.
-  Status-light colour carries the transport instead.
-- **Mid-warm and dark-roast pad palettes.** Both rendered, both shown, both rejected by the owner
-  in favour of the palest of the three. Mid-warm additionally fell into the same value band as
-  the oak desk and cost the machine its silhouette.
-- **A separate tweeter above the woofer on the monitors.** That is the layout of nearly every
-  other monitor and of no Tannoy, whose Dual Concentric driver puts the tweeter down the woofer's
-  throat.
-- **Physically accurate brass** at metalness 0.72. Metal takes its colour from what it reflects,
-  and this scene is a white void with one small runtime environment map, so honest brass renders
-  as a black ring. Low metalness with a lifted envMapIntensity is worse physics and correct
-  pixels.
-- **`RoundedBox` for the monitor cabinet.** It rolls all twelve edges by one radius, so more curve
-  on the uprights ballooned the top into a pillow.
+## Two traps in the tooling
 
-## One trap in the test rig
+**The headless renderer draws about one frame a second.** A pad lights for 100 ms, so a press
+falls between frames and photographs as nothing at all, which looks exactly like a broken feature.
+To photograph a transient, hold it open in a scratch build.
 
-The headless renderer is software and draws roughly three frames a second, while a pad lights for
-a tenth of one. A press therefore falls between frames every time and the screenshot shows
-nothing — which looks exactly like a broken feature and is not. Verifying a press means raising
-the release timeout temporarily, rebuilding, shooting, and putting it back. This has now produced
-a false alarm twice in this project's history. Establish a control before concluding.
+**Confirm coordinates before trusting a pixel measurement.** This cost three wrong conclusions in
+one session: a diff window that caught the MPC's pads and read as a pass, the same window narrowed
+until it excluded the subject entirely and read as a failure, and a drag that missed a control by
+five pixels and read as a dead control. Painting the target a solid colour and locating it, or
+instrumenting the value in the page, settles it in one run.
