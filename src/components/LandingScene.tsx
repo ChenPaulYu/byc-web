@@ -7,25 +7,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Environment, Lightformer, OrbitControls, SoftShadows } from '@react-three/drei';
-import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
 import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
 import { Stage } from './landing/Stage';
 import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
+import { resume } from './landing/audio';
 
 const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
 
-const createSynth = () => {
-  return new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: "triangle" },
-    envelope: { attack: 0.005, decay: 0.1, sustain: 0.1, release: 0.5 }
-  }).toDestination();
-};
-
 const LandingScene: React.FC = () => {
   const navigate = useNavigate();
-  const synth = useMemo(() => createSynth(), []);
   const [entered, setEntered] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -39,7 +31,7 @@ const LandingScene: React.FC = () => {
   }, [videoReady]);
 
   const handleEnter = async () => {
-    await Tone.start();
+    await resume();
     setFadeOut(true);
     setTimeout(() => setEntered(true), 500);
   };
@@ -143,7 +135,7 @@ const LandingScene: React.FC = () => {
 
         <Stage />
         <DeskGear />
-        <Mpc synth={synth} onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
+        <Mpc onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches

@@ -15,7 +15,6 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks: {
             'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
-            'tone-vendor': ['tone'],
             'markdown-vendor': ['react-markdown', 'remark-gfm', 'rehype-highlight', 'highlight.js'],
           },
         },

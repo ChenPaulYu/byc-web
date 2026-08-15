@@ -7,7 +7,6 @@
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox, Text } from '@react-three/drei';
-import * as Tone from 'tone';
 import { AvatarFallback, AvatarModel, Knob, MpcButton, Pad, VideoScreen } from './primitives';
 import {
   COL_KNOBS_X,
@@ -67,12 +66,11 @@ const useGrilleTexture = () =>
   }, []);
 
 export interface MpcProps {
-  synth: Tone.PolySynth;
   onDragChange: (dragging: boolean) => void;
   onVideoReady?: () => void;
 }
 
-const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, onVideoReady }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
 
@@ -93,13 +91,12 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
     knobValues,
     setKnobValues,
     activeBtn,
-    mpcConfig,
-    effects,
+    triggerPad,
     handlePlay,
     handleStop,
     handlePrev,
     handleNext,
-  } = useMpcAudio(synth);
+  } = useMpcAudio();
 
   return (
     <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
@@ -165,19 +162,10 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
             const x = (col - 1.5) * stride;
             const z = (row - 1.5) * stride;
 
-            const handleTrigger = () => {
-              // Check if this pad has a sample assigned via config
-              if (mpcConfig && mpcConfig.pads[pad.key] && effects.current?.players?.loaded) {
-                if (effects.current.players.has(pad.key)) {
-                  const player = effects.current.players.player(pad.key);
-                  player.stop();
-                  player.start();
-                }
-              } else {
-                // No sample assigned — use synth
-                synth.triggerAttackRelease(pad.note, "8n");
-              }
-            };
+            // Which pad has a sample and which falls back to the synth voice is the audio
+            // layer's business, not this component's — it used to be decided here, against a
+            // ref to the Tone graph.
+            const handleTrigger = () => triggerPad(pad.key);
 
             return (
               <Pad

@@ -1,8 +1,8 @@
 /**
  * The synth fallback voice for pads with no sample assigned, plus the note-name-to-frequency
  * math it needs to play one. Matches the oscillator and envelope settings that
- * `LandingScene.createSynth` currently hands to `Tone.PolySynth(Tone.Synth, …)`, so replacing
- * Tone with this later changes the engine underneath a pad without changing how the pad sounds.
+ * `LandingScene.createSynth` used to hand to `Tone.PolySynth(Tone.Synth, …)`, so dropping Tone
+ * changed the engine underneath a pad without changing how the pad sounds.
  */
 
 const SEMITONES_FROM_A: Record<string, number> = {

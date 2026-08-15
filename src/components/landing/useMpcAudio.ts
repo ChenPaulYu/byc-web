@@ -1,24 +1,23 @@
 /**
- * Owns the MPC sample configuration, Tone.js effect chain, transport state, and knob history.
- * Reads: /mpc.config.json and sample files referenced by that configuration.
- * Writes: browser audio graph state and transport playback state.
+ * useMpcAudio — the React side of the instrument: sample configuration, transport state, and
+ * knob values. It owns no audio graph.
+ *
+ * Everything that makes a sound lives behind `./audio`, which hands out behaviour rather than
+ * nodes. The version this replaces returned a ref to its Tone.js effect chain, so `Mpc.tsx`
+ * reached in and started a player itself — the shape of the audio graph was known in two modules
+ * and neither could change without the other. Now the component tree cannot see a node, and this
+ * hook is the only thing that knows a pad key maps to a filename.
+ *
+ * Reads: /mpc.config.json (admin-written) and the sample files it names · ./audio
  */
 
-import { useEffect, useRef, useState } from 'react';
-import * as Tone from 'tone';
+import { useCallback, useEffect, useState } from 'react';
+import { loadBed, loadPadSample, resume, startBed, stopBed, triggerPad } from './audio';
 
 export interface MpcConfig {
   bpm: number;
   loop: string;
   pads: Record<string, string>;
-}
-
-export interface MpcEffects {
-  filter: Tone.Filter;
-  distortion: Tone.Distortion;
-  reverb: Tone.Reverb;
-  vol: Tone.Volume;
-  players?: Tone.Players;
 }
 
 export interface MpcAudioState {
@@ -27,14 +26,15 @@ export interface MpcAudioState {
   setKnobValues: React.Dispatch<React.SetStateAction<number[]>>;
   activeBtn: string | null;
   mpcConfig: MpcConfig | null;
-  effects: React.MutableRefObject<MpcEffects | null>;
+  /** Play the sound assigned to a pad key, or the synth voice if it has none. */
+  triggerPad: (key: string) => void;
   handlePlay: () => Promise<void>;
   handleStop: () => void;
   handlePrev: () => void;
   handleNext: () => void;
 }
 
-export function useMpcAudio(synth: Tone.PolySynth): MpcAudioState {
+export function useMpcAudio(): MpcAudioState {
   const [isPlaying, setIsPlaying] = useState(false);
   const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
@@ -60,72 +60,35 @@ export function useMpcAudio(synth: Tone.PolySynth): MpcAudioState {
       });
   }, []);
 
-  const effects = useRef<MpcEffects | null>(null);
-
+  // Decode as soon as the config names the files, rather than waiting for the first press: a
+  // pad that has to fetch and decode before it sounds is exactly the latency this rewrite is
+  // about. A pad hit before its buffer arrives still makes the synth tone, which is the same
+  // graceful fallback the twelve unassigned pads use.
   useEffect(() => {
     if (!mpcConfig) return;
-
-    // Create effects
-    const vol = new Tone.Volume(0).toDestination();
-    const reverb = new Tone.Reverb(0.5).connect(vol);
-    const distortion = new Tone.Distortion(0).connect(reverb);
-    const filter = new Tone.Filter(20000, "lowpass").connect(distortion);
-
-    // Build sample map from config
-    const sampleMap: Record<string, string> = {};
     for (const [key, filename] of Object.entries(mpcConfig.pads)) {
-      sampleMap[key] = `/samples/${filename}`;
+      loadPadSample(key, filename).catch(() => {
+        // A missing sample is not fatal — that pad keeps its synth voice.
+      });
     }
-    if (mpcConfig.loop) {
-      sampleMap['_loop'] = `/samples/${mpcConfig.loop}`;
-    }
+    if (mpcConfig.loop) loadBed(mpcConfig.loop).catch(() => {});
+  }, [mpcConfig]);
 
-    const players = new Tone.Players(sampleMap, () => {
-      console.log("Samples loaded from config");
-      if (mpcConfig.loop && players.has('_loop')) {
-        const loop = players.player('_loop');
-        loop.loop = true;
-        loop.sync().start(0);
-      }
-      Tone.Transport.bpm.value = mpcConfig.bpm;
-    }).connect(filter);
+  const handlePlay = useCallback(async () => {
+    await resume();
+    setIsPlaying(playing => {
+      if (playing) stopBed();
+      else startBed();
+      return !playing;
+    });
+  }, []);
 
-    effects.current = { filter, distortion, reverb, vol, players };
-
-    // Route synth through effects
-    synth.disconnect();
-    synth.connect(filter);
-
-    return () => {
-      synth.disconnect();
-      synth.toDestination();
-      filter.dispose();
-      distortion.dispose();
-      reverb.dispose();
-      vol.dispose();
-      players.dispose();
-      effects.current = null;
-    };
-  }, [synth, mpcConfig]);
-
-  const handlePlay = async () => {
-    if (Tone.context.state !== 'running') await Tone.start();
-
-    if (isPlaying) {
-      Tone.Transport.stop();
-      setIsPlaying(false);
-    } else {
-      Tone.Transport.start();
-      setIsPlaying(true);
-    }
-  };
-
-  const handleStop = () => {
-    Tone.Transport.stop();
+  const handleStop = useCallback(() => {
+    stopBed();
     setIsPlaying(false);
     setActiveBtn('STOP');
     setTimeout(() => setActiveBtn(null), 150);
-  };
+  }, []);
 
   const handlePrev = () => {
     setActiveBtn('PREV');
@@ -150,7 +113,7 @@ export function useMpcAudio(synth: Tone.PolySynth): MpcAudioState {
     setKnobValues,
     activeBtn,
     mpcConfig,
-    effects,
+    triggerPad,
     handlePlay,
     handleStop,
     handlePrev,
