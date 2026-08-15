@@ -66,6 +66,10 @@ class AudioEngine {
   private padSamples = new Map<string, AudioBuffer>();
   private bedBuffer: AudioBuffer | null = null;
   private bedSource: AudioBufferSourceNode | null = null;
+  // Asking for the bed and being able to play it are separate moments: the POWER ON click can
+  // easily land before the loop has finished decoding. Without remembering the request, that
+  // race just means the scene is silent for the whole visit.
+  private bedWanted = false;
 
   private ensureContext(): AudioContext {
     if (this.ctx) return this.ctx;
@@ -199,7 +203,8 @@ class AudioEngine {
   }
 
   startBed(): void {
-    if (!this.bedBuffer || this.bedSource) return; // nothing loaded, or already running
+    this.bedWanted = true;
+    if (!this.bedBuffer || this.bedSource) return; // nothing loaded yet, or already running
     const ctx = this.ensureContext();
 
     const source = ctx.createBufferSource();
@@ -213,6 +218,7 @@ class AudioEngine {
   }
 
   stopBed(): void {
+    this.bedWanted = false;
     if (!this.bedSource) return;
     this.bedSource.stop();
     this.bedSource.disconnect();
@@ -273,6 +279,7 @@ class AudioEngine {
   async loadBed(filename: string): Promise<void> {
     const ctx = this.ensureContext();
     this.bedBuffer = await loadSample(ctx, filename);
+    if (this.bedWanted) this.startBed();
   }
 }
 

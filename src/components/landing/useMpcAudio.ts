@@ -34,7 +34,7 @@ export interface MpcAudioState {
   handleNext: () => void;
 }
 
-export function useMpcAudio(): MpcAudioState {
+export function useMpcAudio(entered = false): MpcAudioState {
   const [isPlaying, setIsPlaying] = useState(false);
   // [Filter, Distortion, Reverb, Volume]. The filter sits nearly wide open rather than at the
   // midpoint: these values are what a visitor hears before touching anything, and a lowpass
@@ -82,6 +82,15 @@ export function useMpcAudio(): MpcAudioState {
   useEffect(() => {
     knobValues.forEach((value, index) => setParam(index, value));
   }, [knobValues]);
+
+  // The bed starts on entry, so the scene is alive for the visitors who never press a pad — and
+  // POWER ON is the user gesture browsers require before any of this may make a sound. The engine
+  // remembers the request if the loop is still decoding, so this cannot lose the race.
+  useEffect(() => {
+    if (!entered) return;
+    startBed();
+    setIsPlaying(true);
+  }, [entered]);
 
   const handlePlay = useCallback(async () => {
     await resume();

@@ -137,7 +137,7 @@ const LandingScene: React.FC = () => {
 
         <Stage />
         <DeskGear onDragChange={setIsDragging} />
-        <Mpc onDragChange={setIsDragging} onScreenReady={() => setScreenReady(true)} />
+        <Mpc onDragChange={setIsDragging} onScreenReady={() => setScreenReady(true)} entered={entered} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches

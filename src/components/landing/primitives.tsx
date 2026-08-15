@@ -8,7 +8,7 @@ import { useFrame } from '@react-three/fiber';
 import { RoundedBox, Text, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { useDrag } from '@use-gesture/react';
-import { getSpectrum } from './audio';
+import { getLevel, getSpectrum } from './audio';
 
 /**
  * The MPC's screen, drawing what the machine is doing rather than playing a film of it.
@@ -108,14 +108,25 @@ export const AvatarModel: React.FC = () => {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(AVATAR_URL);
   const { actions } = useAnimations(animations, group);
+  const action = useRef<THREE.AnimationAction | null>(null);
 
   useEffect(() => {
-    // Play the first available animation (usually Idle or mixamo.com)
     if (actions && animations.length > 0) {
-      const firstAnim = Object.keys(actions)[0];
-      actions[firstAnim]?.reset().fadeIn(0.5).play();
+      const first = Object.keys(actions)[0];
+      action.current = actions[first] ?? null;
+      action.current?.reset().fadeIn(0.5).play();
     }
   }, [actions, animations]);
+
+  // He dances to the audio rather than unconditionally, so his motion carries information.
+  // model.glb holds exactly one clip, Celebrating_Clean, and no idle — so blending between
+  // resting and dancing is not available and the rate is the dial instead. Near-still at silence
+  // reads as swaying; anyone looking for a second clip to cross-fade will not find one.
+  useFrame(() => {
+    if (!action.current) return;
+    const level = Math.min(1, getLevel() * 3.2);
+    action.current.timeScale = 0.07 + level * 1.05;
+  });
 
   return (
     <group ref={group} dispose={null}>

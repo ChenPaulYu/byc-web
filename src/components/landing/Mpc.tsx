@@ -74,9 +74,10 @@ const useGrilleTexture = () =>
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
   onScreenReady?: () => void;
+  entered?: boolean;
 }
 
-const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
 
@@ -106,7 +107,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady }) => {
     handleStop,
     handlePrev,
     handleNext,
-  } = useMpcAudio();
+  } = useMpcAudio(entered);
 
   return (
     <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
