@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox, Text } from '@react-three/drei';
-import { AvatarFallback, AvatarModel, Knob, MpcButton, Pad, VideoScreen } from './primitives';
+import { AvatarFallback, AvatarModel, Knob, MpcButton, Pad, ScreenReadout } from './primitives';
 import {
   COL_KNOBS_X,
   COL_PADS_X,
@@ -24,8 +24,6 @@ import { useLayoutControls } from './useLayoutControls';
 import { cm } from './scale';
 import { useMpcAudio } from './useMpcAudio';
 import { LIGHT_ASH, createWoodMaps } from './wood';
-
-const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
 
 /**
  * Timber on each end. 1.6 cm rather than the 2.5 that looked right first: the knob column sits at
@@ -75,10 +73,10 @@ const useGrilleTexture = () =>
 
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
-  onVideoReady?: () => void;
+  onScreenReady?: () => void;
 }
 
-const Mpc: React.FC<MpcProps> = ({ onDragChange, onVideoReady }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
 
@@ -228,30 +226,14 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onVideoReady }) => {
 
       {/* --- COLUMN 2: SCREEN (1.5/4 = 37.5%) --- */}
       <group position={[COL_SCREEN_X + positions.screenSectionX, 0, ROW_MAIN_Z + positions.screenSectionZ]}>
-        {/* Video Screen */}
+        {/* The screen. No Suspense wrapper any more — it was there for a video element that
+            had to load; this draws itself from the first frame. */}
         <group position={[0, 0, -0.8]}>
-          <Suspense fallback={
-            <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
-              <meshStandardMaterial color="#d1fae5" roughness={0.2} />
-            </RoundedBox>
-          }>
-            {VIDEO_ENABLED ? (
-              <VideoScreen
-                width={positions.screenWidth}
-                height={positions.screenHeight}
-                depth={positions.screenDepth}
-                opacity={positions.videoOpacity}
-                rotationX={positions.videoRotationX}
-                rotationY={positions.videoRotationY}
-                rotationZ={positions.videoRotationZ}
-                onReady={onVideoReady}
-              />
-            ) : (
-              <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
-                <meshStandardMaterial color="#059669" roughness={0.2} />
-              </RoundedBox>
-            )}
-          </Suspense>
+          <ScreenReadout
+            width={positions.screenWidth}
+            depth={positions.screenDepth}
+            onReady={onScreenReady}
+          />
 
           {/* Avatar on top of video screen */}
           <group position={[0, 0.15, 0]} scale={positions.avatarScale}>

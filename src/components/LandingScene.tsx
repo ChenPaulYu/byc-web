@@ -14,21 +14,20 @@ import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
 import { resume } from './landing/audio';
 
-const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
-
 const LandingScene: React.FC = () => {
   const navigate = useNavigate();
   const [entered, setEntered] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [videoReady, setVideoReady] = useState(!VIDEO_ENABLED);
+  const [screenReady, setScreenReady] = useState(false);
 
-  // Timeout fallback: if video doesn't load within 5 seconds, show the scene anyway
+  // The screen signals itself on mount now that it draws rather than loads, but the fallback
+  // stays: if it never mounts at all, the loading overlay must not sit there forever.
   useEffect(() => {
-    if (videoReady) return;
-    const timeout = window.setTimeout(() => setVideoReady(true), 5000);
+    if (screenReady) return;
+    const timeout = window.setTimeout(() => setScreenReady(true), 5000);
     return () => window.clearTimeout(timeout);
-  }, [videoReady]);
+  }, [screenReady]);
 
   const handleEnter = async () => {
     await resume();
@@ -85,7 +84,7 @@ const LandingScene: React.FC = () => {
     <CanvasErrorBoundary fallback={<StaticFallback />}>
     <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden">
       {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
-      {entered && <LoadingOverlay extraReady={videoReady} />}
+      {entered && <LoadingOverlay extraReady={screenReady} />}
       <Canvas
         shadows={{ type: THREE.PCFSoftShadowMap }}
         camera={{ position: cameraPosition, fov: 35 }}
@@ -138,7 +137,7 @@ const LandingScene: React.FC = () => {
 
         <Stage />
         <DeskGear onDragChange={setIsDragging} />
-        <Mpc onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
+        <Mpc onDragChange={setIsDragging} onScreenReady={() => setScreenReady(true)} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches

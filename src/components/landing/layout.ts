@@ -41,10 +41,6 @@ export interface MpcPositions {
   buttonWidth: number;
   buttonHeight: number;
   knobSpacing: number;
-  videoOpacity: number;
-  videoRotationX: number;
-  videoRotationY: number;
-  videoRotationZ: number;
 }
 
 export const DEFAULT_MPC_POSITIONS: MpcPositions = {
@@ -68,10 +64,6 @@ export const DEFAULT_MPC_POSITIONS: MpcPositions = {
   buttonWidth: 0.6,
   buttonHeight: 0.35,
   knobSpacing: 0.89,
-  videoOpacity: 1.0,
-  videoRotationX: 0,
-  videoRotationY: 0,
-  videoRotationZ: 0,
 };
 
 export const PAD_LAYOUT = [

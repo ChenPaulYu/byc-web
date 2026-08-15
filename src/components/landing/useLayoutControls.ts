@@ -160,22 +160,9 @@ export function useLayoutControls(): LayoutControls {
       setPositions(prev => ({ ...prev, avatarScale: value }));
       if (DEV_CONTROLS_ENABLED) console.log(`Avatar Scale: ${value}`);
     });
-    screenFolder.add(guiProxy, 'videoOpacity', 0, 1).step(0.01).name('Video Opacity').onChange((value: number) => {
-      setPositions(prev => ({ ...prev, videoOpacity: value }));
-      if (DEV_CONTROLS_ENABLED) console.log(`Video Opacity: ${value}`);
-    });
-    screenFolder.add(guiProxy, 'videoRotationX', -Math.PI, Math.PI).step(0.01).name('Video Rotation X').onChange((value: number) => {
-      setPositions(prev => ({ ...prev, videoRotationX: value }));
-      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation X: ${value}`);
-    });
-    screenFolder.add(guiProxy, 'videoRotationY', -Math.PI, Math.PI).step(0.01).name('Video Rotation Y').onChange((value: number) => {
-      setPositions(prev => ({ ...prev, videoRotationY: value }));
-      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation Y: ${value}`);
-    });
-    screenFolder.add(guiProxy, 'videoRotationZ', -Math.PI, Math.PI).step(0.01).name('Video Rotation Z').onChange((value: number) => {
-      setPositions(prev => ({ ...prev, videoRotationZ: value }));
-      if (DEV_CONTROLS_ENABLED) console.log(`Video Rotation Z: ${value}`);
-    });
+
+
+
     screenFolder.open();
 
     const buttonsFolder = gui.addFolder('Transport Buttons');
@@ -220,7 +207,6 @@ export function useLayoutControls(): LayoutControls {
           console.log('Screen Section:', { x: positions.screenSectionX, z: positions.screenSectionZ, width: positions.screenWidth, depth: positions.screenDepth, height: positions.screenHeight });
           console.log('Logo Size:', { mainSize: positions.logoMainSize, subSize: positions.logoSubSize });
           console.log('Avatar Scale:', positions.avatarScale);
-          console.log('Video Opacity:', positions.videoOpacity);
           console.log('Transport Buttons:', { zOffset: positions.buttonsOffsetZ });
           console.log('=== END VALUES ===');
         }

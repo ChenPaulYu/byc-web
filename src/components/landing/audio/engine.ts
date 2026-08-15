@@ -58,6 +58,7 @@ class AudioEngine {
   private masterGain: GainNode | null = null;
   private analyser: AnalyserNode | null = null;
 
+  private spectrumData: Uint8Array | null = null;
   private levelData: Float32Array | null = null;
   private smoothedLevel = 0;
   private lastLevelAt = 0;
@@ -127,6 +128,7 @@ class AudioEngine {
     this.masterGain = masterGain;
     this.analyser = analyser;
     this.levelData = new Float32Array(analyser.fftSize);
+    this.spectrumData = new Uint8Array(analyser.frequencyBinCount);
   }
 
   async resume(): Promise<void> {
@@ -243,6 +245,20 @@ class AudioEngine {
     // see the note in Pad's useFrame. Rate 9 gives a time constant near 110 ms.
     this.smoothedLevel += (rms - this.smoothedLevel) * (1 - Math.exp(-9 * elapsed));
     return Math.min(1, Math.max(0, this.smoothedLevel));
+  }
+
+  /**
+   * Fills `target` with the current frequency bins, 0-255 each, and returns how many were
+   * written. getLevel answers "how loud", which is all an avatar needs; a screen needs "loud at
+   * which frequencies". The caller owns the array so this can run every frame without allocating,
+   * and no node crosses the boundary.
+   */
+  getSpectrum(target: Uint8Array): number {
+    if (!this.analyser || !this.spectrumData) return 0;
+    this.analyser.getByteFrequencyData(this.spectrumData);
+    const n = Math.min(target.length, this.spectrumData.length);
+    target.set(this.spectrumData.subarray(0, n));
+    return n;
   }
 
   /** Seam for a later step: registers a decoded sample against a pad key. Not called by
