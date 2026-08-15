@@ -3,9 +3,10 @@
  * Reads: Vite feature flags and the composed landing-scene modules (stage, MPC, overlays); writes: navigation and entry state.
  */
 
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Environment, OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
+import { Environment, Lightformer, OrbitControls, SoftShadows } from '@react-three/drei';
 import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
 import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
@@ -43,41 +44,42 @@ const LandingScene: React.FC = () => {
   };
 
   // Responsive camera positioning
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 14, 14]);
+  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 11, 26]);
 
   useEffect(() => {
     const updateCameraPosition = () => {
       const { innerWidth, innerHeight } = window;
       const aspectRatio = innerWidth / innerHeight;
 
-      // Base camera distance, adjusted by device type.
-      // A little further than the floating-instrument framing so the desk rim reads.
-      let cameraDistance = 14;
+      // Over-the-shoulder framing: the viewer stands behind the chair rather than above the
+      // desk, so the camera sits low and well back and the object reads as a diorama with
+      // room around it.
+      let cameraDistance = 34;
 
       if (innerWidth < 480) {
-        // Mobile phones - closer view since MPC is scaled down
-        cameraDistance = 11;
+        // Mobile phones - closer, since the whole vignette has to survive a narrow frame
+        cameraDistance = 26;
       } else if (innerWidth < 768) {
         // Large phones / small tablets
-        cameraDistance = 12;
+        cameraDistance = 29;
       } else if (innerWidth < 1024) {
         // Tablets
-        cameraDistance = 13;
+        cameraDistance = 31;
       } else {
         // Desktop
-        cameraDistance = 14;
+        cameraDistance = 34;
       }
 
-      // Adjust for extreme aspect ratios
+      // Three-quarter from behind and to one side. Dead-on reads as a product shot; the
+      // off-axis angle is what makes it feel like looking over someone's shoulder at a desk
+      // they were just working at.
       if (aspectRatio < 0.8) {
-        // Portrait - move camera back and up
-        setCameraPosition([0, cameraDistance + 4, cameraDistance + 2]);
+        // Portrait - swing further round so the desk still fills a narrow frame
+        setCameraPosition([cameraDistance * 0.5, cameraDistance * 0.66, cameraDistance * 0.72]);
       } else if (aspectRatio > 2.0) {
-        // Ultra-wide - adjust position
-        setCameraPosition([0, cameraDistance, cameraDistance + 1]);
+        setCameraPosition([cameraDistance * 0.42, cameraDistance * 0.55, cameraDistance * 0.78]);
       } else {
-        // Standard landscape
-        setCameraPosition([0, cameraDistance, cameraDistance]);
+        setCameraPosition([cameraDistance * 0.46, cameraDistance * 0.6, cameraDistance * 0.75]);
       }
     };
 
@@ -92,35 +94,46 @@ const LandingScene: React.FC = () => {
       {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
       {entered && <LoadingOverlay extraReady={videoReady} />}
       <Canvas
-        shadows
+        shadows={{ type: THREE.PCFSoftShadowMap }}
         camera={{ position: cameraPosition, fov: 35 }}
         dpr={[1, 1.5]} // Limit pixel ratio for performance
         performance={{ min: 0.5 }} // Allow frame rate to drop for performance
+        // Neutral, not ACESFilmic. ACES is built for cinematic HDR contrast and desaturates
+        // light surfaces — on a near-white set that shows up as a grey, muddy wash.
+        gl={{ toneMapping: THREE.NeutralToneMapping, toneMappingExposure: 1.06 }}
       >
         <color attach="background" args={['#f9fafb']} />
 
-        <ambientLight intensity={1.05} />
-        <spotLight
-          position={[8, 16, 10]}
-          angle={0.38}
-          penumbra={1}
-          intensity={1.15}
+        {/* Ambient is kept low on purpose. Flooding the scene with it is what made every
+            surface read as flat paper — the Environment below is doing the shading work, and
+            it can only do that if there is somewhere for its reflections to land. */}
+        <ambientLight intensity={0.32} />
+        <directionalLight
+          position={[9, 15, 7]}
+          intensity={1.5}
           castShadow
-          shadow-mapSize={[1024, 1024]}
+          shadow-mapSize={[2048, 2048]}
+          shadow-camera-left={-24}
+          shadow-camera-right={24}
+          shadow-camera-top={24}
+          shadow-camera-bottom={-24}
+          shadow-bias={-0.0004}
         />
-        <pointLight position={[-8, 8, 6]} intensity={0.45} />
+        <directionalLight position={[-10, 7, 4]} intensity={0.32} />
 
         <OrbitControls
+          target={[0, -1.7, 0]}
           enabled={!isDragging}
           enablePan={false}
           enableZoom={true}
-          minDistance={9}
-          maxDistance={24}
-          minPolarAngle={Math.PI / 4}
+          minDistance={12}
+          maxDistance={44}
+          minPolarAngle={Math.PI / 3.4}
           maxPolarAngle={Math.PI / 2.5}
-          // Fix azimuth to give that slightly angled front view
-          minAzimuthAngle={-Math.PI / 8}
-          maxAzimuthAngle={Math.PI / 8}
+          // Keep the view off-axis. Letting it swing back to dead-on loses the over-the-
+          // shoulder read the whole composition is built around.
+          minAzimuthAngle={Math.PI / 18}
+          maxAzimuthAngle={Math.PI / 2.9}
           zoomSpeed={0.8}
           // Enable touch zoom with pinch gestures
           enableDamping={true}
@@ -130,9 +143,17 @@ const LandingScene: React.FC = () => {
         <Stage />
         <Mpc synth={synth} onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
-        <Suspense fallback={null}>
-          <Environment preset="city" />
-        </Suspense>
+        {/* A three-light studio rig rendered into a cube map at runtime. This replaces
+            `preset="city"`, which reads as one innocuous prop but actually fetches
+            potsdamer_platz_1k.hdr from raw.githack.com on every visit — a third-party CDN in
+            the critical path of how the homepage is lit, and a downloaded asset besides.
+            Lightformers cost nothing to fetch and can be tuned to this scene's near-white
+            palette instead of to a photograph of a city. */}
+        <Environment resolution={256}>
+          <Lightformer form="rect" intensity={2.6} color="#ffffff" scale={[14, 9, 1]} position={[7, 11, 6]} target={[0, -2, 0]} />
+          <Lightformer form="rect" intensity={0.9} color="#eef1f4" scale={[12, 7, 1]} position={[-9, 6, -4]} target={[0, -2, 0]} />
+          <Lightformer form="ring" intensity={0.5} color="#ffffff" scale={5} position={[-4, 3, 9]} target={[0, -2, 0]} />
+        </Environment>
       </Canvas>
 
       {/* --- RESPONSIVE UI OVERLAY --- */}

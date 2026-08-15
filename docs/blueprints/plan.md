@@ -12,9 +12,17 @@
 > its lessons are in [`2026-08-14-full-3d-room-postmortem.md`](thoughts/2026-08-14-full-3d-room-postmortem.md)
 > and its code on branch `experiment/homepage-core`.
 
-- **Near-white desk stage (in flight)** — decided 2026-08-14: room feeling with the existing
-  MPC sitting on a desk, using the site palette (white walls, pale desk, `neutral-200` edges).
-  Not the abandoned warm studio. Instrument restyle comes after the stage reads.
+> **Order of work, decided 2026-08-15:** room and desk-side fixtures first, then restyle the
+> MPC itself, then add more gear. Each stage has to read before the next one starts.
+
+- **Desk vignette (in flight)** — the MPC sits on a desk in a soft grey void, seen three-quarter
+  from behind an empty chair. Reference: `henryheffernan.com`, whose look turns out to be a
+  near-white void with a floating diorama, not a warm room — so it agrees with the site palette
+  rather than fighting it. The chair is what makes it read as someone's workspace; the one dark
+  desk surface is what stops an all-white set from reading as flat paper.
+  Open: chair placement after the camera swung off-axis, no ambient occlusion, an empty desk top,
+  and the plant still looks wrong. The tiny avatar standing on the MPC also has to be resolved —
+  it belongs to a different fiction than "peek at a real workspace".
 - **Re-wire the visual regression gate** — `scripts/visual-gate/compare-baseline.mjs` is carried
   over and unchanged; it needs a capture step against this homepage's single Canvas, waiting on
   a real paint signal rather than a timeout. Worth doing once the stage composition settles.
