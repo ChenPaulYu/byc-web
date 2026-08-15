@@ -177,7 +177,7 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
     // A grid of sixteen identical grey squares reads as a grille. Letting a few pads sit lit at
     // rest is what makes the machine read as an instrument rather than a panel — and colour
     // from light is the one identity cue that survives at this render size.
-    const baseColor = new THREE.Color(idleTint ?? "#6b7280");
+    const baseColor = new THREE.Color(idleTint ?? "#ded5c3");
     const activeColor = new THREE.Color(color);
     const idleEmissive = idleTint ? new THREE.Color(idleTint) : new THREE.Color("#000");
 
@@ -190,7 +190,7 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
 
     material.color.lerp(active ? activeColor : baseColor, damp(20));
     material.emissive.lerp(active ? activeColor : idleEmissive, damp(20));
-    material.emissiveIntensity = active ? 1.0 : idleTint ? 0.34 : 0;
+    material.emissiveIntensity = active ? 1.0 : idleTint ? 0.09 : 0;
 
     const idleY = position[1];
     const pressedY = position[1] - 0.05;

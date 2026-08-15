@@ -52,8 +52,8 @@ export const DEFAULT_MPC_POSITIONS: MpcPositions = {
   containerZ: 0,
   padsSectionX: 0,
   padsSectionZ: -0.39,
-  padSize: 0.87,
-  padSpacing: 0.15,
+  padSize: 0.80,
+  padSpacing: 0.22,
   padHeight: 0.2,
   screenSectionX: 0,
   screenSectionZ: 0,
@@ -81,6 +81,18 @@ export const PAD_LAYOUT = [
   { key: 'z', note: 'C4' }, { key: 'x', note: 'D4' }, { key: 'c', note: 'E4' }, { key: 'v', note: 'G4' },
 ] as const;
 
-export const PAD_COLORS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa'] as const;
+/**
+ * What a pad turns when it is played, by row.
+ *
+ * Kept above the resting cream rather than below it: the pads sit near the chassis colour now,
+ * so a caramel press would have read as the pad going *dark*. Emissive does most of the work.
+ *
+ * A warm ladder — oat, latte, caramel, brown sugar — rather than the red / amber / green / blue
+ * it used to be. The screen is the one saturated thing on this machine and it should stay that
+ * way; sixteen candy-coloured squares next to it made two things competing for the same job.
+ * The rows still separate, by warmth instead of by hue, and the press is mostly read from the
+ * pad dipping and brightening anyway.
+ */
+export const PAD_COLORS = ['#f8e6c6', '#f2cd99', '#e9b075', '#dd9660'] as const;
 
 export const KNOB_MULTIPLIERS = [-1.5, -0.5, 0.5, 1.5] as const;

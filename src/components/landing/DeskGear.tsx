@@ -95,6 +95,56 @@ const Laptop: React.FC = () => {
 };
 
 /**
+ * The front of a Tannoy Gold 5, which is what REAL.monitor has been measured from all along.
+ *
+ * Its one distinguishing feature is the Dual Concentric driver: the tweeter sits down the throat
+ * of the woofer rather than in a second hole above it, so this baffle has exactly one circle on
+ * it. The version before this had a separate tweeter up top, which is the layout of almost every
+ * other monitor and of no Tannoy. The gold centre is the rest of the identity — it is the only
+ * warm point on an otherwise matte black box, and it is what the "Gold" in the name refers to.
+ *
+ * Everything is drawn as stacked discs standing a fraction of a millimetre apart rather than as
+ * real recesses: at this distance the cabinet is about forty pixels wide, so the depth would
+ * never be seen and the z-fighting would be.
+ */
+const BAFFLE_Z = cm(REAL.monitor.depth) / 2;
+const DRIVER_Y = cm(3.5);
+
+const TannoyBaffle: React.FC = () => (
+  <group position={[0, 0, BAFFLE_Z]}>
+    {/* Baffle plate, a shade off the cabinet so the front face separates from the sides. */}
+    <mesh position={[0, 0, cm(0.05)]}>
+      <planeGeometry args={[cm(REAL.monitor.width) - cm(0.6), cm(REAL.monitor.height) - cm(0.6)]} />
+      <meshStandardMaterial color="#232426" roughness={0.82} metalness={0.06} />
+    </mesh>
+
+    {/* Driver: chassis ring, rubber surround, cone, then the gold centre. */}
+    <mesh position={[0, DRIVER_Y, cm(0.1)]}>
+      <ringGeometry args={[cm(6.2), cm(7.0), 40]} />
+      <meshStandardMaterial color="#8c7440" roughness={0.38} metalness={0.72} />
+    </mesh>
+    <mesh position={[0, DRIVER_Y, cm(0.15)]}>
+      <circleGeometry args={[cm(6.2), 40]} />
+      <meshStandardMaterial color="#191a1c" roughness={0.7} metalness={0.05} />
+    </mesh>
+    <mesh position={[0, DRIVER_Y, cm(0.2)]}>
+      <circleGeometry args={[cm(5.2), 40]} />
+      <meshStandardMaterial color="#111214" roughness={0.92} metalness={0.02} />
+    </mesh>
+    <mesh position={[0, DRIVER_Y, cm(0.25)]}>
+      <circleGeometry args={[cm(2.3), 28]} />
+      <meshStandardMaterial color="#b08f4c" roughness={0.34} metalness={0.78} />
+    </mesh>
+
+    {/* Front-firing port slot below the driver. */}
+    <mesh position={[0, cm(-9.4), cm(0.1)]}>
+      <planeGeometry args={[cm(10), cm(1.8)]} />
+      <meshStandardMaterial color="#0d0e0f" roughness={0.95} metalness={0} />
+    </mesh>
+  </group>
+);
+
+/**
  * A monitor on a stack of paperbacks. Isolation pads are what a studio uses; books are what a
  * bedroom uses, and the difference is most of the register.
  */
@@ -121,18 +171,7 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
       <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={cm(0.8)} smoothness={3} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE_DARK} roughness={0.66} metalness={0.1} envMapIntensity={0.9} />
       </RoundedBox>
-      <mesh position={[0, cm(-4), cm(REAL.monitor.depth) / 2 + cm(0.2)]}>
-        <circleGeometry args={[cm(6.4), 28]} />
-        <meshStandardMaterial color="#1b1c1e" roughness={0.85} />
-      </mesh>
-      <mesh position={[0, cm(-4), cm(REAL.monitor.depth) / 2 + cm(0.4)]}>
-        <circleGeometry args={[cm(2), 20]} />
-        <meshStandardMaterial color="#8d7a4e" roughness={0.4} metalness={0.6} />
-      </mesh>
-      <mesh position={[0, cm(9), cm(REAL.monitor.depth) / 2 + cm(0.2)]}>
-        <circleGeometry args={[cm(2.6), 20]} />
-        <meshStandardMaterial color="#242628" roughness={0.7} />
-      </mesh>
+      <TannoyBaffle />
     </group>
   </group>
 );

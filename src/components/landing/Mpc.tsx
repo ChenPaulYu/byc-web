@@ -33,10 +33,10 @@ const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
  * sparse and desaturated — the glow is the machine's only colour, so it does not need to shout.
  */
 const IDLE_TINTS: Array<string | undefined> = [
-  '#5f7f93', undefined, undefined, '#8a6a86',
-  undefined, '#7c6f5a', undefined, undefined,
-  undefined, undefined, '#5f7f93', undefined,
-  '#7a5f63', undefined, undefined, undefined,
+  '#e8dcc2', undefined, undefined, '#d6cdba',
+  undefined, '#eadfc4', undefined, undefined,
+  undefined, undefined, '#d9d0bd', undefined,
+  '#e4d8bf', undefined, undefined, undefined,
 ];
 
 /** A perforated speaker grille, drawn once. Rows of small holes on a slightly darker field. */
@@ -161,7 +161,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
           position={[0, 0.02 - cm(0.5), 0]}
           receiveShadow
         >
-          <meshStandardMaterial color="#191d22" roughness={0.85} metalness={0.03} />
+          <meshStandardMaterial color="#23211d" roughness={0.85} metalness={0.03} />
         </RoundedBox>
 
         <group position={[0, 0, 0]}>
@@ -245,7 +245,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="PREV"
-            ledColor="#fbbf24"
+            ledColor="#d6a854"
             onClick={handlePrev}
             isActive={activeBtn === 'PREV'}
           />
@@ -254,7 +254,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="NXT"
-            ledColor="#9ca3af"
+            ledColor="#a49b8e"
             onClick={handleNext}
             isActive={activeBtn === 'NXT'}
           />
@@ -263,7 +263,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="STOP"
-            ledColor="#f87171"
+            ledColor="#c47a66"
             onClick={handleStop}
             isActive={activeBtn === 'STOP'}
           />
@@ -272,7 +272,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="PLAY"
-            ledColor="#4ade80"
+            ledColor="#89a37c"
             onClick={handlePlay}
             isActive={isPlaying}
           />
