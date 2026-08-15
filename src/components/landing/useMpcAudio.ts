@@ -12,7 +12,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { loadBed, loadPadSample, resume, startBed, stopBed, triggerPad } from './audio';
+import { loadBed, loadPadSample, resume, setParam, startBed, stopBed, triggerPad } from './audio';
 
 export interface MpcConfig {
   bpm: number;
@@ -36,7 +36,10 @@ export interface MpcAudioState {
 
 export function useMpcAudio(): MpcAudioState {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [knobValues, setKnobValues] = useState([0.5, 0.2, 0.3, 0.8]); // [Filter, Distortion, Reverb, Volume]
+  // [Filter, Distortion, Reverb, Volume]. The filter sits nearly wide open rather than at the
+  // midpoint: these values are what a visitor hears before touching anything, and a lowpass
+  // parked halfway through its travel means the site's default sound is a dull one.
+  const [knobValues, setKnobValues] = useState([0.92, 0, 0.18, 0.85]);
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
   const [history, setHistory] = useState<number[][]>([]); // Knob history
   const [mpcConfig, setMpcConfig] = useState<MpcConfig | null>(null);
@@ -74,6 +77,12 @@ export function useMpcAudio(): MpcAudioState {
     if (mpcConfig.loop) loadBed(mpcConfig.loop).catch(() => {});
   }, [mpcConfig]);
 
+  // The knobs were connected to nothing at all until now — the values existed, drew the knob
+  // rotations and were pushed onto the undo history, and never reached the audio graph.
+  useEffect(() => {
+    knobValues.forEach((value, index) => setParam(index, value));
+  }, [knobValues]);
+
   const handlePlay = useCallback(async () => {
     await resume();
     setIsPlaying(playing => {
@@ -104,7 +113,10 @@ export function useMpcAudio(): MpcAudioState {
     setActiveBtn('NXT');
     setTimeout(() => setActiveBtn(null), 150);
     setHistory(prev => [...prev, knobValues]); // Save current state
-    setKnobValues([Math.random(), Math.random(), Math.random(), Math.random()]);
+    // Randomised within ranges that stay listenable. Unbounded, this button could park the
+    // filter at its floor and the drive at maximum in one press, which sounds like a fault
+    // rather than like a shuffle.
+    setKnobValues([0.45 + Math.random() * 0.55, Math.random() * 0.5, Math.random() * 0.6, 0.6 + Math.random() * 0.4]);
   };
 
   return {

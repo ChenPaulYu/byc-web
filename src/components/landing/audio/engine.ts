@@ -159,14 +159,18 @@ class AudioEngine {
 
     switch (index) {
       case 0: {
-        // Filter cutoff, logarithmic 200 Hz..20000 Hz — a linear sweep spends almost its whole
-        // range above the range anyone can hear the difference in.
-        const freq = 200 * Math.pow(100, v);
+        // Filter cutoff, logarithmic 500 Hz..20 kHz. Logarithmic because a linear sweep spends
+        // almost its whole travel above the range anyone can hear a difference in. The floor was
+        // 200 Hz, which is not "filtered" but "broken" to anyone who did not mean to go there —
+        // and a visitor who thinks the site is broken does not conclude they turned a knob too far.
+        const freq = 500 * Math.pow(40, v);
         this.filter?.frequency.setTargetAtTime(freq, now, 0.01);
         break;
       }
       case 1: {
-        if (this.shaper) this.shaper.curve = v === 0 ? null : buildDistortionCurve(v * 100);
+        // Capped well below the curve's useful maximum: fully clockwise should be gritty, not
+        // destroyed, for the same reason the filter has a floor.
+        if (this.shaper) this.shaper.curve = v === 0 ? null : buildDistortionCurve(v * 45);
         break;
       }
       case 2: {

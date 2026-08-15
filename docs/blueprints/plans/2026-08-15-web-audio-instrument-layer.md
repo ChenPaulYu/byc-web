@@ -192,9 +192,10 @@ inherit. None of them block step 1, and none are visible while nothing imports t
   avatar. That is arguably correct — silence should mean stillness — but a scene that goes dead
   when someone only wanted it quieter may read as broken. Decide in step 5; moving the analyser
   before the master gain is a one-line change if the answer is the other one.
-- **The filter's floor is 200 Hz, and the knob's default value is 0.5**, which maps to 2 kHz. The
-  moment step 4 wires the knobs, the site's default sound becomes noticeably dull. The mappings
-  were explicitly delivered as placeholders; this is the specific number to fix.
+- ~~**The filter's floor is 200 Hz, and the knob's default value is 0.5.**~~ Closed in step 4. The
+  floor is 500 Hz, the drive is capped at 45% of the curve's useful maximum, the default knob
+  values moved to [0.92, 0, 0.18, 0.85] so the filter starts nearly open, and NEXT randomises
+  inside listenable bounds rather than across the whole travel.
 
 One defect was fixed during review rather than deferred: `getLevel()` smoothed by a fixed fraction
 per call, which is frame-rate dependent, and it mutated on read, so a second caller in the same
