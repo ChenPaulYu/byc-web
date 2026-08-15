@@ -13,7 +13,7 @@
  * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y
  */
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { DESK_TOP_Y } from './Stage';
@@ -111,8 +111,61 @@ const Laptop: React.FC = () => {
 // REAL.monitor: the gold ring is about two thirds of the front face across, the tweeter cone at
 // its centre is far smaller than it looks in memory, and the control plate sits a third of the
 // way down from centre.
-const CAB_RADIUS = cm(1.8);
-const BAFFLE_Z = cm(REAL.monitor.depth) / 2;
+/**
+ * The cabinet, extruded rather than boxed.
+ *
+ * A RoundedBox rolls all twelve edges by the same amount, so pushing the vertical corners as far
+ * as this would have ballooned the top face into a pillow. Extruding the top-down profile along
+ * the height instead separates the two: the plan outline carries a deep roll on the four upright
+ * corners, and the bevel on the extrusion carries a much smaller one along the top and bottom.
+ *
+ * CAB_RADIUS is the constraint that binds everything else on this speaker. Rolling the uprights
+ * eats into the flat front face — at 3.2 cm the face is 12.6 cm across and the brass ring is
+ * 12.4 cm, so the driver only just fits and there is no room to go further without shrinking it.
+ * Wider than the reference measures, deliberately: at forty pixels a true 2 cm roll is four
+ * pixels and reads as a sharp box.
+ */
+const CAB_RADIUS = cm(3.2);
+const CAB_BEVEL = cm(1);
+
+const useCabinetGeometry = () =>
+  useMemo(() => {
+    // ExtrudeGeometry's bevel grows *outward* from the profile, so the profile has to be inset by
+    // the bevel on every side for the finished cabinet to measure what REAL.monitor says. Getting
+    // this wrong the first time both inflated the box and pushed its front surface out past
+    // BAFFLE_Z, which swallowed the entire driver.
+    const w = cm(REAL.monitor.width) - CAB_BEVEL * 2;
+    const d = cm(REAL.monitor.depth) - CAB_BEVEL * 2;
+    const h = cm(REAL.monitor.height);
+    const r = CAB_RADIUS - CAB_BEVEL;
+    const shape = new THREE.Shape();
+    const x = -w / 2;
+    const y = -d / 2;
+    shape.moveTo(x + r, y);
+    shape.lineTo(x + w - r, y);
+    shape.quadraticCurveTo(x + w, y, x + w, y + r);
+    shape.lineTo(x + w, y + d - r);
+    shape.quadraticCurveTo(x + w, y + d, x + w - r, y + d);
+    shape.lineTo(x + r, y + d);
+    shape.quadraticCurveTo(x, y + d, x, y + d - r);
+    shape.lineTo(x, y + r);
+    shape.quadraticCurveTo(x, y, x + r, y);
+
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: h - CAB_BEVEL * 2,
+      bevelEnabled: true,
+      bevelThickness: CAB_BEVEL,
+      bevelSize: CAB_BEVEL,
+      bevelSegments: 4,
+      curveSegments: 10,
+    });
+    // Extrusion runs along +Z; stand it up, then centre it on its own height.
+    geometry.rotateX(-Math.PI / 2);
+    geometry.translate(0, -(h - CAB_BEVEL * 2) / 2, 0);
+    return geometry;
+  }, []);
+
+const BAFFLE_Z = cm(REAL.monitor.depth) / 2 + cm(0.02);
 const DRIVER_Y = cm(4);
 const RING_OUTER = cm(6.2);
 const RING_INNER = cm(4.8);
@@ -178,7 +231,10 @@ const TannoyBaffle: React.FC = () => (
  * A monitor on a stack of paperbacks. Isolation pads are what a studio uses; books are what a
  * bedroom uses, and the difference is most of the register.
  */
-const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) => (
+const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) => {
+  const cabinet = useCabinetGeometry();
+  useEffect(() => () => { cabinet.dispose(); }, [cabinet]);
+  return (
   <group position={[x, DESK_TOP_Y, cm(-24)]} rotation={[0, toeIn, 0]}>
     {[
       { i: 0, c: BOOK_A, r: 0.04 },
@@ -198,13 +254,14 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
     ))}
     {/* Cabinet, tilted back a little the way a monitor on an improvised riser always is. */}
     <group position={[0, cm(REAL.paperback.height * 3) + cm(REAL.monitor.height) / 2, 0]} rotation={[-0.09, 0, 0]}>
-      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={CAB_RADIUS} smoothness={8} castShadow receiveShadow>
+      <mesh geometry={cabinet} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE_DARK} roughness={0.58} metalness={0.14} envMapIntensity={1.7} clearcoat={0.25} clearcoatRoughness={0.55} />
-      </RoundedBox>
+      </mesh>
       <TannoyBaffle />
     </group>
   </group>
-);
+  );
+};
 
 const Launchpad: React.FC = () => {
   const grid = useGridTexture();
