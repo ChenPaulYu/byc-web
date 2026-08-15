@@ -183,8 +183,8 @@ export function createWoodMaps({
 
 /** Walnut — the desk. Dark enough that the MPC's cream chassis reads as a silhouette on it. */
 export const WALNUT: Pick<WoodOptions, 'light' | 'dark'> = {
-  light: [138, 105, 74],
-  dark: [74, 52, 34],
+  light: [133, 110, 90],
+  dark: [76, 62, 50],
 };
 
 /**
@@ -193,6 +193,6 @@ export const WALNUT: Pick<WoodOptions, 'light' | 'dark'> = {
  * timber would hand two of its edges straight back to the background.
  */
 export const LIGHT_ASH: Pick<WoodOptions, 'light' | 'dark'> = {
-  light: [196, 163, 118],
-  dark: [140, 106, 68],
+  light: [193, 168, 133],
+  dark: [142, 116, 86],
 };

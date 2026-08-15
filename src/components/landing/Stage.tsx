@@ -24,10 +24,10 @@ export const DESK_TOP_Y = -2;
 
 const DESK_TOP = '#3f4043';
 const DESK_BODY = '#d8d9da';
-const DESK_FRAME = '#232528';
+const DESK_FRAME = '#3a3e43';
 // Brackets and feet, a step *lighter* than the tube now that the tube is near-black, so the
 // joints still read as separate parts rather than as the frame simply getting thicker.
-const FRAME_DARK = '#3c4045';
+const FRAME_DARK = '#4f545a';
 const EDGE_BAND = '#6b563f';
 
 // Every dimension below comes from a real measurement through cm(). See scale.ts — before

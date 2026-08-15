@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
 
-const CASE_DARK = '#2f3134';
+const CASE_DARK = '#3f4348';
 const BOOK_A = '#c9cbc6';
 const BOOK_B = '#d9d5cc';
 const BOOK_C = '#bfc4c8';
