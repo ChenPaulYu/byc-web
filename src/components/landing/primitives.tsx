@@ -136,6 +136,133 @@ export const AvatarModel: React.FC = () => {
   );
 };
 
+/**
+ * The avatar's entrance, and the effects that act on him afterwards.
+ *
+ * He is the instrument's output, so he arrives the way a signal does: not by growing into place
+ * but by being *switched on*. The reveal is a hard cut at full size, preceded by two single-frame
+ * flickers and a flash off the screen — a hologram locking on rather than a figure walking in.
+ * An earlier version eased him up over 1.4 s and read as inflating, which is the opposite idea.
+ *
+ * Two knobs then reach him, because an effect you can hear and not see is half an effect:
+ *
+ * - **Drive** shakes him. Distortion is a signal losing its grip, and a figure that jitters when
+ *   the drive comes up says that with no legend needed.
+ * - **Reverb** puts a halo around him. Reverb is the size of the room, so it shows as space
+ *   around the figure rather than as anything happening to the figure itself.
+ *
+ * The beam, ring and halo are additive and never write depth, so they read as light rather than
+ * as more objects sitting on the panel.
+ */
+export const AvatarStage: React.FC<{
+  armed: boolean;
+  scale: number;
+  drive: number;
+  space: number;
+  children: React.ReactNode;
+}> = ({ armed, scale, drive, space, children }) => {
+  const rig = useRef<THREE.Group>(null);
+  const beam = useRef<THREE.Mesh>(null);
+  const ring = useRef<THREE.Mesh>(null);
+  const halo = useRef<THREE.Mesh>(null);
+  const elapsed = useRef(0);
+  const ARRIVAL_SECONDS = 0.55;
+
+  useFrame((state, delta) => {
+    if (!armed) {
+      elapsed.current = 0;
+      if (rig.current) rig.current.visible = false;
+      return;
+    }
+    elapsed.current += delta;
+    const t = Math.min(1, elapsed.current / ARRIVAL_SECONDS);
+
+    // Two flickers, then on for good. No interpolation anywhere in here on purpose.
+    const settled = t > 0.55;
+    const on = settled || (t > 0.12 && t < 0.2) || (t > 0.32 && t < 0.4);
+
+    if (rig.current) {
+      rig.current.visible = on;
+      rig.current.scale.setScalar(scale);
+
+      // Drive shakes him; reverb does not move him at all.
+      const shake = drive * 0.06;
+      const time = state.clock.elapsedTime;
+      rig.current.position.set(
+        Math.sin(time * 47) * shake,
+        0.15 + Math.sin(time * 61) * shake * 0.5,
+        Math.cos(time * 53) * shake,
+      );
+      rig.current.rotation.z = Math.sin(time * 43) * drive * 0.05;
+    }
+
+    // The arrival flash: hardest at the cut, gone almost immediately after.
+    const flash = settled ? 0 : Math.max(0, 1 - t / 0.55);
+
+    if (beam.current) {
+      const material = beam.current.material as THREE.MeshBasicMaterial;
+      material.opacity = flash * 0.75;
+      beam.current.scale.set(0.6 + flash * 0.9, 1, 0.6 + flash * 0.9);
+      beam.current.visible = material.opacity > 0.01;
+    }
+    if (ring.current) {
+      const material = ring.current.material as THREE.MeshBasicMaterial;
+      material.opacity = flash * 0.9;
+      ring.current.scale.setScalar(0.3 + (1 - flash) * 3.2);
+      ring.current.visible = material.opacity > 0.01;
+    }
+    if (halo.current) {
+      const material = halo.current.material as THREE.MeshBasicMaterial;
+      material.opacity = settled ? space * 0.6 : 0;
+      halo.current.scale.setScalar(0.9 + space * 0.5);
+      halo.current.visible = material.opacity > 0.01;
+    }
+  });
+
+  return (
+    <group>
+      <mesh ref={beam} position={[0, 1.15, 0]} visible={false}>
+        <cylinderGeometry args={[0.34, 0.58, 2.4, 18, 1, true]} />
+        <meshBasicMaterial
+          color="#c7b6ff"
+          transparent
+          opacity={0}
+          side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh ref={ring} position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
+        <ringGeometry args={[0.42, 0.62, 40]} />
+        <meshBasicMaterial
+          color="#e6dcff"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh ref={halo} position={[0, 0.62, 0]} visible={false}>
+        <sphereGeometry args={[0.62, 20, 14]} />
+        <meshBasicMaterial
+          color="#9fd6ff"
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          side={THREE.BackSide}
+          toneMapped={false}
+        />
+      </mesh>
+      <group ref={rig} position={[0, 0.15, 0]} visible={false}>
+        {children}
+      </group>
+    </group>
+  );
+};
+
 // Fallback if model doesn't load
 export const AvatarFallback: React.FC = () => (
   <group position={[0, 0.75, 0]}>

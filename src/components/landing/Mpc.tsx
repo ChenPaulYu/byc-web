@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox, Text } from '@react-three/drei';
-import { AvatarFallback, AvatarModel, Knob, MpcButton, Pad, ScreenReadout } from './primitives';
+import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, ScreenReadout } from './primitives';
 import {
   COL_KNOBS_X,
   COL_PADS_X,
@@ -236,13 +236,18 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
             onReady={onScreenReady}
           />
 
-          {/* Avatar on top of video screen */}
-          <group position={[0, 0.15, 0]} scale={positions.avatarScale}>
+          {/* The avatar is projected out of the screen once the visitor is in, rather than
+              already standing there when the lights come up. */}
+          <AvatarStage
+            armed={Boolean(entered)}
+            scale={positions.avatarScale}
+            drive={knobValues[1]}
+            space={knobValues[2]}
+          >
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
             </Suspense>
-            {/* ContactShadows removed for performance */}
-          </group>
+          </AvatarStage>
         </group>
 
         {/* Transport Buttons */}
