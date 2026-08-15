@@ -23,6 +23,8 @@
   Open: chair placement after the camera swung off-axis, no ambient occlusion, an empty desk top,
   and the plant still looks wrong. The tiny avatar standing on the MPC also has to be resolved —
   it belongs to a different fiction than "peek at a real workspace".
+  2026-08-15: monitors are being fitted to a head-on Gold 5 product shot — the front is a rounded
+  rectangle, which the previous top-down extrusion never produced.
 - **Re-wire the visual regression gate** — `scripts/visual-gate/compare-baseline.mjs` is carried
   over and unchanged; it needs a capture step against this homepage's single Canvas, waiting on
   a real paint signal rather than a timeout. Worth doing once the stage composition settles.
