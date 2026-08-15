@@ -298,19 +298,32 @@ const skZ = (fraction: number) => (fraction - 0.5) * SK_D;
 /** Fractions of the unit's width, left to right. */
 const skX = (fraction: number) => (fraction - 0.5) * SK_W;
 
+// Row spacing is the product shot's; the knob radius is not. Drawing the knobs oversized so they
+// survive at this distance while keeping real spacing is what made the first pass look crowded —
+// the knobs ate their own gaps. Radius comes back down and the rows spread a little to match.
 const KNOB_ROWS = [
-  { z: skZ(0.28), colour: SK_ORANGE },
-  { z: skZ(0.38), colour: '#ededec' },
-  { z: skZ(0.47), colour: '#8d9095' },
-  { z: skZ(0.57), colour: '#26282b' },
+  { z: skZ(0.27), colour: SK_ORANGE },
+  { z: skZ(0.39), colour: '#f2f2f0' },
+  { z: skZ(0.5), colour: '#83868b' },
+  { z: skZ(0.61), colour: '#212326' },
 ];
+const KNOB_COLS = [skX(0.26), skX(0.48)];
+const KNOB_R = cm(0.7);
 
 const Sidekick: React.FC = () => (
   <group position={[cm(-32), DESK_TOP_Y, cm(8)]} rotation={[0, 0.1, 0]}>
-    {/* Chassis */}
+    {/* Chassis. A shade darker than the white head above it, because that value split is half of
+        what identifies this object at any size — the real one is a white plate on a grey body. */}
     <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.35)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
-      <meshStandardMaterial color="#c4c6c8" roughness={0.6} metalness={0.06} />
+      <meshStandardMaterial color="#a9acb0" roughness={0.62} metalness={0.06} />
     </RoundedBox>
+
+    {/* The control area sits in a shallow recess, so the panel has an edge to catch light on
+        rather than the controls appearing to float on an unbroken slab. */}
+    <mesh position={[0, SK_H + cm(0.01), skZ(0.63)]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[SK_W - cm(0.7), SK_D * 0.62]} />
+      <meshStandardMaterial color="#c0c3c6" roughness={0.58} metalness={0.05} />
+    </mesh>
 
     {/* Connector strip across the back, with the orange input section the real one has. */}
     <mesh position={[0, SK_H + cm(0.02), skZ(0.055)]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -325,18 +338,26 @@ const Sidekick: React.FC = () => (
     {/* The white upper plate. On the real unit it carries the wordmark; here it is a value
         change, which is what actually reads — the machine splits into a pale head and a grey
         body, and that split is half of its silhouette. */}
-    <mesh position={[0, SK_H + cm(0.02), skZ(0.175)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[SK_W - cm(0.9), cm(6)]} />
-      <meshStandardMaterial color="#eceded" roughness={0.55} />
+    <mesh position={[0, SK_H + cm(0.02), skZ(0.19)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[SK_W - cm(0.7), cm(6.2)]} />
+      <meshStandardMaterial color="#f3f3f2" roughness={0.5} metalness={0.03} />
     </mesh>
 
     {/* Two channels of four knobs. This grid is the whole identity of the object. */}
-    {[skX(0.28), skX(0.44)].map((x) =>
+    {KNOB_COLS.map((x) =>
       KNOB_ROWS.map((row) => (
-        <mesh key={`${x}-${row.z}`} position={[x, SK_H + cm(0.35), row.z]} castShadow>
-          <cylinderGeometry args={[cm(0.8), cm(0.9), cm(0.7), 14]} />
-          <meshStandardMaterial color={row.colour} roughness={0.45} metalness={0.05} />
-        </mesh>
+        <group key={`${x}-${row.z}`} position={[x, SK_H + cm(0.15), row.z]}>
+          <mesh position={[0, cm(0.3), 0]} castShadow>
+            <cylinderGeometry args={[KNOB_R, KNOB_R * 1.12, cm(0.6), 16]} />
+            <meshStandardMaterial color={row.colour} roughness={0.42} metalness={0.05} />
+          </mesh>
+          {/* Pointer. Sub-pixel on its own, but it breaks the knob's top into two tones, which
+              is what stops eight identical discs reading as eight dots. */}
+          <mesh position={[0, cm(0.61), -KNOB_R * 0.45]}>
+            <boxGeometry args={[cm(0.16), cm(0.04), KNOB_R * 0.8]} />
+            <meshStandardMaterial color={row.colour === '#212326' ? '#c9ccd0' : '#3a3d41'} roughness={0.5} />
+          </mesh>
+        </group>
       )),
     )}
 
@@ -367,14 +388,13 @@ const Sidekick: React.FC = () => (
           <planeGeometry args={[cm(1.8), cm(1)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
         </mesh>
-        <mesh position={[x, SK_H + cm(0.02), skZ(0.79)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(0.5), cm(5.4)]} />
-          <meshStandardMaterial color="#9a9da1" roughness={0.7} />
+        <mesh position={[x, SK_H + cm(0.05), skZ(0.79)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(0.55), cm(5.6)]} />
+          <meshStandardMaterial color="#2a2c2f" roughness={0.8} />
         </mesh>
-        <mesh position={[x, SK_H + cm(0.3), skZ(0.79)]} castShadow>
-          <boxGeometry args={[cm(1.5), cm(0.6), cm(1)]} />
-          <meshStandardMaterial color="#7f8286" roughness={0.5} />
-        </mesh>
+        <RoundedBox args={[cm(1.7), cm(0.55), cm(1.1)]} radius={cm(0.12)} smoothness={3} position={[x, SK_H + cm(0.35), skZ(0.75)]} castShadow>
+          <meshStandardMaterial color="#6f7378" roughness={0.45} metalness={0.08} />
+        </RoundedBox>
         <mesh position={[x, SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[cm(1.8), cm(1)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
