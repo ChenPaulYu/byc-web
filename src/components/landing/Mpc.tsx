@@ -132,17 +132,11 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
         <meshStandardMaterial map={grille ?? undefined} color="#cfc9bd" roughness={0.9} metalness={0.02} />
       </mesh>
 
-      {/* The one large control. Size contrast is legible where a legend is not. */}
-      <group position={[COL_KNOBS_X, 0.02, ROW_MAIN_Z + cm(4.5)]}>
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[cm(2.3), cm(2.5), cm(1.2), 26]} />
-          <meshStandardMaterial color="#43474d" roughness={0.42} metalness={0.42} />
-        </mesh>
-        <mesh position={[0, cm(0.65), 0]}>
-          <cylinderGeometry args={[cm(1.7), cm(1.7), cm(0.15), 26]} />
-          <meshStandardMaterial color="#5b6069" roughness={0.35} metalness={0.5} />
-        </mesh>
-      </group>
+      {/* No large control knob here, though the machines this stands in for have one.
+          The knob column is 5.8 cm wide and already full: four knobs with their tick rings run
+          from z -1.19 to 2.19, the chassis ends at 2.5, and the logo holds the back of the
+          column. A fifth control was added here for size contrast and overlapped two of the four
+          — and those four are the ones that will actually do something, so they win. */}
 
       {/* --- COLUMN 1: PADS (2/4 = 50%) --- */}
       <group position={[COL_PADS_X + positions.padsSectionX, 0, ROW_MAIN_Z + positions.padsSectionZ]}>
