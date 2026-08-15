@@ -163,17 +163,23 @@ export interface PadProps {
   onTrigger: () => void;
   height?: number;
   registerTrigger?: (key: string, fn: () => void) => void;
+  /** Colour this pad sits at when nothing is playing, so the grid is not sixteen grey squares. */
+  idleTint?: string;
 }
 
-export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2, registerTrigger }) => {
+export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2, registerTrigger, idleTint }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [active, setActive] = useState(false);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
     const material = meshRef.current.material as THREE.MeshStandardMaterial;
-    const baseColor = new THREE.Color("#6b7280");
+    // A grid of sixteen identical grey squares reads as a grille. Letting a few pads sit lit at
+    // rest is what makes the machine read as an instrument rather than a panel — and colour
+    // from light is the one identity cue that survives at this render size.
+    const baseColor = new THREE.Color(idleTint ?? "#6b7280");
     const activeColor = new THREE.Color(color);
+    const idleEmissive = idleTint ? new THREE.Color(idleTint) : new THREE.Color("#000");
 
     // `delta * k` is not a valid interpolation factor: neither THREE.Color.lerp nor
     // MathUtils.lerp clamps it, so on a slow frame it extrapolates instead of easing.
@@ -183,8 +189,8 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
     const damp = (rate: number) => 1 - Math.exp(-rate * delta);
 
     material.color.lerp(active ? activeColor : baseColor, damp(20));
-    material.emissive.lerp(active ? activeColor : new THREE.Color("#000"), damp(20));
-    material.emissiveIntensity = active ? 1.0 : 0;
+    material.emissive.lerp(active ? activeColor : idleEmissive, damp(20));
+    material.emissiveIntensity = active ? 1.0 : idleTint ? 0.34 : 0;
 
     const idleY = position[1];
     const pressedY = position[1] - 0.05;
@@ -217,7 +223,7 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
       onClick={(e) => { e.stopPropagation(); trigger(); }}
       castShadow receiveShadow
     >
-      <meshStandardMaterial color="#6b7280" roughness={0.4} metalness={0.2} />
+      <meshStandardMaterial color={idleTint ?? "#6b7280"} roughness={0.4} metalness={0.2} />
     </RoundedBox>
   );
 };
@@ -340,7 +346,7 @@ export const MpcButton: React.FC<MpcButtonProps> = ({
     primary: { base: '#f8fafc', text: '#1e293b', led: '#22c55e' },
     secondary: { base: '#f1f5f9', text: '#475569', led: '#64748b' },
     accent: { base: '#fef3c7', text: '#92400e', led: '#f59e0b' },
-    neutral: { base: '#f3f4f6', text: '#374151', led: '#6b7280' }
+    neutral: { base: '#cdc7bc', text: '#374151', led: '#6b7280' }
   };
 
   const colors = buttonColors[variant];
@@ -359,7 +365,7 @@ export const MpcButton: React.FC<MpcButtonProps> = ({
   });
 
   return (
-    <group position={position}>
+    <group position={position} name={`transport-${label}`}>
       <group
         ref={groupRef}
         onClick={(e) => { e.stopPropagation(); onClick?.(); }}
@@ -371,29 +377,19 @@ export const MpcButton: React.FC<MpcButtonProps> = ({
           <meshStandardMaterial color={colors.base} roughness={0.3} metalness={0.05} />
         </RoundedBox>
 
-        {/* Subtle LED indicator */}
-        <mesh position={[0, 0.18, -height / 2 + 0.05]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[width * 0.3, 0.02]} />
+        {/* The status light is what identifies the key. The printed label it replaces rendered
+            about ten pixels wide on the homepage — grey mush, not a word — whereas colour reads
+            at any size, so transport is told by amber / grey / red / green rather than by text.
+            Lit at rest as well as when active, or the row goes blank between presses. */}
+        <mesh position={[0, 0.18, -height / 2 + 0.09]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[width * 0.52, 0.07]} />
           <meshStandardMaterial
             color={finalLedColor}
-            emissive={isActive ? finalLedColor : '#000000'}
-            emissiveIntensity={isActive ? 0.3 : 0}
+            emissive={finalLedColor}
+            emissiveIntensity={isActive ? 1.1 : 0.35}
             toneMapped={false}
           />
         </mesh>
-
-        <Text
-          position={[0, 0.18, 0.05]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={0.12}
-          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
-          color={colors.text}
-          anchorX="center"
-          anchorY="middle"
-          fontWeight="500"
-        >
-          {label}
-        </Text>
       </group>
     </group>
   );
