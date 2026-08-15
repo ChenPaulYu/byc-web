@@ -122,6 +122,40 @@ the control lives in the scene rather than as a DOM overlay.
 *Verify:* enter the page, touch nothing, and confirm the avatar is moving; press STOP and confirm
 both the sound and the motion settle.
 
+### 7. Give the engine a spectrum, not just a level
+
+`getLevel()` answers "how loud", which is all the avatar needs. A screen needs "loud at which
+frequencies". Add `getSpectrum(target: Uint8Array)` filling a caller-owned array from
+`getByteFrequencyData`, so the caller controls allocation and the engine keeps returning no nodes.
+The analyser's `fftSize` is 256, giving 128 bins — plenty for a 512 px-wide readout.
+
+*Verify:* typecheck and build; nothing renders differently.
+
+### 8. Make the MPC's screen a live readout instead of a video
+
+The screen currently plays `/animation.mp4`, a 0.9 MB canned synthwave loop, through a
+`VideoTexture` in `primitives.tsx`'s `VideoScreen`. Replace it with a `CanvasTexture` redrawn each
+frame from `getSpectrum()`.
+
+**Canvas rather than a shader, deliberately.** A shader would be cheaper per frame and is the
+obvious choice for a spectrum alone. Canvas is chosen because the next thing this screen is likely
+to carry is a menu — the four site sections, scrolled with a knob — and a shader cannot draw text.
+Picking the cheaper option now would mean rewriting it then.
+
+Three things fall out of this, which is why it is worth doing at all:
+
+- **The 0.9 MB video asset is deleted**, on a homepage already carrying 8.5 MB of assets.
+- The machine's only saturated element stops being decoration and becomes a **readout of what the
+  visitor is doing**, which is the whole principle of this arc in one object.
+- **The avatar finally makes sense.** He stands on the screen, and the screen now reacts to the
+  same signal he does.
+
+Keep the `VITE_ENABLE_VIDEO` escape hatch's intent: if audio is blocked or unavailable, the screen
+must show something rather than going black.
+
+*Verify:* in a real browser — play pads and watch the screen answer. The screenshot rig cannot
+photograph this any better than it can photograph a lit pad.
+
 ## Verification
 
 | Command | Gate |
