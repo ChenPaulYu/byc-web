@@ -2,13 +2,14 @@
  * Builds the desk vignette the MPC sits on: a workspace seen from behind an empty chair,
  * floating in a soft grey void with no walls or floor edge.
  *
- * The structure comes from one dark surface. An all-near-white set has nothing for the eye to
- * separate forms against, so the desk top carries the site's ink tone while everything else
- * stays in the neutral range — the same white-canvas/dark-text relationship the rest of the
- * site uses, stood up in three dimensions.
+ * An all-near-white set gives the eye nothing to separate forms against, so one surface has to
+ * carry weight. That is the desk top: a warm light oak, drawn as a canvas texture at runtime.
+ * Near-black was tried first and read as heavy and airless; wood holds the same structural job
+ * while putting back the warmth the scene lost when the chair was removed, and a cheap wooden
+ * desk is the right register for bedroom recording anyway.
  *
- * Reads: site-style neutrals · one warm accent on the chair. No texture files, no generated
- * meshes; both gradients are drawn into a canvas at runtime.
+ * Reads: site-style neutrals · scale.ts for every dimension. No texture files, no generated
+ * meshes; the wood, the backdrop and the ground fade are all drawn into canvases at runtime.
  */
 
 import React, { useEffect, useMemo } from 'react';
@@ -67,17 +68,83 @@ const useRoughnessMap = (repeat: number, contrast: number) =>
     return t;
   }, [repeat, contrast]);
 
+/**
+ * Light oak, drawn once into a canvas. Grain is a stack of long thin strokes of varying width
+ * and darkness along one axis, plus a few wider figure bands; that is enough to read as timber
+ * at this camera distance, and it means the desk stays procedural.
+ */
+const useWoodTexture = () =>
+  useMemo(() => {
+    const w = 512;
+    const h = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    let seed = 21;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) % 4294967296;
+      return seed / 4294967296;
+    };
+
+    ctx.fillStyle = '#c2a179';
+    ctx.fillRect(0, 0, w, h);
+
+    // Broad figure: slow tonal drift across the board.
+    for (let i = 0; i < 14; i += 1) {
+      const y = rand() * h;
+      const band = 14 + rand() * 40;
+      ctx.fillStyle = `rgba(150, 112, 70, ${0.05 + rand() * 0.07})`;
+      ctx.fillRect(0, y, w, band);
+    }
+
+    // Grain lines.
+    for (let i = 0; i < 420; i += 1) {
+      const y = rand() * h;
+      const thickness = 0.5 + rand() * 1.8;
+      const alpha = 0.05 + rand() * 0.16;
+      ctx.strokeStyle = rand() > 0.78 ? `rgba(233, 214, 186, ${alpha})` : `rgba(126, 92, 54, ${alpha})`;
+      ctx.lineWidth = thickness;
+      ctx.beginPath();
+      let x = 0;
+      let cy = y;
+      ctx.moveTo(x, cy);
+      while (x < w) {
+        x += 24 + rand() * 40;
+        cy += (rand() - 0.5) * 3.2;
+        ctx.lineTo(x, cy);
+      }
+      ctx.stroke();
+    }
+
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    // Grain runs the length of the desk, and the board is wider than it is deep.
+    t.repeat.set(2.2, 1);
+    t.anisotropy = 4;
+    return t;
+  }, []);
+
 const Desk: React.FC = () => {
   const topY = DESK_TOP_Y - TOP_T / 2;
   const legH = DESK_HEIGHT - TOP_T;
   const floorY = FLOOR_Y;
+  // Where the legs stand. Everything in the frame is measured from these, so the rails cannot
+  // drift out of contact again.
+  const legX = DESK_W / 2 - cm(7);
+  const legZ = DESK_D / 2 - cm(7);
+  const wood = useWoodTexture();
   const topRoughness = useRoughnessMap(5, 70);
   const bodyRoughness = useRoughnessMap(3, 40);
 
   useEffect(() => () => {
     topRoughness?.dispose();
     bodyRoughness?.dispose();
-  }, [topRoughness, bodyRoughness]);
+    wood?.dispose();
+  }, [topRoughness, bodyRoughness, wood]);
 
   return (
     <group>
@@ -92,13 +159,14 @@ const Desk: React.FC = () => {
         receiveShadow
       >
         <meshPhysicalMaterial
-          color={DESK_TOP}
-          roughness={0.48}
+          map={wood ?? undefined}
+          color={wood ? '#ffffff' : DESK_TOP}
+          roughness={0.62}
           roughnessMap={topRoughness ?? undefined}
-          metalness={0.12}
-          clearcoat={0.35}
-          clearcoatRoughness={0.55}
-          envMapIntensity={0.9}
+          metalness={0}
+          clearcoat={0.18}
+          clearcoatRoughness={0.7}
+          envMapIntensity={0.7}
         />
       </RoundedBox>
 
@@ -115,66 +183,34 @@ const Desk: React.FC = () => {
         <meshPhysicalMaterial color={EDGE_BAND} roughness={0.66} metalness={0.03} envMapIntensity={0.85} />
       </RoundedBox>
 
-      {/* Square-tube end frames with a rear stretcher. A pedestal of drawers reads as an
-          office; an open frame with a shelf under it reads as a room someone lives in. */}
+      {/* Square-tube end frames with a rear stretcher.
+          Rail lengths are derived from where the legs actually stand, not from the desk size
+          minus a tuned constant. The previous version used numbers fitted to a desk half this
+          size, so after the rescale the rails no longer reached the legs and the frame read as
+          broken apart. Deriving them means the frame survives any future change to REAL.desk. */}
       {[-1, 1].map((side) => (
-        <group key={side} position={[side * (DESK_W / 2 - 0.9), 0, 0]}>
+        <group key={side} position={[side * legX, 0, 0]}>
           {[-1, 1].map((sz) => (
-            <mesh key={sz} position={[0, floorY + legH / 2, sz * (DESK_D / 2 - 0.9)]} castShadow>
+            <mesh key={sz} position={[0, floorY + legH / 2, sz * legZ]} castShadow>
               <boxGeometry args={[cm(REAL.legSection), legH, cm(REAL.legSection)]} />
               <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
             </mesh>
           ))}
-          <mesh position={[0, floorY + legH - 0.11, 0]} castShadow>
-            <boxGeometry args={[cm(REAL.legSection * 0.9), cm(REAL.legSection * 0.9), DESK_D - cm(30)]} />
+          <mesh position={[0, floorY + legH - cm(3), 0]} castShadow>
+            <boxGeometry args={[cm(REAL.legSection * 0.9), cm(REAL.legSection * 0.9), legZ * 2]} />
             <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
           </mesh>
-          <mesh position={[0, floorY + 0.3, 0]} castShadow>
-            <boxGeometry args={[cm(REAL.legSection * 0.8), cm(REAL.legSection * 0.8), DESK_D - cm(30)]} />
+          <mesh position={[0, floorY + cm(9), 0]} castShadow>
+            <boxGeometry args={[cm(REAL.legSection * 0.8), cm(REAL.legSection * 0.8), legZ * 2]} />
             <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
           </mesh>
         </group>
       ))}
-      <mesh position={[0, floorY + 0.3, -DESK_D / 2 + 0.9]} castShadow>
-        <boxGeometry args={[DESK_W - cm(36), cm(3.5), cm(3.5)]} />
+      <mesh position={[0, floorY + cm(9), -legZ]} castShadow>
+        <boxGeometry args={[legX * 2, cm(3.5), cm(3.5)]} />
         <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
       </mesh>
 
-      {/* Under-desk shelf on the left, with things stacked on it. */}
-      <group position={[-DESK_W / 2 + 3.4, 0, 0]}>
-        <RoundedBox
-          args={[5.6, 0.16, DESK_D - 1.9]}
-          radius={0.04}
-          smoothness={3}
-          position={[0, floorY + 1.15, 0]}
-          castShadow
-          receiveShadow
-        >
-          <meshPhysicalMaterial
-            color={DESK_BODY}
-            roughness={0.74}
-            roughnessMap={bodyRoughness ?? undefined}
-            metalness={0.04}
-            envMapIntensity={0.8}
-          />
-        </RoundedBox>
-        {[
-          { x: -1.5, w: 2.0, h: 0.9, c: '#cfd1cd', r: 0.05 },
-          { x: 0.55, w: 1.7, h: 1.25, c: '#c4c7cb', r: -0.08 },
-          { x: 2.1, w: 1.2, h: 0.7, c: '#dad7d0', r: 0.11 },
-        ].map((b) => (
-          <mesh
-            key={b.x}
-            position={[b.x, floorY + 1.23 + b.h / 2, 0.15]}
-            rotation={[0, b.r, 0]}
-            castShadow
-            receiveShadow
-          >
-            <boxGeometry args={[b.w, b.h, DESK_D - 3.2]} />
-            <meshStandardMaterial color={b.c} roughness={0.9} metalness={0} />
-          </mesh>
-        ))}
-      </group>
     </group>
   );
 };
