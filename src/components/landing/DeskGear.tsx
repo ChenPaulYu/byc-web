@@ -13,9 +13,11 @@
  * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { RoundedBox } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { getLevel } from './audio';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
 
@@ -310,7 +312,32 @@ const KNOB_ROWS = [
 const KNOB_COLS = [skX(0.26), skX(0.48)];
 const KNOB_R = cm(0.7);
 
-const Sidekick: React.FC = () => (
+const METER_W = cm(1.9);
+const METER_H = cm(2.4);
+
+const Sidekick: React.FC = () => {
+  // The lit block grows from the display's near edge, so its origin has to sit at that edge
+  // rather than at its centre — scaling happens about the origin.
+  const meterGeometry = useMemo(() => {
+    const g = new THREE.PlaneGeometry(METER_W, METER_H);
+    g.translate(0, METER_H / 2, 0);
+    return g;
+  }, []);
+  useEffect(() => () => meterGeometry.dispose(), [meterGeometry]);
+
+  const meterRef = useRef<THREE.Mesh>(null);
+  useFrame(() => {
+    const mesh = meterRef.current;
+    if (!mesh) return;
+    // Height and brightness both follow the level. The display renders about six pixels by
+    // eight, so a two-channel bar graph like the real one would be sub-pixel; a single block
+    // that moves and brightens is what survives at this size.
+    const level = Math.min(1, getLevel() * 3.2);
+    mesh.scale.y = 0.08 + level * 0.92;
+    (mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + level * 1.2;
+  });
+
+  return (
   <group position={[cm(-32), DESK_TOP_Y, cm(8)]} rotation={[0, 0.1, 0]}>
     {/* Chassis. A shade darker than the white head above it, because that value split is half of
         what identifies this object at any size — the real one is a white plate on a grey body. */}
@@ -366,9 +393,8 @@ const Sidekick: React.FC = () => (
       <planeGeometry args={[cm(2.6), cm(3.4)]} />
       <meshStandardMaterial color="#1b1a19" roughness={0.4} />
     </mesh>
-    <mesh position={[skX(0.76), SK_H + cm(0.04), skZ(0.33)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(1.9), cm(2.4)]} />
-      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.5} toneMapped={false} />
+    <mesh ref={meterRef} position={[skX(0.76), SK_H + cm(0.04), skZ(0.33) + METER_H / 2]} rotation={[-Math.PI / 2, 0, 0]} geometry={meterGeometry}>
+      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
     </mesh>
 
     {/* Master volume, the one large control. */}
@@ -412,7 +438,8 @@ const Sidekick: React.FC = () => (
       <meshStandardMaterial color="#26282b" roughness={0.6} />
     </mesh>
   </group>
-);
+  );
+};
 
 /** The desk is allowed to hold things that have nothing to do with music. */
 const Clutter: React.FC = () => (
