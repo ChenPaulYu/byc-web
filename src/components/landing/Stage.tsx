@@ -159,16 +159,19 @@ const Chair: React.FC = () => {
   const seatY = DESK_TOP_Y - 1.15;
   const floorY = DESK_TOP_Y - TOP_T - 2.6;
   return (
-    <group position={[0.6, 0, DESK_D / 2 + 1.4]} scale={0.82} rotation={[0, -0.1, 0]}>
+    // Sits on the line between the camera and the desk, so it reads as the shoulder the view
+    // is looking over rather than as another object beside the desk. Rotated to face the desk
+    // centre from wherever it stands.
+    <group position={[4.2, 0, DESK_D / 2 + 1.5]} scale={0.9} rotation={[0, 0.52, 0]}>
       <RoundedBox args={[2.9, 0.42, 2.7]} radius={0.16} smoothness={3} position={[0, seatY, 0]} castShadow receiveShadow>
         <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.28} clearcoatRoughness={0.6} envMapIntensity={0.85} />
       </RoundedBox>
       <RoundedBox
-        args={[2.7, 2.7, 0.38]}
+        args={[2.7, 3.3, 0.34]}
         radius={0.16}
         smoothness={3}
-        position={[0, seatY + 1.6, 1.12]}
-        rotation={[0.14, 0, 0]}
+        position={[0, seatY + 1.85, 1.16]}
+        rotation={[0.06, 0, 0]}
         castShadow
       >
         <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.28} clearcoatRoughness={0.6} envMapIntensity={0.85} />
