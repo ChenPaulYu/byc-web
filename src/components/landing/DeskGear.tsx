@@ -239,11 +239,27 @@ const Cables: React.FC = () => {
       new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
     return [
       // Monitor leads, run along the desk where the camera can see them rather than tucked
-      // behind the far edge, which is geometry nobody ever renders. They used to end behind the
-      // laptop; with nothing there to plug into they now leave over the back edge, which is
-      // where a cable that is not connected to anything visible has to go.
-      make([[cm(-52), DESK_TOP_Y + cm(1), cm(-30)], [cm(-46), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(-38), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(-32), DESK_TOP_Y + cm(0.4), cm(-35)]]),
-      make([[cm(52), DESK_TOP_Y + cm(1), cm(-30)], [cm(46), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(38), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(32), DESK_TOP_Y + cm(0.4), cm(-35)]]),
+      // behind the far edge, which is geometry nobody ever renders.
+      //
+      // They have to go *over* the edge and down, not stop at it. The first version after the
+      // laptop was removed ended its last control point at z = -35 — the back edge exactly — so
+      // the tube reached the rim and was cut off, leaving a blunt black stub sticking out into
+      // space. A cable that ends where a surface ends does not read as tucked away; it reads as
+      // broken geometry, which is what it was.
+      make([
+        [cm(-52), DESK_TOP_Y + cm(1), cm(-30)],
+        [cm(-46), DESK_TOP_Y + cm(0.5), cm(-32)],
+        [cm(-38), DESK_TOP_Y + cm(0.5), cm(-34)],
+        [cm(-34), DESK_TOP_Y - cm(2), cm(-36.5)],
+        [cm(-33), DESK_TOP_Y - cm(13), cm(-37)],
+      ]),
+      make([
+        [cm(52), DESK_TOP_Y + cm(1), cm(-30)],
+        [cm(46), DESK_TOP_Y + cm(0.5), cm(-32)],
+        [cm(38), DESK_TOP_Y + cm(0.5), cm(-34)],
+        [cm(34), DESK_TOP_Y - cm(2), cm(-36.5)],
+        [cm(33), DESK_TOP_Y - cm(13), cm(-37)],
+      ]),
     ];
   }, []);
 
