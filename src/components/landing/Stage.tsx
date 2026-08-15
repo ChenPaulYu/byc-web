@@ -15,6 +15,7 @@ import React, { useEffect, useMemo } from 'react';
 import { ContactShadows, RoundedBox } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import { cm, REAL } from './scale';
 
 /** Matches the MPC chassis bottom: its group sits at y = -1 with a box of height 1 below. */
 export const DESK_TOP_Y = -2;
@@ -23,14 +24,17 @@ const DESK_TOP = '#3f4043';
 const DESK_BODY = '#d8d9da';
 const DESK_FRAME = '#b9babc';
 const EDGE_BAND = '#cdd0d2';
-const SEAT = '#c08a5e';
-const SEAT_FRAME = '#9fa1a4';
 const POT = '#f0f0ef';
 const LEAF = '#8fae86';
 
-const DESK_W = 17.2;
-const DESK_D = 9.6;
-const TOP_T = 0.34;
+// Every dimension below comes from a real measurement through cm(). See scale.ts — before
+// that module existed this desk worked out to 15 cm tall, which is why the MPC read as a
+// giant slab on a footstool.
+const DESK_W = cm(REAL.desk.width);
+const DESK_D = cm(REAL.desk.depth);
+const TOP_T = cm(REAL.desk.topThickness);
+const DESK_HEIGHT = cm(REAL.desk.height);
+const FLOOR_Y = DESK_TOP_Y - DESK_HEIGHT;
 
 /**
  * A fine value-noise roughness map. A surface with perfectly uniform roughness reads as paper
@@ -67,8 +71,8 @@ const useRoughnessMap = (repeat: number, contrast: number) =>
 
 const Desk: React.FC = () => {
   const topY = DESK_TOP_Y - TOP_T / 2;
-  const legH = 2.6;
-  const floorY = DESK_TOP_Y - TOP_T - legH;
+  const legH = DESK_HEIGHT - TOP_T;
+  const floorY = FLOOR_Y;
   const topRoughness = useRoughnessMap(5, 70);
   const bodyRoughness = useRoughnessMap(3, 40);
 
@@ -177,86 +181,6 @@ const Desk: React.FC = () => {
   );
 };
 
-/**
- * The chair does the narrative work. Back to the camera, pushed slightly out from the desk, it
- * puts the viewer behind someone who has just stepped away — an empty desk is an object, an
- * empty chair at a desk is a person. It also carries the scene's only warm colour.
- */
-const Chair: React.FC = () => {
-  const floorY = DESK_TOP_Y - TOP_T - 2.6;
-  const seatY = DESK_TOP_Y - 1.15;
-
-  return (
-    // Sits on the line between the camera and the desk, so it reads as the shoulder the view
-    // is looking over rather than as another object beside the desk. Rotated to face the desk
-    // centre from wherever it stands.
-    <group position={[4.2, 0, DESK_D / 2 + 1.5]} scale={0.9} rotation={[0, 0.52, 0]}>
-      {/* Seat, with a thinner front lip so the profile is not a uniform slab. */}
-      <RoundedBox args={[2.9, 0.4, 2.6]} radius={0.18} smoothness={4} position={[0, seatY, 0]} castShadow receiveShadow>
-        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
-      </RoundedBox>
-      <RoundedBox args={[2.75, 0.22, 0.55]} radius={0.1} smoothness={3} position={[0, seatY - 0.07, -1.15]} castShadow>
-        <meshPhysicalMaterial color={SEAT} roughness={0.74} metalness={0.02} clearcoat={0.24} envMapIntensity={0.85} />
-      </RoundedBox>
-
-      {/* The back is a separate panel held off the seat by a spine. That gap, and the kink
-          between lumbar and shoulder panels, is what makes a shape read as a task chair
-          rather than as a bench with a board behind it. */}
-      <mesh position={[0, seatY + 0.75, 1.28]} rotation={[0.1, 0, 0]} castShadow>
-        <boxGeometry args={[0.42, 1.5, 0.3]} />
-        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.34} metalness={0.66} envMapIntensity={1.15} />
-      </mesh>
-      <RoundedBox args={[2.6, 1.5, 0.34]} radius={0.16} smoothness={4} position={[0, seatY + 1.6, 1.16]} rotation={[0.02, 0, 0]} castShadow>
-        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
-      </RoundedBox>
-      <RoundedBox args={[2.5, 1.7, 0.3]} radius={0.16} smoothness={4} position={[0, seatY + 3.0, 1.36]} rotation={[0.16, 0, 0]} castShadow>
-        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
-      </RoundedBox>
-
-      {/* Armrests. Cheap chairs have them; their silhouette is most of what says "office". */}
-      {[-1, 1].map((sx) => (
-        <group key={sx}>
-          <mesh position={[sx * 1.6, seatY + 0.5, 0.55]} castShadow>
-            <boxGeometry args={[0.18, 1.1, 0.2]} />
-            <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.36} metalness={0.6} envMapIntensity={1.1} />
-          </mesh>
-          <RoundedBox args={[0.34, 0.2, 1.5]} radius={0.08} smoothness={3} position={[sx * 1.6, seatY + 1.05, 0.15]} castShadow>
-            <meshPhysicalMaterial color="#4b4d50" roughness={0.6} metalness={0.15} envMapIntensity={0.9} />
-          </RoundedBox>
-        </group>
-      ))}
-
-      {/* Gas lift: cylinder plus a wider collar, which is the detail that stops it reading as
-          a broomstick. */}
-      <mesh position={[0, seatY - 0.95, 0]} castShadow>
-        <cylinderGeometry args={[0.15, 0.15, 1.5, 16]} />
-        <meshPhysicalMaterial color="#c7c9cb" roughness={0.24} metalness={0.8} envMapIntensity={1.2} />
-      </mesh>
-      <mesh position={[0, seatY - 1.55, 0]} castShadow>
-        <cylinderGeometry args={[0.24, 0.24, 0.5, 16]} />
-        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.4} metalness={0.6} envMapIntensity={1.1} />
-      </mesh>
-
-      {/* Five-star base: arms taper outward and drop toward the caster, rather than being
-          five identical sticks. */}
-      {[0, 1, 2, 3, 4].map((i) => {
-        const a = (i / 5) * Math.PI * 2 + 0.4;
-        return (
-          <group key={i} rotation={[0, a, 0]}>
-            <mesh position={[0, floorY + 0.42, 0.95]} rotation={[0.12, 0, 0]} castShadow>
-              <boxGeometry args={[0.26, 0.2, 1.9]} />
-              <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.36} metalness={0.6} envMapIntensity={1.1} />
-            </mesh>
-            <mesh position={[0, floorY + 0.17, 1.85]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-              <cylinderGeometry args={[0.17, 0.17, 0.14, 14]} />
-              <meshPhysicalMaterial color="#5c5e61" roughness={0.5} metalness={0.35} envMapIntensity={0.9} />
-            </mesh>
-          </group>
-        );
-      })}
-    </group>
-  );
-};
 
 /** One plant, off to the side. The reference's other accent, and the cheapest way to say lived-in. */
 const Plant: React.FC = () => {
@@ -355,7 +279,6 @@ export const Stage: React.FC = () => {
       </mesh>
 
       <Desk />
-      <Chair />
       <Plant />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.34} scale={34} blur={2.6} far={7} />

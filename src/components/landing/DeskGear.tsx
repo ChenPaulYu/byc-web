@@ -17,6 +17,7 @@ import React, { useMemo } from 'react';
 import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { DESK_TOP_Y } from './Stage';
+import { cm, REAL } from './scale';
 
 const CASE = '#e8e9ea';
 const CASE_DARK = '#2f3134';
@@ -76,16 +77,16 @@ const useScreenTexture = () =>
 const Laptop: React.FC = () => {
   const screen = useScreenTexture();
   return (
-    <group position={[-0.3, DESK_TOP_Y, -3.4]} rotation={[0, 0.06, 0]}>
-      <RoundedBox args={[5.4, 0.16, 3.6]} radius={0.07} smoothness={3} position={[0, 0.08, 0]} castShadow receiveShadow>
+    <group position={[cm(-4), DESK_TOP_Y, cm(-23)]} rotation={[0, 0.06, 0]}>
+      <RoundedBox args={[cm(REAL.laptop.width), cm(REAL.laptop.thickness), cm(REAL.laptop.depth)]} radius={cm(0.6)} smoothness={3} position={[0, cm(REAL.laptop.thickness) / 2, 0]} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE} roughness={0.42} metalness={0.35} envMapIntensity={1} />
       </RoundedBox>
-      <group position={[0, 0.16, -1.7]} rotation={[-0.19, 0, 0]}>
-        <RoundedBox args={[5.4, 3.5, 0.13]} radius={0.07} smoothness={3} position={[0, 1.75, 0]} castShadow>
+      <group position={[0, cm(REAL.laptop.thickness), -cm(REAL.laptop.depth) / 2]} rotation={[-0.19, 0, 0]}>
+        <RoundedBox args={[cm(REAL.laptop.width), cm(REAL.laptop.screenHeight), cm(0.5)]} radius={cm(0.6)} smoothness={3} position={[0, cm(REAL.laptop.screenHeight) / 2, 0]} castShadow>
           <meshPhysicalMaterial color={CASE} roughness={0.42} metalness={0.35} envMapIntensity={1} />
         </RoundedBox>
-        <mesh position={[0, 1.75, 0.075]}>
-          <planeGeometry args={[4.9, 3.05]} />
+        <mesh position={[0, cm(REAL.laptop.screenHeight) / 2, cm(0.3)]}>
+          <planeGeometry args={[cm(REAL.laptop.width - 2.4), cm(REAL.laptop.screenHeight - 2)]} />
           <meshBasicMaterial map={screen ?? undefined} color={screen ? '#ffffff' : SCREEN_GLOW} toneMapped={false} />
         </mesh>
       </group>
@@ -98,32 +99,38 @@ const Laptop: React.FC = () => {
  * bedroom uses, and the difference is most of the register.
  */
 const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) => (
-  <group position={[x, DESK_TOP_Y, -3.7]} rotation={[0, toeIn, 0]}>
+  <group position={[x, DESK_TOP_Y, cm(-24)]} rotation={[0, toeIn, 0]}>
     {[
-      { y: 0.11, w: 2.5, d: 1.9, c: BOOK_A, r: 0.04 },
-      { y: 0.31, w: 2.35, d: 1.75, c: BOOK_B, r: -0.05 },
-      { y: 0.49, w: 2.45, d: 1.85, c: BOOK_C, r: 0.03 },
-    ].map((b, i) => (
-      <mesh key={i} position={[0, b.y, 0]} rotation={[0, b.r, 0]} castShadow receiveShadow>
-        <boxGeometry args={[b.w, 0.2, b.d]} />
+      { i: 0, c: BOOK_A, r: 0.04 },
+      { i: 1, c: BOOK_B, r: -0.05 },
+      { i: 2, c: BOOK_C, r: 0.03 },
+    ].map((b) => (
+      <mesh
+        key={b.i}
+        position={[0, cm(REAL.paperback.height) * (b.i + 0.5), 0]}
+        rotation={[0, b.r, 0]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[cm(REAL.paperback.depth), cm(REAL.paperback.height), cm(REAL.paperback.width + 2)]} />
         <meshStandardMaterial color={b.c} roughness={0.92} metalness={0} />
       </mesh>
     ))}
     {/* Cabinet, tilted back a little the way a monitor on an improvised riser always is. */}
-    <group position={[0, 1.72, 0]} rotation={[-0.09, 0, 0]}>
-      <RoundedBox args={[2.1, 2.9, 1.9]} radius={0.08} smoothness={3} castShadow receiveShadow>
+    <group position={[0, cm(REAL.paperback.height * 3) + cm(REAL.monitor.height) / 2, 0]} rotation={[-0.09, 0, 0]}>
+      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={cm(0.8)} smoothness={3} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE_DARK} roughness={0.66} metalness={0.1} envMapIntensity={0.9} />
       </RoundedBox>
-      <mesh position={[0, -0.35, 0.96]}>
-        <circleGeometry args={[0.66, 28]} />
+      <mesh position={[0, cm(-4), cm(REAL.monitor.depth) / 2 + cm(0.2)]}>
+        <circleGeometry args={[cm(6.4), 28]} />
         <meshStandardMaterial color="#1b1c1e" roughness={0.85} />
       </mesh>
-      <mesh position={[0, -0.35, 0.99]}>
-        <circleGeometry args={[0.2, 20]} />
+      <mesh position={[0, cm(-4), cm(REAL.monitor.depth) / 2 + cm(0.4)]}>
+        <circleGeometry args={[cm(2), 20]} />
         <meshStandardMaterial color="#8d7a4e" roughness={0.4} metalness={0.6} />
       </mesh>
-      <mesh position={[0, 0.92, 0.96]}>
-        <circleGeometry args={[0.26, 20]} />
+      <mesh position={[0, cm(9), cm(REAL.monitor.depth) / 2 + cm(0.2)]}>
+        <circleGeometry args={[cm(2.6), 20]} />
         <meshStandardMaterial color="#242628" roughness={0.7} />
       </mesh>
     </group>
@@ -133,12 +140,12 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
 const Launchpad: React.FC = () => {
   const grid = useGridTexture();
   return (
-    <group position={[-6.2, DESK_TOP_Y, 1.4]} rotation={[0, 0.12, 0]}>
-      <RoundedBox args={[3.5, 0.28, 3.5]} radius={0.09} smoothness={3} position={[0, 0.14, 0]} castShadow receiveShadow>
+    <group position={[cm(-42), DESK_TOP_Y, cm(12)]} rotation={[0, 0.12, 0]}>
+      <RoundedBox args={[cm(REAL.launchpad.width), cm(REAL.launchpad.height), cm(REAL.launchpad.depth)]} radius={cm(0.8)} smoothness={3} position={[0, cm(REAL.launchpad.height) / 2, 0]} castShadow receiveShadow>
         <meshPhysicalMaterial color="#3a3d40" roughness={0.6} metalness={0.12} envMapIntensity={0.9} />
       </RoundedBox>
-      <mesh position={[0, 0.29, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[3.0, 3.0]} />
+      <mesh position={[0, cm(REAL.launchpad.height) + cm(0.05), 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[cm(REAL.launchpad.width - 2), cm(REAL.launchpad.depth - 2)]} />
         <meshBasicMaterial map={grid ?? undefined} toneMapped={false} />
       </mesh>
     </group>
@@ -151,9 +158,12 @@ const Cables: React.FC = () => {
     const make = (pts: Array<[number, number, number]>) =>
       new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
     return [
-      make([[-6.0, DESK_TOP_Y + 0.1, -4.6], [-5.2, DESK_TOP_Y + 0.05, -4.9], [-3.0, DESK_TOP_Y + 0.04, -4.8], [-0.9, DESK_TOP_Y + 0.12, -4.2]]),
-      make([[6.0, DESK_TOP_Y + 0.1, -4.6], [5.0, DESK_TOP_Y + 0.05, -4.9], [2.6, DESK_TOP_Y + 0.04, -4.85], [0.4, DESK_TOP_Y + 0.12, -4.3]]),
-      make([[-4.4, DESK_TOP_Y + 0.06, 1.6], [-3.9, DESK_TOP_Y + 0.05, 0.6], [-4.3, DESK_TOP_Y + 0.05, -0.6], [-3.6, DESK_TOP_Y + 0.06, -1.6]]),
+      // Monitor cables running in behind the laptop, and the Launchpad's USB lead. Kept on the
+      // desk surface where the camera can actually see them — a cable tucked behind the far
+      // edge is geometry nobody ever renders.
+      make([[cm(-52), DESK_TOP_Y + cm(1), cm(-30)], [cm(-44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(-24), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(-8), DESK_TOP_Y + cm(1.2), cm(-28)]]),
+      make([[cm(52), DESK_TOP_Y + cm(1), cm(-30)], [cm(44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(22), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(4), DESK_TOP_Y + cm(1.2), cm(-28)]]),
+      make([[cm(-36), DESK_TOP_Y + cm(0.6), cm(14)], [cm(-30), DESK_TOP_Y + cm(0.5), cm(4)], [cm(-34), DESK_TOP_Y + cm(0.5), cm(-8)], [cm(-26), DESK_TOP_Y + cm(0.6), cm(-18)]]),
     ];
   }, []);
 
@@ -161,7 +171,7 @@ const Cables: React.FC = () => {
     <group>
       {curves.map((c, i) => (
         <mesh key={i} castShadow>
-          <tubeGeometry args={[c, 40, 0.055, 6, false]} />
+          <tubeGeometry args={[c, 44, cm(0.5), 6, false]} />
           <meshStandardMaterial color={CABLE} roughness={0.75} metalness={0.05} />
         </mesh>
       ))}
@@ -172,22 +182,22 @@ const Cables: React.FC = () => {
 /** The desk is allowed to hold things that have nothing to do with music. */
 const Clutter: React.FC = () => (
   <group>
-    <group position={[-7.0, DESK_TOP_Y, 3.1]}>
-      <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.42, 0.36, 0.84, 20]} />
+    <group position={[cm(-56), DESK_TOP_Y, cm(22)]}>
+      <mesh position={[0, cm(REAL.mug.height) / 2, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[cm(REAL.mug.diameter) / 2, cm(REAL.mug.diameter) / 2 - cm(0.6), cm(REAL.mug.height), 20]} />
         <meshPhysicalMaterial color={MUG} roughness={0.55} metalness={0.02} clearcoat={0.4} envMapIntensity={0.9} />
       </mesh>
-      <mesh position={[0.5, 0.44, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[0.2, 0.05, 8, 18, Math.PI * 1.1]} />
+      <mesh position={[cm(5.4), cm(REAL.mug.height) * 0.55, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <torusGeometry args={[cm(2.2), cm(0.5), 8, 18, Math.PI * 1.1]} />
         <meshPhysicalMaterial color={MUG} roughness={0.55} clearcoat={0.4} />
       </mesh>
     </group>
     {[
-      { p: [6.4, 0.07, 3.0] as [number, number, number], r: 0.14, w: 2.3, d: 1.6, c: '#eceae5' },
-      { p: [6.55, 0.2, 3.1] as [number, number, number], r: -0.08, w: 2.1, d: 1.5, c: '#dedbd4' },
+      { p: [cm(52), cm(0.5), cm(20)] as [number, number, number], r: 0.14, w: cm(21), d: cm(29.7), c: '#eceae5' },
+      { p: [cm(54), cm(1.5), cm(21)] as [number, number, number], r: -0.08, w: cm(21), d: cm(29.7), c: '#dedbd4' },
     ].map((b, i) => (
       <mesh key={i} position={[b.p[0], DESK_TOP_Y + b.p[1], b.p[2]]} rotation={[0, b.r, 0]} castShadow receiveShadow>
-        <boxGeometry args={[b.w, 0.13, b.d]} />
+        <boxGeometry args={[b.w, cm(0.8), b.d]} />
         <meshStandardMaterial color={b.c} roughness={0.9} />
       </mesh>
     ))}
@@ -197,8 +207,8 @@ const Clutter: React.FC = () => (
 export const DeskGear: React.FC = () => (
   <group>
     <Laptop />
-    <MonitorOnBooks x={-6.1} toeIn={0.42} />
-    <MonitorOnBooks x={6.1} toeIn={-0.42} />
+    <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
+    <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
     <Launchpad />
     <Cables />
     <Clutter />

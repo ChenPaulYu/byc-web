@@ -55,20 +55,20 @@ const LandingScene: React.FC = () => {
       // Over-the-shoulder framing: the viewer stands behind the chair rather than above the
       // desk, so the camera sits low and well back and the object reads as a diorama with
       // room around it.
-      let cameraDistance = 34;
+      let cameraDistance = 62;
 
       if (innerWidth < 480) {
         // Mobile phones - closer, since the whole vignette has to survive a narrow frame
-        cameraDistance = 26;
+        cameraDistance = 48;
       } else if (innerWidth < 768) {
         // Large phones / small tablets
-        cameraDistance = 29;
+        cameraDistance = 53;
       } else if (innerWidth < 1024) {
         // Tablets
-        cameraDistance = 31;
+        cameraDistance = 57;
       } else {
         // Desktop
-        cameraDistance = 34;
+        cameraDistance = 62;
       }
 
       // Three-quarter from behind and to one side. Dead-on reads as a product shot; the
@@ -123,12 +123,12 @@ const LandingScene: React.FC = () => {
         <directionalLight position={[-10, 7, 4]} intensity={0.32} />
 
         <OrbitControls
-          target={[0, -1.7, 0]}
+          target={[0, -6.5, 0]}
           enabled={!isDragging}
           enablePan={false}
           enableZoom={true}
-          minDistance={12}
-          maxDistance={44}
+          minDistance={24}
+          maxDistance={90}
           minPolarAngle={Math.PI / 3.4}
           maxPolarAngle={Math.PI / 2.5}
           // Keep the view off-axis. Letting it swing back to dead-on loses the over-the-
