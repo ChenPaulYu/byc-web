@@ -23,7 +23,7 @@ export const DESK_TOP_Y = -2;
 
 const DESK_TOP = '#3f4043';
 const DESK_BODY = '#d8d9da';
-const DESK_FRAME = '#8d8f92';
+const DESK_FRAME = '#6f7276';
 // Brackets and feet, a step darker than the tube so the joints read as separate parts rather
 // than as the frame simply getting thicker.
 const FRAME_DARK = '#54565a';
@@ -261,7 +261,7 @@ const Desk: React.FC = () => {
             <group key={sz} position={[0, 0, sz * legZ]}>
               <mesh position={[0, floorY + legH / 2, 0]} castShadow>
                 <boxGeometry args={[cm(REAL.legSection), legH, cm(REAL.legSection)]} />
-                <meshPhysicalMaterial color={DESK_FRAME} roughness={0.55} metalness={0.06} envMapIntensity={0.3} />
+                <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.04} envMapIntensity={0.12} />
               </mesh>
 
               {/* Where the leg meets the top. A real desk has a plate here with the fixings
@@ -284,11 +284,11 @@ const Desk: React.FC = () => {
           ))}
           <mesh position={[0, floorY + legH - cm(3), 0]} castShadow>
             <boxGeometry args={[cm(REAL.legSection * 0.9), cm(REAL.legSection * 0.9), legZ * 2]} />
-            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.55} metalness={0.06} envMapIntensity={0.3} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.04} envMapIntensity={0.12} />
           </mesh>
           <mesh position={[0, floorY + cm(9), 0]} castShadow>
             <boxGeometry args={[cm(REAL.legSection * 0.8), cm(REAL.legSection * 0.8), legZ * 2]} />
-            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.55} metalness={0.06} envMapIntensity={0.3} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.04} envMapIntensity={0.12} />
           </mesh>
           {[-1, 1].map((sz) => (
             <mesh key={sz} position={[0, floorY + cm(9), sz * (legZ - cm(3))]} castShadow>
@@ -300,7 +300,7 @@ const Desk: React.FC = () => {
       ))}
       <mesh position={[0, floorY + cm(9), -legZ]} castShadow>
         <boxGeometry args={[legX * 2, cm(3.5), cm(3.5)]} />
-        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.55} metalness={0.06} envMapIntensity={0.3} />
+        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.04} envMapIntensity={0.12} />
       </mesh>
 
     </group>
@@ -360,7 +360,12 @@ const useGround = () =>
 export const Stage: React.FC = () => {
   useBackdrop();
   const ground = useGround();
-  const floorY = DESK_TOP_Y - TOP_T - 2.6;
+  // The floor is FLOOR_Y, the same constant the legs stand on. It used to be worked out here a
+  // second time, as the desk top minus its thickness minus a tuned 2.6 — which put the ground
+  // 65 cm above the feet. The legs passed straight through it and carried on below, and the
+  // contact shadow was a haze floating at mid-leg height, so nothing in the scene was ever
+  // standing on anything. One fact, one owner; this is what scale.ts exists to prevent.
+  const floorY = FLOOR_Y;
 
   useEffect(() => () => { ground?.dispose(); }, [ground]);
 
@@ -373,8 +378,8 @@ export const Stage: React.FC = () => {
 
       <Desk />
 
-      <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.34} scale={34} blur={2.6} far={7} />
-      <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.26} scale={18} blur={1.6} far={4} />
+      <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
+      <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />
     </group>
   );
 };

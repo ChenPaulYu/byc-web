@@ -31,12 +31,12 @@ export const cm = (value: number) => value / CM_PER_UNIT;
  * can check them without reading geometry.
  */
 export const REAL = {
-  desk: { width: 140, depth: 70, height: 82, topThickness: 2.5 },
+  desk: { width: 140, depth: 70, height: 82, topThickness: 4 },
   chair: { seatHeight: 45, seatWidth: 48, seatDepth: 45, backHeight: 52, baseRadius: 33 },
   /** Tannoy Gold 5 — a 5-inch nearfield monitor. */
   monitor: { width: 19, height: 30, depth: 25 },
   mug: { diameter: 9, height: 10 },
   paperback: { width: 13, height: 2, depth: 20 },
   /** Square-tube desk leg section. */
-  legSection: 4.5,
+  legSection: 6,
 } as const;
