@@ -11,6 +11,7 @@ import * as Tone from 'tone';
 import { useNavigate } from 'react-router-dom';
 import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
 import { Stage } from './landing/Stage';
+import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
 
 const VIDEO_ENABLED = import.meta.env.VITE_ENABLE_VIDEO !== 'false';
@@ -141,6 +142,7 @@ const LandingScene: React.FC = () => {
         />
 
         <Stage />
+        <DeskGear />
         <Mpc synth={synth} onDragChange={setIsDragging} onVideoReady={() => setVideoReady(true)} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
