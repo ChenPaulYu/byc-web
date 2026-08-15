@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox, Text } from '@react-three/drei';
-import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, ScreenReadout } from './primitives';
+import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, VideoScreen } from './primitives';
 import {
   COL_KNOBS_X,
   COL_PADS_X,
@@ -227,14 +227,27 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
 
       {/* --- COLUMN 2: SCREEN (1.5/4 = 37.5%) --- */}
       <group position={[COL_SCREEN_X + positions.screenSectionX, 0, ROW_MAIN_Z + positions.screenSectionZ]}>
-        {/* The screen. No Suspense wrapper any more — it was there for a video element that
-            had to load; this draws itself from the first frame. */}
+        {/* The screen plays a video rather than drawing the spectrum. A live readout was built
+            and reverted: it deleted the asset and tied the machine's one saturated element to
+            what the visitor was doing, but the owner prefers this. The Suspense wrapper is back
+            with it, because a video element has to load and a canvas does not. */}
         <group position={[0, 0, -0.8]}>
-          <ScreenReadout
-            width={positions.screenWidth}
-            depth={positions.screenDepth}
-            onReady={onScreenReady}
-          />
+          <Suspense fallback={
+            <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+              <meshStandardMaterial color="#d1fae5" roughness={0.2} />
+            </RoundedBox>
+          }>
+            <VideoScreen
+              width={positions.screenWidth}
+              height={positions.screenHeight}
+              depth={positions.screenDepth}
+              opacity={positions.videoOpacity}
+              rotationX={positions.videoRotationX}
+              rotationY={positions.videoRotationY}
+              rotationZ={positions.videoRotationZ}
+              onReady={onScreenReady}
+            />
+          </Suspense>
 
           {/* The avatar is projected out of the screen once the visitor is in, rather than
               already standing there when the lights come up. */}

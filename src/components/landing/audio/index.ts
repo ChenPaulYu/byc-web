@@ -16,7 +16,6 @@ export const setChannel = (index: number, value: number): void => engine.setChan
 export const startBed = (): void => engine.startBed();
 export const stopBed = (): void => engine.stopBed();
 export const getLevel = (): number => engine.getLevel();
-export const getSpectrum = (target: Uint8Array): number => engine.getSpectrum(target);
 export const loadPadSample = (key: string, filename: string): Promise<void> =>
   engine.loadPadSample(key, filename);
 export const loadBed = (filename: string): Promise<void> => engine.loadBed(filename);

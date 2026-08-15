@@ -8,94 +8,109 @@ import { useFrame } from '@react-three/fiber';
 import { RoundedBox, Text, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { useDrag } from '@use-gesture/react';
-import { getLevel, getSpectrum } from './audio';
+import { getLevel } from './audio';
 
-/**
- * The MPC's screen, drawing what the machine is doing rather than playing a film of it.
- *
- * This replaced a 0.9 MB canned video loop on a homepage already carrying 8.5 MB of assets. It
- * earns the swap three ways: the asset goes, the machine's one saturated element stops being
- * decoration and becomes a readout of what the visitor is doing, and the avatar standing on it
- * finally makes sense — he and the screen now answer the same signal.
- *
- * A canvas rather than a shader, deliberately and against the cheaper option. A shader wins on a
- * spectrum alone but cannot draw text, and the next thing this screen is likely to carry is the
- * site's navigation, scrolled with a knob that already exists. Picking the cheap option now would
- * mean rewriting it then.
- */
-const SCREEN_BARS = 28;
-
-export const ScreenReadout: React.FC<{
+export const VideoScreen: React.FC<{
   width: number;
+  height: number;
   depth: number;
+  opacity?: number;
+  rotationX?: number;
+  rotationY?: number;
+  rotationZ?: number;
   onReady?: () => void;
-}> = ({ width, depth, onReady }) => {
-  const spectrum = useMemo(() => new Uint8Array(128), []);
-  const { canvas, ctx, texture } = useMemo(() => {
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const context = c.getContext('2d');
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return { canvas: c, ctx: context, texture: t };
-  }, []);
+}> = ({ width, height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0, onReady }) => {
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
-    onReady?.();
-    return () => texture.dispose();
-  }, [onReady, texture]);
+    // Create video element following Codrops tutorial approach
+    const video = document.createElement('video');
+    video.src = '/animation.mp4';
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
 
-  useFrame((state) => {
-    if (!ctx) return;
-    const size = canvas.width;
-    const bins = getSpectrum(spectrum);
+    console.log('🎬 Creating video texture...');
 
-    const sky = ctx.createLinearGradient(0, 0, 0, size);
-    sky.addColorStop(0, '#241848');
-    sky.addColorStop(0.52, '#3a1f5c');
-    sky.addColorStop(1, '#0a0a18');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, size, size);
+    // Create video texture with proper color space and orientation
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = true; // Fix upside-down video
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
 
-    const horizon = size * 0.56;
-    const time = state.clock.elapsedTime;
-    const barWidth = size / SCREEN_BARS;
-    // Only the lower bins carry anything for this material; the top of the range is silence and
-    // would render as a row of dead bars down one side.
-    const usable = Math.max(1, Math.floor(bins * 0.62));
+    setVideoTexture(texture);
 
-    for (let i = 0; i < SCREEN_BARS; i += 1) {
-      const from = Math.floor((i / SCREEN_BARS) * usable);
-      const to = Math.max(from + 1, Math.floor(((i + 1) / SCREEN_BARS) * usable));
-      let sum = 0;
-      for (let b = from; b < to; b += 1) sum += spectrum[b];
-      const level = sum / (to - from) / 255;
-      // A slow idle wave, so silence is a screen that is switched on rather than a black square.
-      const idle = 0.05 + 0.035 * Math.sin(time * 1.4 + i * 0.5);
-      const barHeight = Math.max(idle, level) * horizon * 1.05;
+    // Start video playback
+    const startVideo = async () => {
+      try {
+        await video.play();
+        console.log('🎬 Video playing successfully');
+      } catch (error) {
+        console.log('🎬 Video autoplay blocked, will play on user interaction');
+      }
+    };
 
-      // Blue at rest through to magenta when loud. Subtracting from 212 rather than adding was
-      // the first attempt and runs the other way round the wheel — through cyan into green, which
-      // both loses the register the old video had and clashes with the avatar standing on it.
-      const hue = 212 + level * 90;
-      ctx.fillStyle = `hsl(${hue}, 88%, ${44 + level * 26}%)`;
-      ctx.fillRect(i * barWidth + 1, horizon - barHeight, barWidth - 2, barHeight);
-      // The reflection is what makes this read as a horizon rather than as a bar chart.
-      ctx.globalAlpha = 0.22;
-      ctx.fillRect(i * barWidth + 1, horizon, barWidth - 2, barHeight * 0.7);
-      ctx.globalAlpha = 1;
+    // Play on user interaction
+    const handleInteraction = () => {
+      video.play().then(() => {
+        console.log('🎬 Video started on user interaction');
+      }).catch(err => {
+        console.error('🎬 Video play error:', err);
+      });
+    };
+
+    // Mark ready when the first frame is available
+    const handleLoaded = () => {
+      onReady?.();
+      startVideo();
+    };
+
+    // Try autoplay first, then on click
+    video.addEventListener('loadeddata', handleLoaded);
+    document.addEventListener('click', handleInteraction, { once: true });
+
+    return () => {
+      video.pause();
+      video.src = '';
+      document.removeEventListener('click', handleInteraction);
+      video.removeEventListener('loadeddata', handleLoaded);
+      texture.dispose();
+    };
+  }, [onReady]);
+
+  // Update texture on every frame
+  useFrame(() => {
+    if (videoTexture) {
+      videoTexture.needsUpdate = true;
     }
-
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.fillRect(0, horizon - 1, size, 1.5);
-    texture.needsUpdate = true;
   });
 
   return (
-    <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[width, depth]} />
-      <meshBasicMaterial map={texture} toneMapped={false} />
-    </mesh>
+    <group>
+      {/* Video plane with correct aspect ratio */}
+      <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2 + rotationX, rotationY, rotationZ]}>
+        <planeGeometry args={[width, depth]} />
+        {videoTexture ? (
+          <meshBasicMaterial
+            map={videoTexture}
+            side={THREE.FrontSide}
+            transparent
+            opacity={opacity}
+          />
+        ) : (
+          <meshStandardMaterial color="#374151" roughness={0.2} transparent opacity={opacity} />
+        )}
+      </mesh>
+
+      {/* Optional: Screen border */}
+      <RoundedBox args={[width, height, depth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
+        <meshStandardMaterial color="#1f2937" roughness={0.2} transparent opacity={0.1} />
+      </RoundedBox>
+    </group>
   );
 };
 

@@ -35,6 +35,10 @@ export interface MpcPositions {
   screenWidth: number;
   screenDepth: number;
   screenHeight: number;
+  videoOpacity: number;
+  videoRotationX: number;
+  videoRotationY: number;
+  videoRotationZ: number;
   avatarScale: number;
   buttonsOffsetZ: number;
   buttonSpacing: number;
@@ -58,6 +62,10 @@ export const DEFAULT_MPC_POSITIONS: MpcPositions = {
   screenWidth: 3.4,
   screenDepth: 3.4,
   screenHeight: 0.17,
+  videoOpacity: 1.0,
+  videoRotationX: 0,
+  videoRotationY: 0,
+  videoRotationZ: 0,
   avatarScale: 0.78,
   buttonsOffsetZ: 1.4,
   buttonSpacing: 0.87,

@@ -122,7 +122,7 @@ the control lives in the scene rather than as a DOM overlay.
 *Verify:* enter the page, touch nothing, and confirm the avatar is moving; press STOP and confirm
 both the sound and the motion settle.
 
-### 7. Give the engine a spectrum, not just a level
+### 7. ~~Give the engine a spectrum, not just a level~~ — reverted with step 8
 
 `getLevel()` answers "how loud", which is all the avatar needs. A screen needs "loud at which
 frequencies". Add `getSpectrum(target: Uint8Array)` filling a caller-owned array from
@@ -131,7 +131,18 @@ The analyser's `fftSize` is 256, giving 128 bins — plenty for a 512 px-wide re
 
 *Verify:* typecheck and build; nothing renders differently.
 
-### 8. Make the MPC's screen a live readout instead of a video
+### 8. ~~Make the MPC's screen a live readout instead of a video~~ — built, then reverted
+
+**The owner prefers the video.** It was built and it worked: the asset went, the machine's one
+saturated element became a readout of what the visitor was doing, and the avatar standing on it
+finally answered the same signal he did. It was reverted on taste, which is the owner's call. The
+spectrum accessor from step 7 went with it — its only consumer.
+
+What survives the revert is the argument, in case anyone re-opens this: the reasoning below still
+holds, and the 0.9 MB is still being paid.
+
+<details><summary>The original step</summary>
+
 
 The screen currently plays `/animation.mp4`, a 0.9 MB canned synthwave loop, through a
 `VideoTexture` in `primitives.tsx`'s `VideoScreen`. Replace it with a `CanvasTexture` redrawn each
@@ -155,6 +166,8 @@ must show something rather than going black.
 
 *Verify:* in a real browser — play pads and watch the screen answer. The screenshot rig cannot
 photograph this any better than it can photograph a lit pad.
+
+</details>
 
 ## Verification
 
