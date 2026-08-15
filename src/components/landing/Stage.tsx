@@ -22,7 +22,7 @@ export const DESK_TOP_Y = -2;
 const DESK_TOP = '#3f4043';
 const DESK_BODY = '#d8d9da';
 const DESK_FRAME = '#b9babc';
-const DRAWER_PULL = '#9a9b9d';
+const EDGE_BAND = '#cdd0d2';
 const SEAT = '#c08a5e';
 const SEAT_FRAME = '#9fa1a4';
 const POT = '#f0f0ef';
@@ -100,52 +100,79 @@ const Desk: React.FC = () => {
         />
       </RoundedBox>
 
-      {/* Drawer pedestal on the left, open leg frame on the right — the asymmetry is what makes
-          a slab of geometry read as a desk rather than a table. */}
-      <group position={[-DESK_W / 2 + 2.5, 0, 0]}>
+      {/* Laminate edge banding: a pale rim sitting just under the dark surface. It is the
+          detail that says cheap flat-pack rather than solid timber, and it draws a highlight
+          line all the way round the silhouette, which a single dark slab never gets. */}
+      <RoundedBox
+        args={[DESK_W + 0.06, 0.11, DESK_D + 0.06]}
+        radius={0.04}
+        smoothness={3}
+        position={[0, DESK_TOP_Y - TOP_T + 0.03, 0]}
+        castShadow
+      >
+        <meshPhysicalMaterial color={EDGE_BAND} roughness={0.66} metalness={0.03} envMapIntensity={0.85} />
+      </RoundedBox>
+
+      {/* Square-tube end frames with a rear stretcher. A pedestal of drawers reads as an
+          office; an open frame with a shelf under it reads as a room someone lives in. */}
+      {[-1, 1].map((side) => (
+        <group key={side} position={[side * (DESK_W / 2 - 0.9), 0, 0]}>
+          {[-1, 1].map((sz) => (
+            <mesh key={sz} position={[0, floorY + legH / 2, sz * (DESK_D / 2 - 0.9)]} castShadow>
+              <boxGeometry args={[0.22, legH, 0.22]} />
+              <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+            </mesh>
+          ))}
+          <mesh position={[0, floorY + legH - 0.11, 0]} castShadow>
+            <boxGeometry args={[0.2, 0.2, DESK_D - 1.6]} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+          </mesh>
+          <mesh position={[0, floorY + 0.3, 0]} castShadow>
+            <boxGeometry args={[0.18, 0.18, DESK_D - 1.6]} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+          </mesh>
+        </group>
+      ))}
+      <mesh position={[0, floorY + 0.3, -DESK_D / 2 + 0.9]} castShadow>
+        <boxGeometry args={[DESK_W - 2.0, 0.16, 0.16]} />
+        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+      </mesh>
+
+      {/* Under-desk shelf on the left, with things stacked on it. */}
+      <group position={[-DESK_W / 2 + 3.4, 0, 0]}>
         <RoundedBox
-          args={[4.2, legH - 0.35, DESK_D - 1.1]}
-          radius={0.06}
+          args={[5.6, 0.16, DESK_D - 1.9]}
+          radius={0.04}
           smoothness={3}
-          position={[0, floorY + (legH - 0.35) / 2 + 0.35, 0]}
+          position={[0, floorY + 1.15, 0]}
           castShadow
           receiveShadow
         >
           <meshPhysicalMaterial
             color={DESK_BODY}
-            roughness={0.72}
+            roughness={0.74}
             roughnessMap={bodyRoughness ?? undefined}
-            metalness={0.06}
-            clearcoat={0.15}
+            metalness={0.04}
             envMapIntensity={0.8}
           />
         </RoundedBox>
-        {[0.62, 1.62].map((y) => (
-          <group key={y} position={[0, floorY + y + 0.35, (DESK_D - 1.1) / 2 + 0.02]}>
-            <mesh>
-              <planeGeometry args={[3.9, 0.86]} />
-              <meshStandardMaterial color={DESK_BODY} roughness={0.8} metalness={0} />
-            </mesh>
-            <mesh position={[0, 0, 0.03]}>
-              <boxGeometry args={[1.5, 0.1, 0.06]} />
-              <meshStandardMaterial color={DRAWER_PULL} roughness={0.55} metalness={0.2} />
-            </mesh>
-          </group>
+        {[
+          { x: -1.5, w: 2.0, h: 0.9, c: '#cfd1cd', r: 0.05 },
+          { x: 0.55, w: 1.7, h: 1.25, c: '#c4c7cb', r: -0.08 },
+          { x: 2.1, w: 1.2, h: 0.7, c: '#dad7d0', r: 0.11 },
+        ].map((b) => (
+          <mesh
+            key={b.x}
+            position={[b.x, floorY + 1.23 + b.h / 2, 0.15]}
+            rotation={[0, b.r, 0]}
+            castShadow
+            receiveShadow
+          >
+            <boxGeometry args={[b.w, b.h, DESK_D - 3.2]} />
+            <meshStandardMaterial color={b.c} roughness={0.9} metalness={0} />
+          </mesh>
         ))}
       </group>
-
-      {[-1, 1].map((sz) =>
-        [DESK_W / 2 - 0.6].map((x) => (
-          <mesh key={`${x}:${sz}`} position={[x, floorY + legH / 2, sz * (DESK_D / 2 - 0.7)]} castShadow>
-            <boxGeometry args={[0.26, legH, 0.26]} />
-            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.38} metalness={0.55} envMapIntensity={1.1} />
-          </mesh>
-        )),
-      )}
-      <mesh position={[DESK_W / 2 - 0.6, floorY + 0.16, 0]} castShadow>
-        <boxGeometry args={[0.2, 0.2, DESK_D - 1.4]} />
-        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.38} metalness={0.55} envMapIntensity={1.1} />
-      </mesh>
     </group>
   );
 };
@@ -156,49 +183,73 @@ const Desk: React.FC = () => {
  * empty chair at a desk is a person. It also carries the scene's only warm colour.
  */
 const Chair: React.FC = () => {
-  const seatY = DESK_TOP_Y - 1.15;
   const floorY = DESK_TOP_Y - TOP_T - 2.6;
+  const seatY = DESK_TOP_Y - 1.15;
+
   return (
     // Sits on the line between the camera and the desk, so it reads as the shoulder the view
     // is looking over rather than as another object beside the desk. Rotated to face the desk
     // centre from wherever it stands.
     <group position={[4.2, 0, DESK_D / 2 + 1.5]} scale={0.9} rotation={[0, 0.52, 0]}>
-      <RoundedBox args={[2.9, 0.42, 2.7]} radius={0.16} smoothness={3} position={[0, seatY, 0]} castShadow receiveShadow>
-        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.28} clearcoatRoughness={0.6} envMapIntensity={0.85} />
+      {/* Seat, with a thinner front lip so the profile is not a uniform slab. */}
+      <RoundedBox args={[2.9, 0.4, 2.6]} radius={0.18} smoothness={4} position={[0, seatY, 0]} castShadow receiveShadow>
+        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
       </RoundedBox>
-      <RoundedBox
-        args={[2.7, 3.3, 0.34]}
-        radius={0.16}
-        smoothness={3}
-        position={[0, seatY + 1.85, 1.16]}
-        rotation={[0.06, 0, 0]}
-        castShadow
-      >
-        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.28} clearcoatRoughness={0.6} envMapIntensity={0.85} />
+      <RoundedBox args={[2.75, 0.22, 0.55]} radius={0.1} smoothness={3} position={[0, seatY - 0.07, -1.15]} castShadow>
+        <meshPhysicalMaterial color={SEAT} roughness={0.74} metalness={0.02} clearcoat={0.24} envMapIntensity={0.85} />
       </RoundedBox>
-      <mesh position={[0, seatY + 0.9, 1.34]} castShadow>
-        <boxGeometry args={[0.16, 1.9, 0.16]} />
-        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.32} metalness={0.7} envMapIntensity={1.15} />
+
+      {/* The back is a separate panel held off the seat by a spine. That gap, and the kink
+          between lumbar and shoulder panels, is what makes a shape read as a task chair
+          rather than as a bench with a board behind it. */}
+      <mesh position={[0, seatY + 0.75, 1.28]} rotation={[0.1, 0, 0]} castShadow>
+        <boxGeometry args={[0.42, 1.5, 0.3]} />
+        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.34} metalness={0.66} envMapIntensity={1.15} />
       </mesh>
-      <mesh position={[0, (seatY + floorY) / 2 - 0.1, 0]} castShadow>
-        <cylinderGeometry args={[0.17, 0.17, seatY - floorY - 0.5, 16]} />
-        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.32} metalness={0.7} envMapIntensity={1.15} />
+      <RoundedBox args={[2.6, 1.5, 0.34]} radius={0.16} smoothness={4} position={[0, seatY + 1.6, 1.16]} rotation={[0.02, 0, 0]} castShadow>
+        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
+      </RoundedBox>
+      <RoundedBox args={[2.5, 1.7, 0.3]} radius={0.16} smoothness={4} position={[0, seatY + 3.0, 1.36]} rotation={[0.16, 0, 0]} castShadow>
+        <meshPhysicalMaterial color={SEAT} roughness={0.72} metalness={0.02} clearcoat={0.26} clearcoatRoughness={0.6} envMapIntensity={0.85} />
+      </RoundedBox>
+
+      {/* Armrests. Cheap chairs have them; their silhouette is most of what says "office". */}
+      {[-1, 1].map((sx) => (
+        <group key={sx}>
+          <mesh position={[sx * 1.6, seatY + 0.5, 0.55]} castShadow>
+            <boxGeometry args={[0.18, 1.1, 0.2]} />
+            <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.36} metalness={0.6} envMapIntensity={1.1} />
+          </mesh>
+          <RoundedBox args={[0.34, 0.2, 1.5]} radius={0.08} smoothness={3} position={[sx * 1.6, seatY + 1.05, 0.15]} castShadow>
+            <meshPhysicalMaterial color="#4b4d50" roughness={0.6} metalness={0.15} envMapIntensity={0.9} />
+          </RoundedBox>
+        </group>
+      ))}
+
+      {/* Gas lift: cylinder plus a wider collar, which is the detail that stops it reading as
+          a broomstick. */}
+      <mesh position={[0, seatY - 0.95, 0]} castShadow>
+        <cylinderGeometry args={[0.15, 0.15, 1.5, 16]} />
+        <meshPhysicalMaterial color="#c7c9cb" roughness={0.24} metalness={0.8} envMapIntensity={1.2} />
       </mesh>
+      <mesh position={[0, seatY - 1.55, 0]} castShadow>
+        <cylinderGeometry args={[0.24, 0.24, 0.5, 16]} />
+        <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.4} metalness={0.6} envMapIntensity={1.1} />
+      </mesh>
+
+      {/* Five-star base: arms taper outward and drop toward the caster, rather than being
+          five identical sticks. */}
       {[0, 1, 2, 3, 4].map((i) => {
         const a = (i / 5) * Math.PI * 2 + 0.4;
         return (
-          <group key={i}>
-            <mesh position={[Math.sin(a) * 0.85, floorY + 0.24, Math.cos(a) * 0.85]} rotation={[0, -a, 0]} castShadow>
-              <boxGeometry args={[0.16, 0.12, 1.7]} />
-              <meshStandardMaterial color={SEAT_FRAME} roughness={0.55} metalness={0.25} />
+          <group key={i} rotation={[0, a, 0]}>
+            <mesh position={[0, floorY + 0.42, 0.95]} rotation={[0.12, 0, 0]} castShadow>
+              <boxGeometry args={[0.26, 0.2, 1.9]} />
+              <meshPhysicalMaterial color={SEAT_FRAME} roughness={0.36} metalness={0.6} envMapIntensity={1.1} />
             </mesh>
-            <mesh
-              position={[Math.sin(a) * 1.6, floorY + 0.13, Math.cos(a) * 1.6]}
-              rotation={[Math.PI / 2, 0, 0]}
-              castShadow
-            >
-              <cylinderGeometry args={[0.13, 0.13, 0.16, 12]} />
-              <meshStandardMaterial color="#6f7174" roughness={0.5} metalness={0.3} />
+            <mesh position={[0, floorY + 0.17, 1.85]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+              <cylinderGeometry args={[0.17, 0.17, 0.14, 14]} />
+              <meshPhysicalMaterial color="#5c5e61" roughness={0.5} metalness={0.35} envMapIntensity={0.9} />
             </mesh>
           </group>
         );
