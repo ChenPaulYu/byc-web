@@ -111,6 +111,7 @@ const Laptop: React.FC = () => {
 // REAL.monitor: the gold ring is about two thirds of the front face across, the tweeter cone at
 // its centre is far smaller than it looks in memory, and the control plate sits a third of the
 // way down from centre.
+const CAB_RADIUS = cm(1.8);
 const BAFFLE_Z = cm(REAL.monitor.depth) / 2;
 const DRIVER_Y = cm(4);
 const RING_OUTER = cm(6.2);
@@ -132,7 +133,7 @@ const TannoyBaffle: React.FC = () => (
   <group position={[0, 0, BAFFLE_Z]}>
     {/* Baffle plate, a shade off the cabinet so the front face separates from the sides. */}
     <mesh position={[0, 0, cm(0.05)]}>
-      <planeGeometry args={[cm(REAL.monitor.width) - cm(0.6), cm(REAL.monitor.height) - cm(0.6)]} />
+      <planeGeometry args={[cm(REAL.monitor.width) - CAB_RADIUS * 2, cm(REAL.monitor.height) - CAB_RADIUS * 2]} />
       <meshStandardMaterial color="#1c1d1f" roughness={0.86} metalness={0.05} envMapIntensity={1.2} />
     </mesh>
 
@@ -197,7 +198,7 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
     ))}
     {/* Cabinet, tilted back a little the way a monitor on an improvised riser always is. */}
     <group position={[0, cm(REAL.paperback.height * 3) + cm(REAL.monitor.height) / 2, 0]} rotation={[-0.09, 0, 0]}>
-      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={cm(1.1)} smoothness={3} castShadow receiveShadow>
+      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={CAB_RADIUS} smoothness={8} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE_DARK} roughness={0.58} metalness={0.14} envMapIntensity={1.7} clearcoat={0.25} clearcoatRoughness={0.55} />
       </RoundedBox>
       <TannoyBaffle />
