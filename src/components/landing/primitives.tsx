@@ -264,21 +264,6 @@ export const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDra
 
   const rotation = (value - 0.5) * 4.7;
 
-  // Generate ticks
-  const ticks = useMemo(() => {
-    return Array.from({ length: 11 }).map((_, i) => {
-      // Map 0..10 to -135..+135 degrees
-      const angleDeg = -135 + i * (270 / 10);
-      const angleRad = (angleDeg * Math.PI) / 180;
-      // 0 deg is Up (-Z), so we rotate from there
-      // x = sin(a) * r, z = -cos(a) * r
-      const radius = 0.32;
-      const x = Math.sin(angleRad) * radius;
-      const z = -Math.cos(angleRad) * radius;
-      return { x, z, rotation: -angleRad };
-    });
-  }, []);
-
   return (
     <group
       position={position}
@@ -287,16 +272,6 @@ export const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDra
       onPointerOver={() => { document.body.style.cursor = 'ns-resize'; setHover(true); }}
       onPointerOut={() => { document.body.style.cursor = 'auto'; setHover(false); }}
     >
-      {/* Static Ticks */}
-      <group position={[0, 0.01, 0]}>
-        {ticks.map((tick, i) => (
-          <mesh key={i} position={[tick.x, 0, tick.z]} rotation={[0, tick.rotation, 0]}>
-            <boxGeometry args={[0.02, 0.01, 0.06]} />
-            <meshStandardMaterial color="#9ca3af" />
-          </mesh>
-        ))}
-      </group>
-
       {/* Knob Body */}
       <mesh castShadow receiveShadow position={[0, 0.12, 0]} rotation={[0, rotation, 0]}>
         <cylinderGeometry args={[0.25, 0.25, 0.25, 16]} />

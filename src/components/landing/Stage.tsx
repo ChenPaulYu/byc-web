@@ -17,6 +17,7 @@ import { ContactShadows, RoundedBox } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { cm, REAL } from './scale';
+import { WALNUT, createWoodMaps } from './wood';
 
 /** Matches the MPC chassis bottom: its group sits at y = -1 with a box of height 1 below. */
 export const DESK_TOP_Y = -2;
@@ -38,157 +39,6 @@ const TOP_T = cm(REAL.desk.topThickness);
 const DESK_HEIGHT = cm(REAL.desk.height);
 const FLOOR_Y = DESK_TOP_Y - DESK_HEIGHT;
 
-/**
- * Light oak: colour, relief and finish, all derived from one drawing of the grain.
- *
- * The version this replaces drew grain into a colour map and then took its roughness from an
- * unrelated field of value noise, with no normal map at all — so the wood was a *picture* of
- * timber printed on a perfectly flat, uniformly rough plane. Light had nothing to catch on and
- * the desk read as painted card however good the picture got.
- *
- * Real timber has one structure showing three ways: the grain is darker, it sits slightly lower
- * because the soft early wood wears down, and its open pores scatter light more than the polished
- * surface between them. So the grain is drawn once into a height field, and the colour map, the
- * normal map and the roughness map are all read out of that same field. Nothing can drift out of
- * register with anything else, because there is only one thing.
- */
-const useWoodMaps = () =>
-  useMemo(() => {
-    const size = 1024;
-    const grain = document.createElement('canvas');
-    grain.width = grain.height = size;
-    const gctx = grain.getContext('2d');
-    if (!gctx) return null;
-
-    let seed = 21;
-    const rand = () => {
-      seed = (seed * 1664525 + 1013904223) % 4294967296;
-      return seed / 4294967296;
-    };
-
-    // --- the one drawing: white is proud and polished, black is deep and open ---
-    gctx.fillStyle = '#ffffff';
-    gctx.fillRect(0, 0, size, size);
-
-    // Growth rings, not stripes. The first attempt drew 620 independently wandering lines at
-    // even spacing and came out looking like decking: neighbouring lines went their own way, and
-    // regular spacing reads as manufactured. Real grain does the opposite on both counts, so
-    // this shares one warp between neighbours — rings that formed together arc together — and
-    // spaces them by a squared random, which clusters most lines tight and leaves occasional
-    // wide bands of clear timber between.
-    const waves = Array.from({ length: 5 }, () => ({
-      frequency: 0.3 + rand() * 2.2,
-      amplitude: 6 + rand() * 34,
-      phase: rand() * Math.PI * 2,
-    }));
-    const warpAt = (x: number, drift: number) =>
-      waves.reduce(
-        (sum, w) => sum + Math.sin((x / size) * Math.PI * 2 * w.frequency + w.phase + drift) * w.amplitude,
-        0,
-      );
-
-    // Deliberately coarser and stronger than real oak. The desk renders about two hundred pixels
-    // across, so seventy centimetres of depth land in roughly sixty pixels: grain at true scale
-    // is sub-pixel and averages away to a flat plane, which is exactly what the first two
-    // attempts did — one too fine to survive, one so fine it vanished entirely.
-    for (let y = 0; y < size; ) {
-      y += 9 + rand() ** 2 * 48;
-      // The arc slowly changes down the board, so the figure is not one repeated curve.
-      const drift = (y / size) * 1.5;
-      const latewood = rand() > 0.55;
-      gctx.lineWidth = latewood ? 2.6 + rand() * 5 : 1 + rand() * 1.8;
-      gctx.strokeStyle = `rgba(0,0,0,${latewood ? 0.34 + rand() * 0.38 : 0.12 + rand() * 0.2})`;
-      gctx.beginPath();
-      for (let x = 0; x <= size; x += 8) {
-        const yy = y + warpAt(x, drift);
-        if (x === 0) gctx.moveTo(x, yy);
-        else gctx.lineTo(x, yy);
-      }
-      gctx.stroke();
-    }
-
-    // Open pores: short dark dashes lying along the grain. These are what separate oak from a
-    // smooth close-grained timber, and they are the detail the roughness map lives on.
-    gctx.fillStyle = 'rgba(0,0,0,0.5)';
-    for (let i = 0; i < 2600; i += 1) {
-      gctx.fillRect(rand() * size, rand() * size, 2 + rand() * 9, 1);
-    }
-
-    const field = gctx.getImageData(0, 0, size, size).data;
-    const heightAt = (x: number, y: number) =>
-      field[(((y + size) % size) * size + ((x + size) % size)) * 4] / 255;
-
-    // --- colour: tint the height field, so dark grain is also darker wood ---
-    const colour = document.createElement('canvas');
-    colour.width = colour.height = size;
-    const cctx = colour.getContext('2d');
-    const normal = document.createElement('canvas');
-    normal.width = normal.height = size;
-    const nctx = normal.getContext('2d');
-    const rough = document.createElement('canvas');
-    rough.width = rough.height = size;
-    const rctx = rough.getContext('2d');
-    if (!cctx || !nctx || !rctx) return null;
-
-    const cImg = cctx.createImageData(size, size);
-    const nImg = nctx.createImageData(size, size);
-    const rImg = rctx.createImageData(size, size);
-
-    // Walnut, not oak, and the reason is measured rather than aesthetic. On the light oak the
-    // MPC's cream chassis rendered at luminance 177 against a desk at 161 — sixteen points, six
-    // percent — and their red channels were within four of each other, so the hero separated from
-    // its background almost entirely on a faint difference in blue. That is the whole silhouette
-    // resting on the one channel a viewer is least sensitive to. Darker timber gives it about
-    // seventy points instead. Paler or greyer wood was considered first and is worse on both
-    // counts: paler closes the gap, greyer removes the hue difference that was carrying it.
-    const LIGHT = [138, 105, 74];
-    const DARK = [74, 52, 34];
-    const STRENGTH = 3.4; // how hard the relief pushes; the grain is shallow in reality
-
-    for (let y = 0; y < size; y += 1) {
-      for (let x = 0; x < size; x += 1) {
-        const i = (y * size + x) * 4;
-        const h = heightAt(x, y);
-
-        const t = 1 - h;
-        cImg.data[i] = LIGHT[0] + (DARK[0] - LIGHT[0]) * t;
-        cImg.data[i + 1] = LIGHT[1] + (DARK[1] - LIGHT[1]) * t;
-        cImg.data[i + 2] = LIGHT[2] + (DARK[2] - LIGHT[2]) * t;
-        cImg.data[i + 3] = 255;
-
-        // Central differences on the height field give the surface slope.
-        const dx = (heightAt(x + 1, y) - heightAt(x - 1, y)) * STRENGTH;
-        const dy = (heightAt(x, y + 1) - heightAt(x, y - 1)) * STRENGTH;
-        const len = Math.sqrt(dx * dx + dy * dy + 1);
-        nImg.data[i] = ((-dx / len) * 0.5 + 0.5) * 255;
-        nImg.data[i + 1] = ((-dy / len) * 0.5 + 0.5) * 255;
-        nImg.data[i + 2] = (1 / len) * 0.5 * 255 + 127;
-        nImg.data[i + 3] = 255;
-
-        // Pores scatter, the polished surface between them does not.
-        const r = 255 * (0.42 + (1 - h) * 0.45);
-        rImg.data[i] = rImg.data[i + 1] = rImg.data[i + 2] = r;
-        rImg.data[i + 3] = 255;
-      }
-    }
-
-    cctx.putImageData(cImg, 0, 0);
-    nctx.putImageData(nImg, 0, 0);
-    rctx.putImageData(rImg, 0, 0);
-
-    const make = (canvas: HTMLCanvasElement, srgb: boolean) => {
-      const t = new THREE.CanvasTexture(canvas);
-      if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-      t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      // Grain runs the length of the desk, and the board is wider than it is deep.
-      t.repeat.set(2.2, 1);
-      t.anisotropy = 8;
-      return t;
-    };
-
-    return { map: make(colour, true), normalMap: make(normal, false), roughnessMap: make(rough, false) };
-  }, []);
-
 const Desk: React.FC = () => {
   const topY = DESK_TOP_Y - TOP_T / 2;
   const legH = DESK_HEIGHT - TOP_T;
@@ -197,13 +47,9 @@ const Desk: React.FC = () => {
   // drift out of contact again.
   const legX = DESK_W / 2 - cm(7);
   const legZ = DESK_D / 2 - cm(7);
-  const wood = useWoodMaps();
+  const wood = useMemo(() => createWoodMaps({ ...WALNUT, repeat: [2.2, 1] }), []);
 
-  useEffect(() => () => {
-    wood?.map.dispose();
-    wood?.normalMap.dispose();
-    wood?.roughnessMap.dispose();
-  }, [wood]);
+  useEffect(() => () => wood?.dispose(), [wood]);
 
   return (
     <group>
