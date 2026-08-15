@@ -37,8 +37,6 @@ export const REAL = {
   monitor: { width: 19, height: 30, depth: 25 },
   /** 14-inch MacBook Pro. */
   laptop: { width: 31, depth: 22, thickness: 1.6, screenHeight: 21 },
-  /** Novation Launchpad Mini mk3. */
-  launchpad: { width: 18, depth: 18, height: 1.4 },
   mug: { diameter: 9, height: 10 },
   paperback: { width: 13, height: 2, depth: 20 },
   /** Square-tube desk leg section. */

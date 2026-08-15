@@ -2,9 +2,9 @@
  * DeskGear.tsx — the owner's real kit, arranged on the desk the way it is actually used.
  *
  * The layout follows `docs/blueprints/thoughts/2026-08-15-producer-desk-layout.md`: a reach
- * zone at the front holding everything played by hand, a look-at zone behind it holding the
- * laptop and the monitor pair. A controller pushed behind the laptop cannot be reached, which
- * is the detail that says nobody actually plays here.
+ * zone at the front for what is played by hand, a look-at zone behind it holding the laptop and
+ * the monitor pair. The MPC is now the only thing in the reach zone — a second controller beside
+ * it read as set dressing rather than as kit, so it went.
  *
  * The register is bedroom recording, not a treated studio. The monitors are raised on a stack
  * of books rather than isolation wedges, the cables are visible, and the desk is allowed to
@@ -27,30 +27,6 @@ const BOOK_B = '#d9d5cc';
 const BOOK_C = '#bfc4c8';
 const CABLE = '#3a3c3f';
 const MUG = '#e3e4e2';
-
-/** The Launchpad's 8x8 grid, drawn once into a canvas. Cheaper and sharper than 64 meshes. */
-const useGridTexture = () =>
-  useMemo(() => {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    ctx.fillStyle = '#2b2d30';
-    ctx.fillRect(0, 0, size, size);
-    const pad = size / 8;
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        // A few pads lit, the rest dark — a grid that is entirely unlit reads as a grille.
-        const lit = (r * 8 + c) % 11 === 0;
-        ctx.fillStyle = lit ? '#8fb4c8' : '#43474b';
-        ctx.fillRect(c * pad + 3, r * pad + 3, pad - 6, pad - 6);
-      }
-    }
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
 
 /** A soft vertical wash for the laptop screen. No text — at this size it would be mush. */
 const useScreenTexture = () =>
@@ -112,21 +88,50 @@ const Laptop: React.FC = () => {
 // its centre is far smaller than it looks in memory, and the control plate sits a third of the
 // way down from centre.
 /**
- * The cabinet, extruded rather than boxed.
+ * The cabinet, extruded from its front silhouette rather than boxed or planned from above.
  *
- * A RoundedBox rolls all twelve edges by the same amount, so pushing the vertical corners as far
- * as this would have ballooned the top face into a pillow. Extruding the top-down profile along
- * the height instead separates the two: the plan outline carries a deep roll on the four upright
- * corners, and the bevel on the extrusion carries a much smaller one along the top and bottom.
+ * A RoundedBox rolls all twelve edges by the same amount, so more curve on the uprights balloons
+ * the top into a pillow. Extruding the *top-down* plan along the height was the next attempt, and
+ * it is why "not round enough" kept being true: that profile rounds the vertical edges, so from
+ * the front the speaker still reads as a rectangle with softened sides. The Gold 5 product shot
+ * is a rounded rectangle head-on. Extruding that front profile along the depth is the shape the
+ * photograph is of. It also drops the old bind: rolling the uprights no longer eats the baffle
+ * width, so the brass ring no longer has to shrink for the corners to grow.
  *
- * CAB_RADIUS is the constraint that binds everything else on this speaker. Rolling the uprights
- * eats into the flat front face — at 3.2 cm the face is 12.6 cm across and the brass ring is
- * 12.4 cm, so the driver only just fits and there is no room to go further without shrinking it.
- * Wider than the reference measures, deliberately: at forty pixels a true 2 cm roll is four
- * pixels and reads as a sharp box.
+ * CAB_RADIUS is larger than the photograph measures (~2 cm on a 17.6 cm cabinet). At this camera
+ * distance a true 2 cm corner is four pixels and still reads as a box.
  */
-const CAB_RADIUS = cm(3.2);
+const CAB_RADIUS = cm(4.2);
 const CAB_BEVEL = cm(1);
+
+const roundedRectShape = (width: number, height: number, radius: number) => {
+  const w = width / 2;
+  const h = height / 2;
+  const r = Math.min(radius, w, h);
+  const shape = new THREE.Shape();
+  shape.moveTo(-w + r, -h);
+  shape.lineTo(w - r, -h);
+  shape.absarc(w - r, -h + r, r, -Math.PI / 2, 0, false);
+  shape.lineTo(w, h - r);
+  shape.absarc(w - r, h - r, r, 0, Math.PI / 2, false);
+  shape.lineTo(-w + r, h);
+  shape.absarc(-w + r, h - r, r, Math.PI / 2, Math.PI, false);
+  shape.lineTo(-w, -h + r);
+  shape.absarc(-w + r, -h + r, r, Math.PI, Math.PI * 1.5, false);
+  return shape;
+};
+
+const stadiumShape = (width: number, height: number) => {
+  const r = height / 2;
+  const cx = width / 2 - r;
+  const shape = new THREE.Shape();
+  shape.moveTo(-cx, -r);
+  shape.lineTo(cx, -r);
+  shape.absarc(cx, 0, r, -Math.PI / 2, Math.PI / 2, false);
+  shape.lineTo(-cx, r);
+  shape.absarc(-cx, 0, r, Math.PI / 2, Math.PI * 1.5, false);
+  return shape;
+};
 
 const useCabinetGeometry = () =>
   useMemo(() => {
@@ -135,40 +140,26 @@ const useCabinetGeometry = () =>
     // this wrong the first time both inflated the box and pushed its front surface out past
     // BAFFLE_Z, which swallowed the entire driver.
     const w = cm(REAL.monitor.width) - CAB_BEVEL * 2;
+    const h = cm(REAL.monitor.height) - CAB_BEVEL * 2;
     const d = cm(REAL.monitor.depth) - CAB_BEVEL * 2;
-    const h = cm(REAL.monitor.height);
     const r = CAB_RADIUS - CAB_BEVEL;
-    const shape = new THREE.Shape();
-    const x = -w / 2;
-    const y = -d / 2;
-    shape.moveTo(x + r, y);
-    shape.lineTo(x + w - r, y);
-    shape.quadraticCurveTo(x + w, y, x + w, y + r);
-    shape.lineTo(x + w, y + d - r);
-    shape.quadraticCurveTo(x + w, y + d, x + w - r, y + d);
-    shape.lineTo(x + r, y + d);
-    shape.quadraticCurveTo(x, y + d, x, y + d - r);
-    shape.lineTo(x, y + r);
-    shape.quadraticCurveTo(x, y, x + r, y);
-
-    const geometry = new THREE.ExtrudeGeometry(shape, {
-      depth: h - CAB_BEVEL * 2,
+    const geometry = new THREE.ExtrudeGeometry(roundedRectShape(w, h, r), {
+      depth: d,
       bevelEnabled: true,
       bevelThickness: CAB_BEVEL,
       bevelSize: CAB_BEVEL,
-      bevelSegments: 4,
-      curveSegments: 10,
+      bevelSegments: 6,
+      curveSegments: 14,
     });
-    // Extrusion runs along +Z; stand it up, then centre it on its own height.
-    geometry.rotateX(-Math.PI / 2);
-    geometry.translate(0, -(h - CAB_BEVEL * 2) / 2, 0);
+    // Front silhouette in XY, extrusion along +Z. Bevel grows both ways, so shift to centre.
+    geometry.translate(0, 0, CAB_BEVEL - cm(REAL.monitor.depth) / 2);
     return geometry;
   }, []);
 
 const BAFFLE_Z = cm(REAL.monitor.depth) / 2 + cm(0.02);
-const DRIVER_Y = cm(4);
-const RING_OUTER = cm(6.2);
-const RING_INNER = cm(4.8);
+const DRIVER_Y = cm(4.2);
+const RING_OUTER = cm(6.8);
+const RING_INNER = cm(5.4);
 
 /**
  * A brass that stays brass under this scene's lighting.
@@ -182,11 +173,34 @@ const brass = (color: string) => (
   <meshStandardMaterial color={color} roughness={0.29} metalness={0.3} envMapIntensity={2.6} />
 );
 
-const TannoyBaffle: React.FC = () => (
+const TannoyBaffle: React.FC = () => {
+  const { baffle, plateOuter, plateInner } = useMemo(() => {
+    const r = CAB_RADIUS - CAB_BEVEL;
+    return {
+      baffle: new THREE.ShapeGeometry(
+        roundedRectShape(
+          cm(REAL.monitor.width) - CAB_BEVEL * 2,
+          cm(REAL.monitor.height) - CAB_BEVEL * 2,
+          r,
+        ),
+      ),
+      plateOuter: new THREE.ShapeGeometry(stadiumShape(cm(13.2), cm(3.8))),
+      plateInner: new THREE.ShapeGeometry(stadiumShape(cm(12.5), cm(3.1))),
+    };
+  }, []);
+  useEffect(
+    () => () => {
+      baffle.dispose();
+      plateOuter.dispose();
+      plateInner.dispose();
+    },
+    [baffle, plateOuter, plateInner],
+  );
+
+  return (
   <group position={[0, 0, BAFFLE_Z]}>
-    {/* Baffle plate, a shade off the cabinet so the front face separates from the sides. */}
-    <mesh position={[0, 0, cm(0.05)]}>
-      <planeGeometry args={[cm(REAL.monitor.width) - CAB_RADIUS * 2, cm(REAL.monitor.height) - CAB_RADIUS * 2]} />
+    {/* Baffle follows the rounded-rect front, a shade off the cabinet so the face separates. */}
+    <mesh position={[0, 0, cm(0.05)]} geometry={baffle}>
       <meshStandardMaterial color="#1c1d1f" roughness={0.86} metalness={0.05} envMapIntensity={1.2} />
     </mesh>
 
@@ -202,7 +216,7 @@ const TannoyBaffle: React.FC = () => (
       <meshStandardMaterial color="#5b6066" roughness={0.66} metalness={0.1} envMapIntensity={3.2} />
     </mesh>
     <mesh position={[0, DRIVER_Y, cm(0.2)]}>
-      <circleGeometry args={[cm(4.4), 44]} />
+      <circleGeometry args={[cm(5.0), 44]} />
       <meshStandardMaterial color="#4a4f55" roughness={0.8} metalness={0.07} envMapIntensity={2.6} />
     </mesh>
     <mesh position={[0, DRIVER_Y, cm(0.25)]}>
@@ -212,20 +226,19 @@ const TannoyBaffle: React.FC = () => (
 
     {/* The front control plate: a brass-outlined capsule holding the knobs, the power LED and
         the GOLD 5 legend. None of that survives at forty pixels, but the outline does, and it is
-        the second thing that says Tannoy after the ring — so it is drawn as an outline and a
-        recess and nothing else. */}
-    <group position={[0, cm(-9.6), cm(0.1)]}>
-      <mesh>
-        <planeGeometry args={[cm(11.6), cm(3.9)]} />
+        the second thing that says Tannoy after the ring — so it is drawn as a pill and a recess
+        and nothing else. */}
+    <group position={[0, cm(-8.8), cm(0.1)]}>
+      <mesh geometry={plateOuter}>
         <meshStandardMaterial color="#8a713e" roughness={0.4} metalness={0.28} envMapIntensity={1.9} />
       </mesh>
-      <mesh position={[0, 0, cm(0.05)]}>
-        <planeGeometry args={[cm(11.1), cm(3.4)]} />
+      <mesh position={[0, 0, cm(0.05)]} geometry={plateInner}>
         <meshStandardMaterial color="#2c3034" roughness={0.84} metalness={0.06} envMapIntensity={2.2} />
       </mesh>
     </group>
   </group>
-);
+  );
+};
 
 /**
  * A monitor on a stack of paperbacks. Isolation pads are what a studio uses; books are what a
@@ -263,33 +276,17 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
   );
 };
 
-const Launchpad: React.FC = () => {
-  const grid = useGridTexture();
-  return (
-    <group position={[cm(-42), DESK_TOP_Y, cm(12)]} rotation={[0, 0.12, 0]}>
-      <RoundedBox args={[cm(REAL.launchpad.width), cm(REAL.launchpad.height), cm(REAL.launchpad.depth)]} radius={cm(0.25)} smoothness={4} position={[0, cm(REAL.launchpad.height) / 2, 0]} castShadow receiveShadow>
-        <meshPhysicalMaterial color="#3a3d40" roughness={0.6} metalness={0.12} envMapIntensity={0.9} />
-      </RoundedBox>
-      <mesh position={[0, cm(REAL.launchpad.height) + cm(0.15), 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[cm(REAL.launchpad.width - 2), cm(REAL.launchpad.depth - 2)]} />
-        <meshBasicMaterial map={grid ?? undefined} toneMapped={false} />
-      </mesh>
-    </group>
-  );
-};
-
 /** Cables. Ranked low by the research, but visible cable is the bedroom-recording tell. */
 const Cables: React.FC = () => {
   const curves = useMemo(() => {
     const make = (pts: Array<[number, number, number]>) =>
       new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
     return [
-      // Monitor cables running in behind the laptop, and the Launchpad's USB lead. Kept on the
+      // Monitor cables running in behind the laptop. Kept on the
       // desk surface where the camera can actually see them — a cable tucked behind the far
       // edge is geometry nobody ever renders.
       make([[cm(-52), DESK_TOP_Y + cm(1), cm(-30)], [cm(-44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(-24), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(-8), DESK_TOP_Y + cm(1.2), cm(-28)]]),
       make([[cm(52), DESK_TOP_Y + cm(1), cm(-30)], [cm(44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(22), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(4), DESK_TOP_Y + cm(1.2), cm(-28)]]),
-      make([[cm(-36), DESK_TOP_Y + cm(0.6), cm(14)], [cm(-30), DESK_TOP_Y + cm(0.5), cm(4)], [cm(-34), DESK_TOP_Y + cm(0.5), cm(-8)], [cm(-26), DESK_TOP_Y + cm(0.6), cm(-18)]]),
     ];
   }, []);
 
@@ -335,7 +332,6 @@ export const DeskGear: React.FC = () => (
     <Laptop />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
-    <Launchpad />
     <Cables />
     <Clutter />
   </group>
