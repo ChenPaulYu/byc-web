@@ -123,9 +123,12 @@ const LandingScene: React.FC = () => {
           maxDistance={90}
           minPolarAngle={Math.PI / 3.4}
           maxPolarAngle={Math.PI / 2.5}
-          // Keep the view off-axis. Letting it swing back to dead-on loses the over-the-
-          // shoulder read the whole composition is built around.
-          minAzimuthAngle={Math.PI / 18}
+          // Keep the view off-axis. Letting it swing back to dead-on loses the over-the-shoulder
+          // read the whole composition is built around — and the floor used to be 10°, which is
+          // near enough to frontal that the MPC collapsed into a sliver and the hero disappeared.
+          // 25° still clears every default position (they sit at 28°, 31.5° and 35°), so this
+          // only stops the drag going too far; it does not move the view anyone lands on.
+          minAzimuthAngle={Math.PI / 7.2}
           maxAzimuthAngle={Math.PI / 2.9}
           zoomSpeed={0.8}
           // Enable touch zoom with pinch gestures
