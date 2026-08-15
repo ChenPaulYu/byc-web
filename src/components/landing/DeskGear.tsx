@@ -275,6 +275,125 @@ const Cables: React.FC = () => {
   );
 };
 
+/**
+ * The K.O. II Sidekick — the 2-channel mixer that partners the EP-133.
+ *
+ * It renders about forty pixels across, so it is built from the two things that survive that:
+ * its proportion, which is unusually tall and narrow for a desk box, and its colour-coded knob
+ * grid, where the four rows go orange, white, grey, black down each channel. Everything printed
+ * on the real one — the wordmark, the katakana, GAIN / HIGH / MID / LOW, CUE, FX — is left off
+ * for the reason the MPC's own labels were: at this size type is grey mush, and mush reads worse
+ * than absence.
+ *
+ * Knobs and faders are drawn larger than scale. A real 11 mm knob lands at about two pixels here.
+ */
+const SK = REAL.sidekick;
+const SK_W = cm(SK.width);
+const SK_D = cm(SK.depth);
+const SK_H = cm(SK.height);
+const SK_ORANGE = '#ee5a1e';
+
+/** Fractions of the unit's depth, read off the product shot, back edge to front. */
+const skZ = (fraction: number) => (fraction - 0.5) * SK_D;
+/** Fractions of the unit's width, left to right. */
+const skX = (fraction: number) => (fraction - 0.5) * SK_W;
+
+const KNOB_ROWS = [
+  { z: skZ(0.28), colour: SK_ORANGE },
+  { z: skZ(0.38), colour: '#ededec' },
+  { z: skZ(0.47), colour: '#8d9095' },
+  { z: skZ(0.57), colour: '#26282b' },
+];
+
+const Sidekick: React.FC = () => (
+  <group position={[cm(-32), DESK_TOP_Y, cm(8)]} rotation={[0, 0.1, 0]}>
+    {/* Chassis */}
+    <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.35)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
+      <meshStandardMaterial color="#c4c6c8" roughness={0.6} metalness={0.06} />
+    </RoundedBox>
+
+    {/* Connector strip across the back, with the orange input section the real one has. */}
+    <mesh position={[0, SK_H + cm(0.02), skZ(0.055)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[SK_W - cm(1), cm(1.6)]} />
+      <meshStandardMaterial color="#3a3d41" roughness={0.7} />
+    </mesh>
+    <mesh position={[skX(0.46), SK_H + cm(0.03), skZ(0.055)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(2.4), cm(1.6)]} />
+      <meshStandardMaterial color={SK_ORANGE} roughness={0.6} />
+    </mesh>
+
+    {/* The white upper plate. On the real unit it carries the wordmark; here it is a value
+        change, which is what actually reads — the machine splits into a pale head and a grey
+        body, and that split is half of its silhouette. */}
+    <mesh position={[0, SK_H + cm(0.02), skZ(0.175)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[SK_W - cm(0.9), cm(6)]} />
+      <meshStandardMaterial color="#eceded" roughness={0.55} />
+    </mesh>
+
+    {/* Two channels of four knobs. This grid is the whole identity of the object. */}
+    {[skX(0.28), skX(0.44)].map((x) =>
+      KNOB_ROWS.map((row) => (
+        <mesh key={`${x}-${row.z}`} position={[x, SK_H + cm(0.35), row.z]} castShadow>
+          <cylinderGeometry args={[cm(0.8), cm(0.9), cm(0.7), 14]} />
+          <meshStandardMaterial color={row.colour} roughness={0.45} metalness={0.05} />
+        </mesh>
+      )),
+    )}
+
+    {/* Level display. The only lit thing on the unit, and orange like the knobs above it. */}
+    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.33)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(2.6), cm(3.4)]} />
+      <meshStandardMaterial color="#1b1a19" roughness={0.4} />
+    </mesh>
+    <mesh position={[skX(0.76), SK_H + cm(0.04), skZ(0.33)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(1.9), cm(2.4)]} />
+      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.5} toneMapped={false} />
+    </mesh>
+
+    {/* Master volume, the one large control. */}
+    <mesh position={[skX(0.76), SK_H + cm(0.5), skZ(0.52)]} castShadow>
+      <cylinderGeometry args={[cm(1.3), cm(1.4), cm(1), 18]} />
+      <meshStandardMaterial color="#f0f0ef" roughness={0.42} />
+    </mesh>
+    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.63)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(1.4), cm(0.9)]} />
+      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.35} toneMapped={false} />
+    </mesh>
+
+    {/* CUE, then the two channel faders, then FX and SELECT along the front. */}
+    {[skX(0.28), skX(0.44)].map((x) => (
+      <group key={`ch-${x}`}>
+        <mesh position={[x, SK_H + cm(0.03), skZ(0.645)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(1.8), cm(1)]} />
+          <meshStandardMaterial color="#26282b" roughness={0.6} />
+        </mesh>
+        <mesh position={[x, SK_H + cm(0.02), skZ(0.79)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(0.5), cm(5.4)]} />
+          <meshStandardMaterial color="#9a9da1" roughness={0.7} />
+        </mesh>
+        <mesh position={[x, SK_H + cm(0.3), skZ(0.79)]} castShadow>
+          <boxGeometry args={[cm(1.5), cm(0.6), cm(1)]} />
+          <meshStandardMaterial color="#7f8286" roughness={0.5} />
+        </mesh>
+        <mesh position={[x, SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(1.8), cm(1)]} />
+          <meshStandardMaterial color="#26282b" roughness={0.6} />
+        </mesh>
+      </group>
+    ))}
+
+    {/* Headphone level, and the SELECT key beside it. */}
+    <mesh position={[skX(0.76), SK_H + cm(0.35), skZ(0.85)]} castShadow>
+      <cylinderGeometry args={[cm(1), cm(1.1), cm(0.7), 14]} />
+      <meshStandardMaterial color="#26282b" roughness={0.5} />
+    </mesh>
+    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(2), cm(1)]} />
+      <meshStandardMaterial color="#26282b" roughness={0.6} />
+    </mesh>
+  </group>
+);
+
 /** The desk is allowed to hold things that have nothing to do with music. */
 const Clutter: React.FC = () => (
   <group>
@@ -302,6 +421,7 @@ const Clutter: React.FC = () => (
 
 export const DeskGear: React.FC = () => (
   <group>
+    <Sidekick />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
     <Cables />

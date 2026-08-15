@@ -35,6 +35,8 @@ export const REAL = {
   chair: { seatHeight: 45, seatWidth: 48, seatDepth: 45, backHeight: 52, baseRadius: 33 },
   /** Tannoy Gold 5 — a 5-inch nearfield monitor. */
   monitor: { width: 19, height: 30, depth: 25 },
+  /** Teenage Engineering K.O. II Sidekick — the 2-channel mixer that partners the EP-133. */
+  sidekick: { width: 9, depth: 23, height: 3.4 },
   mug: { diameter: 9, height: 10 },
   paperback: { width: 13, height: 2, depth: 20 },
   /** Square-tube desk leg section. */
