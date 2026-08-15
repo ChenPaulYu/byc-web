@@ -161,7 +161,7 @@ const Mpc: React.FC<MpcProps> = ({ synth, onDragChange, onVideoReady }) => {
           position={[0, 0.02 - cm(0.5), 0]}
           receiveShadow
         >
-          <meshStandardMaterial color="#23211d" roughness={0.85} metalness={0.03} />
+          <meshStandardMaterial color="#877b6b" roughness={0.85} metalness={0.03} />
         </RoundedBox>
 
         <group position={[0, 0, 0]}>

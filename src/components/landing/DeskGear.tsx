@@ -107,40 +107,69 @@ const Laptop: React.FC = () => {
  * real recesses: at this distance the cabinet is about forty pixels wide, so the depth would
  * never be seen and the z-fighting would be.
  */
+// Read off public/landing/gear/tannoy-gold-5.png, measured against the 19 cm cabinet width in
+// REAL.monitor: the gold ring is about two thirds of the front face across, the tweeter cone at
+// its centre is far smaller than it looks in memory, and the control plate sits a third of the
+// way down from centre.
 const BAFFLE_Z = cm(REAL.monitor.depth) / 2;
-const DRIVER_Y = cm(3.5);
+const DRIVER_Y = cm(4);
+const RING_OUTER = cm(6.2);
+const RING_INNER = cm(4.8);
+
+/**
+ * A brass that stays brass under this scene's lighting.
+ *
+ * Metal takes almost all of its colour from what it reflects, and this room is a near-white void
+ * with one small runtime-built environment map — so the first pass, an accurate dark brass at
+ * metalness 0.72, rendered as a black ring on a black box. Lower metalness with a brighter base
+ * and a lifted envMapIntensity is a physically worse metal and a visually correct one.
+ */
+const brass = (color: string) => (
+  <meshStandardMaterial color={color} roughness={0.29} metalness={0.3} envMapIntensity={2.6} />
+);
 
 const TannoyBaffle: React.FC = () => (
   <group position={[0, 0, BAFFLE_Z]}>
     {/* Baffle plate, a shade off the cabinet so the front face separates from the sides. */}
     <mesh position={[0, 0, cm(0.05)]}>
       <planeGeometry args={[cm(REAL.monitor.width) - cm(0.6), cm(REAL.monitor.height) - cm(0.6)]} />
-      <meshStandardMaterial color="#232426" roughness={0.82} metalness={0.06} />
+      <meshStandardMaterial color="#1c1d1f" roughness={0.86} metalness={0.05} envMapIntensity={1.2} />
     </mesh>
 
-    {/* Driver: chassis ring, rubber surround, cone, then the gold centre. */}
+    {/* Driver: the wide brass ring, the graphite cone inside it, then the small gold tweeter
+        cone down its throat. The ring is the whole identity of the thing — on the reference it
+        is the brightest object in the photograph. */}
     <mesh position={[0, DRIVER_Y, cm(0.1)]}>
-      <ringGeometry args={[cm(6.2), cm(7.0), 40]} />
-      <meshStandardMaterial color="#8c7440" roughness={0.38} metalness={0.72} />
+      <ringGeometry args={[RING_INNER, RING_OUTER, 44]} />
+      {brass('#dcb964')}
     </mesh>
     <mesh position={[0, DRIVER_Y, cm(0.15)]}>
-      <circleGeometry args={[cm(6.2), 40]} />
-      <meshStandardMaterial color="#191a1c" roughness={0.7} metalness={0.05} />
+      <circleGeometry args={[RING_INNER, 44]} />
+      <meshStandardMaterial color="#5b6066" roughness={0.66} metalness={0.1} envMapIntensity={3.2} />
     </mesh>
     <mesh position={[0, DRIVER_Y, cm(0.2)]}>
-      <circleGeometry args={[cm(5.2), 40]} />
-      <meshStandardMaterial color="#111214" roughness={0.92} metalness={0.02} />
+      <circleGeometry args={[cm(4.4), 44]} />
+      <meshStandardMaterial color="#4a4f55" roughness={0.8} metalness={0.07} envMapIntensity={2.6} />
     </mesh>
     <mesh position={[0, DRIVER_Y, cm(0.25)]}>
-      <circleGeometry args={[cm(2.3), 28]} />
-      <meshStandardMaterial color="#b08f4c" roughness={0.34} metalness={0.78} />
+      <circleGeometry args={[cm(1.3), 24]} />
+      {brass('#e6c473')}
     </mesh>
 
-    {/* Front-firing port slot below the driver. */}
-    <mesh position={[0, cm(-9.4), cm(0.1)]}>
-      <planeGeometry args={[cm(10), cm(1.8)]} />
-      <meshStandardMaterial color="#0d0e0f" roughness={0.95} metalness={0} />
-    </mesh>
+    {/* The front control plate: a brass-outlined capsule holding the knobs, the power LED and
+        the GOLD 5 legend. None of that survives at forty pixels, but the outline does, and it is
+        the second thing that says Tannoy after the ring — so it is drawn as an outline and a
+        recess and nothing else. */}
+    <group position={[0, cm(-9.6), cm(0.1)]}>
+      <mesh>
+        <planeGeometry args={[cm(11.6), cm(3.9)]} />
+        <meshStandardMaterial color="#8a713e" roughness={0.4} metalness={0.28} envMapIntensity={1.9} />
+      </mesh>
+      <mesh position={[0, 0, cm(0.05)]}>
+        <planeGeometry args={[cm(11.1), cm(3.4)]} />
+        <meshStandardMaterial color="#2c3034" roughness={0.84} metalness={0.06} envMapIntensity={2.2} />
+      </mesh>
+    </group>
   </group>
 );
 
@@ -168,8 +197,8 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
     ))}
     {/* Cabinet, tilted back a little the way a monitor on an improvised riser always is. */}
     <group position={[0, cm(REAL.paperback.height * 3) + cm(REAL.monitor.height) / 2, 0]} rotation={[-0.09, 0, 0]}>
-      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={cm(0.8)} smoothness={3} castShadow receiveShadow>
-        <meshPhysicalMaterial color={CASE_DARK} roughness={0.66} metalness={0.1} envMapIntensity={0.9} />
+      <RoundedBox args={[cm(REAL.monitor.width), cm(REAL.monitor.height), cm(REAL.monitor.depth)]} radius={cm(1.1)} smoothness={3} castShadow receiveShadow>
+        <meshPhysicalMaterial color={CASE_DARK} roughness={0.58} metalness={0.14} envMapIntensity={1.7} clearcoat={0.25} clearcoatRoughness={0.55} />
       </RoundedBox>
       <TannoyBaffle />
     </group>
