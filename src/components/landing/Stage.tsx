@@ -24,8 +24,6 @@ const DESK_TOP = '#3f4043';
 const DESK_BODY = '#d8d9da';
 const DESK_FRAME = '#b9babc';
 const EDGE_BAND = '#cdd0d2';
-const POT = '#f0f0ef';
-const LEAF = '#8fae86';
 
 // Every dimension below comes from a real measurement through cm(). See scale.ts — before
 // that module existed this desk worked out to 15 cm tall, which is why the MPC read as a
@@ -123,23 +121,23 @@ const Desk: React.FC = () => {
         <group key={side} position={[side * (DESK_W / 2 - 0.9), 0, 0]}>
           {[-1, 1].map((sz) => (
             <mesh key={sz} position={[0, floorY + legH / 2, sz * (DESK_D / 2 - 0.9)]} castShadow>
-              <boxGeometry args={[0.22, legH, 0.22]} />
-              <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+              <boxGeometry args={[cm(REAL.legSection), legH, cm(REAL.legSection)]} />
+              <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
             </mesh>
           ))}
           <mesh position={[0, floorY + legH - 0.11, 0]} castShadow>
-            <boxGeometry args={[0.2, 0.2, DESK_D - 1.6]} />
-            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+            <boxGeometry args={[cm(REAL.legSection * 0.9), cm(REAL.legSection * 0.9), DESK_D - cm(30)]} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
           </mesh>
           <mesh position={[0, floorY + 0.3, 0]} castShadow>
-            <boxGeometry args={[0.18, 0.18, DESK_D - 1.6]} />
-            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+            <boxGeometry args={[cm(REAL.legSection * 0.8), cm(REAL.legSection * 0.8), DESK_D - cm(30)]} />
+            <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
           </mesh>
         </group>
       ))}
       <mesh position={[0, floorY + 0.3, -DESK_D / 2 + 0.9]} castShadow>
-        <boxGeometry args={[DESK_W - 2.0, 0.16, 0.16]} />
-        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.34} metalness={0.62} envMapIntensity={1.15} />
+        <boxGeometry args={[DESK_W - cm(36), cm(3.5), cm(3.5)]} />
+        <meshPhysicalMaterial color={DESK_FRAME} roughness={0.62} metalness={0.22} envMapIntensity={0.75} />
       </mesh>
 
       {/* Under-desk shelf on the left, with things stacked on it. */}
@@ -182,39 +180,6 @@ const Desk: React.FC = () => {
 };
 
 
-/** One plant, off to the side. The reference's other accent, and the cheapest way to say lived-in. */
-const Plant: React.FC = () => {
-  const floorY = DESK_TOP_Y - TOP_T - 2.6;
-  return (
-    <group position={[DESK_W / 2 + 2.2, 0, 1.6]} scale={0.9}>
-      <mesh position={[0, floorY + 0.85, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.82, 0.62, 1.7, 24]} />
-        <meshStandardMaterial color={POT} roughness={0.9} metalness={0} />
-      </mesh>
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const a = (i / 6) * Math.PI * 2 + 0.3;
-        const lean = 0.42 + (i % 3) * 0.12;
-        return (
-          <group key={i} rotation={[0, a, 0]}>
-            <mesh position={[0, floorY + 2.5, 0.35]} rotation={[lean, 0, 0]} castShadow>
-              <cylinderGeometry args={[0.045, 0.06, 2.2, 8]} />
-              <meshStandardMaterial color="#7e9b76" roughness={0.85} metalness={0} />
-            </mesh>
-            <mesh
-              position={[0, floorY + 3.5, 1.1 + lean * 0.5]}
-              rotation={[lean + 0.25, 0, 0]}
-              scale={[1.05, 0.14, 1.5]}
-              castShadow
-            >
-              <sphereGeometry args={[0.78, 14, 10]} />
-              <meshStandardMaterial color={LEAF} roughness={0.88} metalness={0} side={THREE.DoubleSide} />
-            </mesh>
-          </group>
-        );
-      })}
-    </group>
-  );
-};
 
 const useBackdrop = () => {
   const { scene } = useThree();
@@ -279,7 +244,6 @@ export const Stage: React.FC = () => {
       </mesh>
 
       <Desk />
-      <Plant />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.34} scale={34} blur={2.6} far={7} />
       <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.26} scale={18} blur={1.6} far={4} />

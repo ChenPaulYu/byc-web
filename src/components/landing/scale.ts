@@ -41,4 +41,6 @@ export const REAL = {
   launchpad: { width: 18, depth: 18, height: 1.4 },
   mug: { diameter: 9, height: 10 },
   paperback: { width: 13, height: 2, depth: 20 },
+  /** Square-tube desk leg section. */
+  legSection: 4.5,
 } as const;

@@ -141,10 +141,10 @@ const Launchpad: React.FC = () => {
   const grid = useGridTexture();
   return (
     <group position={[cm(-42), DESK_TOP_Y, cm(12)]} rotation={[0, 0.12, 0]}>
-      <RoundedBox args={[cm(REAL.launchpad.width), cm(REAL.launchpad.height), cm(REAL.launchpad.depth)]} radius={cm(0.8)} smoothness={3} position={[0, cm(REAL.launchpad.height) / 2, 0]} castShadow receiveShadow>
+      <RoundedBox args={[cm(REAL.launchpad.width), cm(REAL.launchpad.height), cm(REAL.launchpad.depth)]} radius={cm(0.25)} smoothness={4} position={[0, cm(REAL.launchpad.height) / 2, 0]} castShadow receiveShadow>
         <meshPhysicalMaterial color="#3a3d40" roughness={0.6} metalness={0.12} envMapIntensity={0.9} />
       </RoundedBox>
-      <mesh position={[0, cm(REAL.launchpad.height) + cm(0.05), 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, cm(REAL.launchpad.height) + cm(0.15), 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[cm(REAL.launchpad.width - 2), cm(REAL.launchpad.depth - 2)]} />
         <meshBasicMaterial map={grid ?? undefined} toneMapped={false} />
       </mesh>
