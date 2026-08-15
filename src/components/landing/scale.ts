@@ -35,8 +35,6 @@ export const REAL = {
   chair: { seatHeight: 45, seatWidth: 48, seatDepth: 45, backHeight: 52, baseRadius: 33 },
   /** Tannoy Gold 5 — a 5-inch nearfield monitor. */
   monitor: { width: 19, height: 30, depth: 25 },
-  /** 14-inch MacBook Pro. */
-  laptop: { width: 31, depth: 22, thickness: 1.6, screenHeight: 21 },
   mug: { diameter: 9, height: 10 },
   paperback: { width: 13, height: 2, depth: 20 },
   /** Square-tube desk leg section. */

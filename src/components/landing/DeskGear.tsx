@@ -19,56 +19,12 @@ import * as THREE from 'three';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
 
-const CASE = '#e8e9ea';
 const CASE_DARK = '#2f3134';
-const SCREEN_GLOW = '#cfe3ef';
 const BOOK_A = '#c9cbc6';
 const BOOK_B = '#d9d5cc';
 const BOOK_C = '#bfc4c8';
 const CABLE = '#3a3c3f';
 const MUG = '#e3e4e2';
-
-/** A soft vertical wash for the laptop screen. No text — at this size it would be mush. */
-const useScreenTexture = () =>
-  useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 8;
-    canvas.height = 128;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    const g = ctx.createLinearGradient(0, 0, 0, 128);
-    g.addColorStop(0, '#1d2733');
-    g.addColorStop(0.5, '#24333f');
-    g.addColorStop(1, '#1a222c');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 8, 128);
-    // A couple of bright rows stand in for lines of code.
-    ctx.fillStyle = '#7fd4c1';
-    [26, 40, 62, 76].forEach((y) => ctx.fillRect(1, y, 5, 2));
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
-
-const Laptop: React.FC = () => {
-  const screen = useScreenTexture();
-  return (
-    <group position={[cm(-4), DESK_TOP_Y, cm(-23)]} rotation={[0, 0.06, 0]}>
-      <RoundedBox args={[cm(REAL.laptop.width), cm(REAL.laptop.thickness), cm(REAL.laptop.depth)]} radius={cm(0.6)} smoothness={3} position={[0, cm(REAL.laptop.thickness) / 2, 0]} castShadow receiveShadow>
-        <meshPhysicalMaterial color={CASE} roughness={0.42} metalness={0.35} envMapIntensity={1} />
-      </RoundedBox>
-      <group position={[0, cm(REAL.laptop.thickness), -cm(REAL.laptop.depth) / 2]} rotation={[-0.19, 0, 0]}>
-        <RoundedBox args={[cm(REAL.laptop.width), cm(REAL.laptop.screenHeight), cm(0.5)]} radius={cm(0.6)} smoothness={3} position={[0, cm(REAL.laptop.screenHeight) / 2, 0]} castShadow>
-          <meshPhysicalMaterial color={CASE} roughness={0.42} metalness={0.35} envMapIntensity={1} />
-        </RoundedBox>
-        <mesh position={[0, cm(REAL.laptop.screenHeight) / 2, cm(0.3)]}>
-          <planeGeometry args={[cm(REAL.laptop.width - 2.4), cm(REAL.laptop.screenHeight - 2)]} />
-          <meshBasicMaterial map={screen ?? undefined} color={screen ? '#ffffff' : SCREEN_GLOW} toneMapped={false} />
-        </mesh>
-      </group>
-    </group>
-  );
-};
 
 /**
  * The front of a Tannoy Gold 5, which is what REAL.monitor has been measured from all along.
@@ -282,11 +238,12 @@ const Cables: React.FC = () => {
     const make = (pts: Array<[number, number, number]>) =>
       new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
     return [
-      // Monitor cables running in behind the laptop. Kept on the
-      // desk surface where the camera can actually see them — a cable tucked behind the far
-      // edge is geometry nobody ever renders.
-      make([[cm(-52), DESK_TOP_Y + cm(1), cm(-30)], [cm(-44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(-24), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(-8), DESK_TOP_Y + cm(1.2), cm(-28)]]),
-      make([[cm(52), DESK_TOP_Y + cm(1), cm(-30)], [cm(44), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(22), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(4), DESK_TOP_Y + cm(1.2), cm(-28)]]),
+      // Monitor leads, run along the desk where the camera can see them rather than tucked
+      // behind the far edge, which is geometry nobody ever renders. They used to end behind the
+      // laptop; with nothing there to plug into they now leave over the back edge, which is
+      // where a cable that is not connected to anything visible has to go.
+      make([[cm(-52), DESK_TOP_Y + cm(1), cm(-30)], [cm(-46), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(-38), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(-32), DESK_TOP_Y + cm(0.4), cm(-35)]]),
+      make([[cm(52), DESK_TOP_Y + cm(1), cm(-30)], [cm(46), DESK_TOP_Y + cm(0.5), cm(-32)], [cm(38), DESK_TOP_Y + cm(0.5), cm(-33)], [cm(32), DESK_TOP_Y + cm(0.4), cm(-35)]]),
     ];
   }, []);
 
@@ -329,7 +286,6 @@ const Clutter: React.FC = () => (
 
 export const DeskGear: React.FC = () => (
   <group>
-    <Laptop />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
     <Cables />
