@@ -24,10 +24,11 @@
   mouse target at the default framing — without asking anyone to fly a camera, and the framing
   becomes something the code chooses rather than something the visitor can break.
 
-  **Not designed yet, and align does not author it.** Three forks need settling first, via
-  `/shape:elicit`: whether free orbit survives inside focus mode or is suspended; how you get back
-  out (click-away · a key · an object in the scene); and whether each instrument carries its own
-  framing or they share one rule. Then `/nav:plan`.
+  **Designed 2026-08-17** in [`2026-08-17-focus-by-flying.md`](thoughts/2026-08-17-focus-by-flying.md).
+  All three forks settled the same way — never take the camera away, move it and let the page
+  recede: free orbit and zoom stay untouched, the navigation fades on camera distance rather than
+  on state, and focus is a camera move with no mode, no exit and no rules that change. The third
+  fell out of the first two rather than needing its own answer. Ready for `/nav:plan`.
 
 ## ▶ Next
 
