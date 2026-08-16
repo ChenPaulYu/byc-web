@@ -1,6 +1,6 @@
 # Baton
 
-Branch `polish/landing-instrument` · HEAD `171f4b5` · 2026-08-16
+Branch `polish/landing-instrument` · HEAD `bae95d1` · 2026-08-16
 
 ## Goal
 
@@ -21,9 +21,14 @@ was exactly as long as the pad's flash, so the sound used to arrive as the light
 
 **Everything that was decorative now does something.** The four knobs were connected to nothing at
 all; they are filter, drive, reverb and volume now, calibrated so no position sounds broken. The
-Sidekick's two faders are the two channels. Its display and the MPC's screen both read the audio —
-the MPC's replaced a 0.9 MB video loop with a live spectrum. The avatar takes his rate from the
-level, and drive and reverb reach him as shake and halo.
+Sidekick's two faders are the two channels and its display reads the level. The avatar takes his
+rate from the level too, arrives by being switched on rather than eased in, and drive and reverb
+reach him as shake and halo.
+
+The MPC's screen is **still the video**. A live spectrum was built in its place — it deleted the
+0.9 MB asset and tied the machine's one saturated element to what the visitor was doing — and the
+owner reverted it on taste. The plan keeps that step struck through with its reasoning intact,
+because the argument did not stop being true and the 0.9 MB is being paid again.
 
 **The scene was cut back and rebuilt.** Laptop and Launchpad gone with everything that existed
 only for them. Desk in walnut on a black steel frame, its wood generated from one height field so
