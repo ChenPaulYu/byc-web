@@ -1,5 +1,7 @@
 # How a producer's desk is actually arranged
 
+> 2026-08-15 · **Status: in force** · Reference gathered for the homepage desk vignette, against the owner's real kit: Akai MPC Sample, Novation Launchpad Mini, Teenage Engineering EP-133 K.O. II, a Tannoy Gold 5 pair, Bowers & Wilkins PX8 S2 headphones, and a MacBook running Strudel.
+
 Reference gathered 2026-08-15 for the homepage desk vignette, against the owner's real kit:
 Akai MPC Sample, Novation Launchpad Mini, Teenage Engineering EP-133 K.O. II, a Tannoy Gold 5
 pair, Bowers & Wilkins PX8 S2 headphones, and a MacBook running Strudel.

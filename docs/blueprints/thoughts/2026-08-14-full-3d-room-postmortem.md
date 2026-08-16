@@ -1,5 +1,7 @@
 # Postmortem — the full-3D landing room
 
+> 2026-08-14 · **Status: in force** · The full-3D landing room is abandoned; the homepage returns to the single interactive MPC already on `main`, polished with procedural three.js geometry and supporting textures.
+
 **Decided 2026-08-14: abandoned.** The homepage returns to the single interactive MPC that
 already lives on `main`, polished with procedurally generated three.js geometry and supporting
 textures. No room, no asset pipeline.

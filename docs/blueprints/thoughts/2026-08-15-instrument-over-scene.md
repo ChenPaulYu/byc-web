@@ -1,5 +1,7 @@
 # The homepage is an instrument, not a room
 
+> 2026-08-15 · **Status: in force** · Converged 2026-08-15: continuing to polish the 3D desk vignette was not paying off, and the owner did not think the current version added much.
+
 Converged 2026-08-15, after the owner judged that continuing to polish the 3D desk vignette was
 not paying off — and that he did not think the current version added much.
 

@@ -1,5 +1,7 @@
 # Before you touch the 3D scene
 
+> 2026-08-15 · **Status: in force** · Read this first if you are working on the homepage scene in a fresh session — the set of decisions and traps that are expensive to rediscover.
+
 Read this first if you are working on the homepage scene in a fresh session. It is the set of
 decisions and traps that are expensive to rediscover.
 

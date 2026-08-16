@@ -1,5 +1,7 @@
 # Agent-first content ownership
 
+> 2026-08-09 · **Status: in force** · The agent and repository are the primary authoring path; the admin dashboard remains a narrow safety valve for small text edits and operational asset/config work, not a second full CMS.
+
 > Role: Defines who owns website content authoring and what the admin surface is allowed to become.
 > TL;DR: The agent and repository are the primary authoring path; the admin dashboard remains a narrow safety valve for small text edits and operational asset/config work, not a second full CMS.
 
