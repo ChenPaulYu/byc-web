@@ -1,6 +1,6 @@
 # Baton
 
-Branch `polish/landing-instrument` · HEAD `bae95d1` · 2026-08-16
+Branch `polish/landing-instrument` · HEAD `4758058` · 2026-08-16
 
 ## Goal
 
@@ -37,7 +37,10 @@ product photograph. The MPC has timber end cheeks.
 
 ## Now
 
-Nothing in flight. The grounded plan
+Nothing in flight. A new current call landed on the board on 2026-08-16 — click an object
+to focus it — and is not designed yet; see plan.md for the three forks it needs.
+
+Previously: The grounded plan
 (`plans/2026-08-15-web-audio-instrument-layer.md`) is complete — all eight steps, plus the two
 open items it recorded along the way.
 
