@@ -3,7 +3,7 @@
  * Reads: Vite feature flags and the composed landing-scene modules (stage, MPC, overlays); writes: navigation and entry state.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Environment, Lightformer, OrbitControls, SoftShadows } from '@react-three/drei';
@@ -28,6 +28,10 @@ const LandingScene: React.FC = () => {
     const timeout = window.setTimeout(() => setScreenReady(true), 5000);
     return () => window.clearTimeout(timeout);
   }, [screenReady]);
+
+  // Stable identity: an inline arrow here is a new prop on every render, and the screen
+  // rebuilds its video element whenever it sees one.
+  const handleScreenReady = useCallback(() => setScreenReady(true), []);
 
   const handleEnter = async () => {
     await resume();
@@ -137,7 +141,7 @@ const LandingScene: React.FC = () => {
 
         <Stage />
         <DeskGear onDragChange={setIsDragging} />
-        <Mpc onDragChange={setIsDragging} onScreenReady={() => setScreenReady(true)} entered={entered} />
+        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered={entered} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches

@@ -6,7 +6,7 @@
 
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { RoundedBox, Text } from '@react-three/drei';
+import { RoundedBox } from '@react-three/drei';
 import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, VideoScreen } from './primitives';
 import {
   COL_KNOBS_X,
@@ -24,6 +24,7 @@ import { useLayoutControls } from './useLayoutControls';
 import { cm } from './scale';
 import { useMpcAudio } from './useMpcAudio';
 import { LIGHT_ASH, createWoodMaps } from './wood';
+import { useDisposable } from './useDisposable';
 
 /**
  * Timber on each end. 1.6 cm rather than the 2.5 that looked right first: the knob column sits at
@@ -43,6 +44,40 @@ const IDLE_TINTS: Array<string | undefined> = [
   undefined, undefined, '#d9d0bd', undefined,
   '#e4d8bf', undefined, undefined, undefined,
 ];
+
+/**
+ * The BYC mark, drawn into a canvas.
+ *
+ * It used to be a drei <Text>, which renders through troika and fetches a font from
+ * fonts.gstatic.com. That request inside the Canvas is what emptied the homepage under
+ * `npm run dev`: React's StrictMode mounts, unmounts and mounts again, and the double mount left
+ * the text renderer in a state the whole scene never came back from — a blank canvas in
+ * development while production builds were fine, which is the worst shape a bug can take.
+ *
+ * The fix is the rule this project already follows everywhere else and had quietly broken here:
+ * no third-party fetches. `<Environment preset="city">` went for pulling an HDRI off a CDN and
+ * Tone.js went for its weight; this was the same class of thing and survived only because nobody
+ * looked. A canvas costs nothing and the mark renders about ten pixels wide.
+ */
+const useLogoTexture = () =>
+  useMemo(() => {
+    const w = 256;
+    const h = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '800 78px Inter, Helvetica, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('BYC', w / 2, h / 2 - 4);
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }, []);
 
 /** A perforated speaker grille, drawn once. Rows of small holes on a slightly darker field. */
 const useGrilleTexture = () =>
@@ -92,10 +127,10 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
   }, []);
 
   const grille = useGrilleTexture();
+  const logo = useLogoTexture();
   // Finer ring pitch than the desk: the cheek is a tenth of the desk's width on screen, so the
   // desk's deliberately-coarse grain would read as two or three stripes on it.
-  const cheek = useMemo(() => createWoodMaps({ ...LIGHT_ASH, repeat: [1.4, 1], seed: 91, ringPitch: 26 }), []);
-  useEffect(() => () => cheek?.dispose(), [cheek]);
+  const cheek = useDisposable(() => createWoodMaps({ ...LIGHT_ASH, repeat: [1.4, 1], seed: 91, ringPitch: 26 }));
   const { positions, responsiveScale, stride } = useLayoutControls();
   const {
     isPlaying,
@@ -147,19 +182,10 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
       ))}
 
       {/* --- LOGO ROW (TOP RIGHT) --- */}
-      <group position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Text
-          fontSize={positions.logoMainSize}
-          font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff"
-          color="#ef4444"
-          anchorX="center"
-          position={[0, 0, 0]}
-          fontWeight="800"
-          letterSpacing={-0.05}
-        >
-          BYC
-        </Text>
-      </group>
+      <mesh position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[positions.logoMainSize * 4.2, positions.logoMainSize * 2.1]} />
+        <meshBasicMaterial map={logo ?? undefined} transparent toneMapped={false} />
+      </mesh>
 
       {/* Speaker grille, on the front vertical face rather than the top deck — which is where
           the machines it stands in for put it, and also the only place it fits: once the pad

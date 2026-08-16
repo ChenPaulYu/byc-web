@@ -21,20 +21,25 @@ export const VideoScreen: React.FC<{
   onReady?: () => void;
 }> = ({ width, height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0, onReady }) => {
   const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const video = useRef<HTMLVideoElement | null>(null);
+  const ready = useRef(onReady);
+  ready.current = onReady;
 
   useEffect(() => {
     // Create video element following Codrops tutorial approach
-    const video = document.createElement('video');
-    video.src = '/animation.mp4';
-    video.crossOrigin = 'anonymous';
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
+    const element = document.createElement('video');
+    video.current = element;
+    const videoEl = element;
+    videoEl.src = '/animation.mp4';
+    videoEl.crossOrigin = 'anonymous';
+    videoEl.loop = true;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
 
     console.log('🎬 Creating video texture...');
 
     // Create video texture with proper color space and orientation
-    const texture = new THREE.VideoTexture(video);
+    const texture = new THREE.VideoTexture(videoEl);
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.colorSpace = THREE.SRGBColorSpace;
@@ -47,7 +52,7 @@ export const VideoScreen: React.FC<{
     // Start video playback
     const startVideo = async () => {
       try {
-        await video.play();
+        await videoEl.play();
         console.log('🎬 Video playing successfully');
       } catch (error) {
         console.log('🎬 Video autoplay blocked, will play on user interaction');
@@ -56,7 +61,7 @@ export const VideoScreen: React.FC<{
 
     // Play on user interaction
     const handleInteraction = () => {
-      video.play().then(() => {
+      videoEl.play().then(() => {
         console.log('🎬 Video started on user interaction');
       }).catch(err => {
         console.error('🎬 Video play error:', err);
@@ -65,26 +70,35 @@ export const VideoScreen: React.FC<{
 
     // Mark ready when the first frame is available
     const handleLoaded = () => {
-      onReady?.();
+      ready.current?.();
       startVideo();
     };
 
     // Try autoplay first, then on click
-    video.addEventListener('loadeddata', handleLoaded);
+    videoEl.addEventListener('loadeddata', handleLoaded);
     document.addEventListener('click', handleInteraction, { once: true });
 
     return () => {
-      video.pause();
-      video.src = '';
+      videoEl.pause();
+      videoEl.src = '';
       document.removeEventListener('click', handleInteraction);
-      video.removeEventListener('loadeddata', handleLoaded);
+      videoEl.removeEventListener('loadeddata', handleLoaded);
       texture.dispose();
     };
-  }, [onReady]);
+    // Deliberately empty: this effect owns a video element and a texture for the component's
+    // whole life. Listing `onReady` here was tearing both down and rebuilding them on every
+    // render of the parent, because that callback is an inline arrow with a new identity each
+    // time — and rebuilding a video element per render is what eventually took the WebGL context
+    // down. The ref keeps the latest callback without making the effect depend on it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update texture on every frame
   useFrame(() => {
-    if (videoTexture) {
+    // Only ask for an upload once the element actually holds a frame. Setting needsUpdate
+    // unconditionally makes three.js call texImage2D on an empty video every frame, which the
+    // driver answers with INVALID_VALUE and, often enough, by dropping the context.
+    if (videoTexture && video.current && video.current.readyState >= 2) {
       videoTexture.needsUpdate = true;
     }
   });

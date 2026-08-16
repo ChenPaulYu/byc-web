@@ -48,8 +48,10 @@ open items it recorded along the way.
 - **The Sidekick's orange** is the only colour in the frame besides the two screens. Justified now
   that its display responds to the music, but it sits opposite the MPC and still pulls the eye.
 - **Ambient-occlusion bake** with `three-mesh-bvh` in Node. Chosen approach, not started.
-- **`npm run dev` renders an empty canvas** (React StrictMode double-mount), verified at a clean
-  HEAD. Unfixed. Work around it with a build plus `vite preview`.
+- ~~**`npm run dev` renders an empty canvas.**~~ Fixed. It was a drei `<Text>` fetching a font
+  from fonts.gstatic.com inside the Canvas — StrictMode's double mount left the text renderer in
+  a state the scene never recovered from. The mark is a canvas texture now, and StrictMode stays
+  on. Two real bugs in the video element were found on the way and also fixed.
 - `public/model.glb` is **2.7 MB**, larger than the whole three.js vendor chunk, and carries eleven
   textures. If page weight ever becomes the subject, that file is the place to look.
 

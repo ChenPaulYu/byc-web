@@ -18,6 +18,7 @@ import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { cm, REAL } from './scale';
 import { WALNUT, createWoodMaps } from './wood';
+import { useDisposable } from './useDisposable';
 
 /** Matches the MPC chassis bottom: its group sits at y = -1 with a box of height 1 below. */
 export const DESK_TOP_Y = -2;
@@ -47,9 +48,8 @@ const Desk: React.FC = () => {
   // drift out of contact again.
   const legX = DESK_W / 2 - cm(7);
   const legZ = DESK_D / 2 - cm(7);
-  const wood = useMemo(() => createWoodMaps({ ...WALNUT, repeat: [2.2, 1] }), []);
+  const wood = useDisposable(() => createWoodMaps({ ...WALNUT, repeat: [2.2, 1] }));
 
-  useEffect(() => () => wood?.dispose(), [wood]);
 
   return (
     <group>
@@ -157,7 +157,7 @@ const Desk: React.FC = () => {
 
 const useBackdrop = () => {
   const { scene } = useThree();
-  const texture = useMemo(() => {
+  const texture = useDisposable(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 4;
     canvas.height = 512;
@@ -172,22 +172,20 @@ const useBackdrop = () => {
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
-  }, []);
+  });
 
   useEffect(() => {
     if (!texture) return;
     const previous = scene.background;
     scene.background = texture;
-    return () => {
-      scene.background = previous;
-      texture.dispose();
-    };
+    // Disposal belongs to useDisposable; this effect only owns the assignment.
+    return () => { scene.background = previous; };
   }, [scene, texture]);
 };
 
 /** A ground disc whose alpha falls off at the rim, so the floor never shows an edge. */
 const useGround = () =>
-  useMemo(() => {
+  useDisposable(() => {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 256;
     const ctx = canvas.getContext('2d');
@@ -201,7 +199,7 @@ const useGround = () =>
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
-  }, []);
+  });
 
 export const Stage: React.FC = () => {
   useBackdrop();
@@ -212,8 +210,6 @@ export const Stage: React.FC = () => {
   // contact shadow was a haze floating at mid-leg height, so nothing in the scene was ever
   // standing on anything. One fact, one owner; this is what scale.ts exists to prevent.
   const floorY = FLOOR_Y;
-
-  useEffect(() => () => { ground?.dispose(); }, [ground]);
 
   return (
     <group>

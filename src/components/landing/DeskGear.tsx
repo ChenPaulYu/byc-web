@@ -19,6 +19,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useDrag } from '@use-gesture/react';
 import { getLevel, setChannel } from './audio';
+import { bundle, useDisposable } from './useDisposable';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
 
@@ -93,7 +94,7 @@ const stadiumShape = (width: number, height: number) => {
 };
 
 const useCabinetGeometry = () =>
-  useMemo(() => {
+  useDisposable(() => {
     // ExtrudeGeometry's bevel grows *outward* from the profile, so the profile has to be inset by
     // the bevel on every side for the finished cabinet to measure what REAL.monitor says. Getting
     // this wrong the first time both inflated the box and pushed its front surface out past
@@ -113,7 +114,7 @@ const useCabinetGeometry = () =>
     // Front silhouette in XY, extrusion along +Z. Bevel grows both ways, so shift to centre.
     geometry.translate(0, 0, CAB_BEVEL - cm(REAL.monitor.depth) / 2);
     return geometry;
-  }, []);
+  });
 
 const BAFFLE_Z = cm(REAL.monitor.depth) / 2 + cm(0.02);
 const DRIVER_Y = cm(4.2);
@@ -133,9 +134,9 @@ const brass = (color: string) => (
 );
 
 const TannoyBaffle: React.FC = () => {
-  const { baffle, plateOuter, plateInner } = useMemo(() => {
+  const shapes = useDisposable(() => {
     const r = CAB_RADIUS - CAB_BEVEL;
-    return {
+    return bundle({
       baffle: new THREE.ShapeGeometry(
         roundedRectShape(
           cm(REAL.monitor.width) - CAB_BEVEL * 2,
@@ -145,21 +146,13 @@ const TannoyBaffle: React.FC = () => {
       ),
       plateOuter: new THREE.ShapeGeometry(stadiumShape(cm(13.2), cm(3.8))),
       plateInner: new THREE.ShapeGeometry(stadiumShape(cm(12.5), cm(3.1))),
-    };
-  }, []);
-  useEffect(
-    () => () => {
-      baffle.dispose();
-      plateOuter.dispose();
-      plateInner.dispose();
-    },
-    [baffle, plateOuter, plateInner],
-  );
+    });
+  });
 
   return (
   <group position={[0, 0, BAFFLE_Z]}>
     {/* Baffle follows the rounded-rect front, a shade off the cabinet so the face separates. */}
-    <mesh position={[0, 0, cm(0.05)]} geometry={baffle}>
+    <mesh position={[0, 0, cm(0.05)]} geometry={shapes?.baffle}>
       <meshStandardMaterial color="#1c1d1f" roughness={0.86} metalness={0.05} envMapIntensity={1.2} />
     </mesh>
 
@@ -188,10 +181,10 @@ const TannoyBaffle: React.FC = () => {
         the second thing that says Tannoy after the ring — so it is drawn as a pill and a recess
         and nothing else. */}
     <group position={[0, cm(-8.8), cm(0.1)]}>
-      <mesh geometry={plateOuter}>
+      <mesh geometry={shapes?.plateOuter}>
         <meshStandardMaterial color="#8a713e" roughness={0.4} metalness={0.28} envMapIntensity={1.9} />
       </mesh>
-      <mesh position={[0, 0, cm(0.05)]} geometry={plateInner}>
+      <mesh position={[0, 0, cm(0.05)]} geometry={shapes?.plateInner}>
         <meshStandardMaterial color="#2c3034" roughness={0.84} metalness={0.06} envMapIntensity={2.2} />
       </mesh>
     </group>
@@ -205,7 +198,6 @@ const TannoyBaffle: React.FC = () => {
  */
 const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) => {
   const cabinet = useCabinetGeometry();
-  useEffect(() => () => { cabinet.dispose(); }, [cabinet]);
   return (
   <group position={[x, DESK_TOP_Y, cm(-24)]} rotation={[0, toeIn, 0]}>
     {[
@@ -226,7 +218,7 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
     ))}
     {/* Cabinet, tilted back a little the way a monitor on an improvised riser always is. */}
     <group position={[0, cm(REAL.paperback.height * 3) + cm(REAL.monitor.height) / 2, 0]} rotation={[-0.09, 0, 0]}>
-      <mesh geometry={cabinet} castShadow receiveShadow>
+      <mesh geometry={cabinet ?? undefined} castShadow receiveShadow>
         <meshPhysicalMaterial color={CASE_DARK} roughness={0.58} metalness={0.14} envMapIntensity={1.7} clearcoat={0.25} clearcoatRoughness={0.55} />
       </mesh>
       <TannoyBaffle />
@@ -375,12 +367,11 @@ const METER_H = cm(2.4);
 const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ onDragChange }) => {
   // The lit block grows from the display's near edge, so its origin has to sit at that edge
   // rather than at its centre — scaling happens about the origin.
-  const meterGeometry = useMemo(() => {
+  const meterGeometry = useDisposable(() => {
     const g = new THREE.PlaneGeometry(METER_W, METER_H);
     g.translate(0, METER_H / 2, 0);
     return g;
-  }, []);
-  useEffect(() => () => meterGeometry.dispose(), [meterGeometry]);
+  });
 
   const meterRef = useRef<THREE.Mesh>(null);
   useFrame(() => {
@@ -450,7 +441,7 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ on
       <planeGeometry args={[cm(2.6), cm(3.4)]} />
       <meshStandardMaterial color="#1b1a19" roughness={0.4} />
     </mesh>
-    <mesh ref={meterRef} position={[skX(0.76), SK_H + cm(0.04), skZ(0.33) + METER_H / 2]} rotation={[-Math.PI / 2, 0, 0]} geometry={meterGeometry}>
+    <mesh ref={meterRef} position={[skX(0.76), SK_H + cm(0.04), skZ(0.33) + METER_H / 2]} rotation={[-Math.PI / 2, 0, 0]} geometry={meterGeometry ?? undefined}>
       <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
     </mesh>
 
