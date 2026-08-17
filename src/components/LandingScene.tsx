@@ -45,11 +45,8 @@ const LandingScene: React.FC = () => {
   // instance (target, damped position) without that instance ever going through React state.
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
-  // Reported by CameraDirector when the camera crosses close/far of an instrument. Not consumed
-  // yet — the overlay fade that reads it is a later step of this plan — but it has to exist as
-  // real state now so CameraDirector has somewhere to report into.
+  // True while the camera is close enough that the scene reaches the page's own text.
   const [isCameraClose, setIsCameraClose] = useState(false);
-  void isCameraClose;
 
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 11, 26]);
@@ -181,7 +178,18 @@ const LandingScene: React.FC = () => {
       </Canvas>
 
       {/* --- RESPONSIVE UI OVERLAY --- */}
-      <div className="absolute inset-0 pointer-events-none p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-between">
+      {/* The whole text layer retreats while the camera is close, rather than the scene being
+          held back from it. Someone examining an instrument is not looking for the About link at
+          that moment — and the collision was never only in the corner, since the left monitor
+          reaches the name at close range too.
+
+          The fade is CSS off a boolean, not per-frame JavaScript: CameraDirector flips that
+          boolean only when the distance actually crosses, and the transition below does the rest. */}
+      <div
+        className={`absolute inset-0 pointer-events-none p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-between transition-opacity duration-500 ${
+          isCameraClose ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
 
         {/* Header: Top Left */}
         <header className="z-10">
@@ -207,7 +215,13 @@ const LandingScene: React.FC = () => {
           </div>
 
           {/* Right: Navigation */}
-          <nav className="w-full sm:w-1/3 pointer-events-auto flex sm:flex-col items-center sm:items-end gap-x-5 gap-y-2 sm:gap-4 justify-center sm:justify-end pb-2 sm:pb-0">
+          {/* pointer-events has to follow the opacity. An invisible button that still swallows
+              clicks is worse than a visible one. */}
+          <nav
+            className={`w-full sm:w-1/3 ${
+              isCameraClose ? '' : 'pointer-events-auto'
+            } flex sm:flex-col items-center sm:items-end gap-x-5 gap-y-2 sm:gap-4 justify-center sm:justify-end pb-2 sm:pb-0`}
+          >
             <button
               onClick={() => navigate('/about')}
               className="text-sm sm:text-lg md:text-xl text-neutral-800 hover:text-black transition-colors font-normal touch-manipulation"
