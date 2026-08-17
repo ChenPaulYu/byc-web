@@ -192,6 +192,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
           receiveShadow
         >
           <meshStandardMaterial
+            key={cheek ? 'ash' : 'bare'}
             map={cheek.map}
             normalMap={cheek.normalMap}
             normalScale={new THREE.Vector2(0.5, 0.5)}

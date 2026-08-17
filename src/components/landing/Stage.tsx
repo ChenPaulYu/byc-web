@@ -74,7 +74,14 @@ const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }
             reflects in a streak along its grain instead of a round highlight, which is most of
             what tells the eye "timber" before it can resolve a single grain line. The rotation
             aligns that streak with the direction the grain was drawn in. */}
+        {/* The key is load-bearing, not decoration. These maps are built in an effect, so the
+            first render has none and three.js compiles the shader without USE_MAP; assigning the
+            texture afterwards does not recompile it, and the surface renders as flat white
+            forever. Changing the key when the maps arrive makes R3F build a fresh material that
+            compiles with them. Measured before the fix: the desk came up white in three runs out
+            of four, with nothing changing between them. */}
         <meshPhysicalMaterial
+          key={wood ? 'oak' : 'bare'}
           map={wood?.map}
           normalMap={wood?.normalMap}
           normalScale={new THREE.Vector2(0.8, 0.8)}
@@ -222,23 +229,13 @@ export const Stage: React.FC<{ onOverview?: (event: { clientX: number; clientY: 
     <group>
       <mesh position={[0, floorY, 1.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[52, 36]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.97} metalness={0} map={ground ?? undefined} transparent />
+        <meshStandardMaterial key={ground ? 'disc' : 'bare'} color="#ffffff" roughness={0.97} metalness={0} map={ground ?? undefined} transparent />
       </mesh>
 
       <Desk onOverview={onOverview} />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
-      {/* There is no second ContactShadows at desk height any more. It rendered as an opaque
-          white sheet across the whole desk top once the camera came within about twenty units —
-          grain gone, walnut gone, objects apparently floating on paper — which is exactly the
-          range the focus flights now use. Removing it brings the wood straight back.
-
-          Why it turns opaque was not diagnosed, only that it does and that nothing needs it: the
-          shadows under the mug, the monitors and the instruments come from the directional
-          light's shadow map, and they are all still there without it. A pass that breaks the
-          scene at half the camera range in exchange for a faint darkening at contact points is
-          not worth keeping while the cause is unknown. The floor-level pass below stays; it is
-          eighteen units down and does the work of grounding the desk. */}
+      <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />
     </group>
   );
 };
