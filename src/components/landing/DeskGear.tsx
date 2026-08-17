@@ -312,15 +312,17 @@ const skX = (fraction: number) => (fraction - 0.5) * SK_W;
 const KNOB_ROWS = [
   { z: skZ(0.31), colour: SK_ORANGE, r: cm(0.85) }, // GAIN
   { z: skZ(0.43), colour: '#f2f2f0', r: cm(0.85) }, // HIGH
-  { z: skZ(0.54), colour: '#83868b', r: cm(0.62) }, // MID
-  { z: skZ(0.64), colour: '#1e2023', r: cm(0.62) }, // LOW
+  { z: skZ(0.545), colour: '#83868b', r: cm(0.62) }, // MID
+  { z: skZ(0.645), colour: '#1e2023', r: cm(0.62) }, // LOW
 ];
 const KNOB_COLS = [skX(0.19), skX(0.44)];
 /** The display, the volume knob and the headphone knob all share one column on the right. */
 const RIGHT_COL = skX(0.74);
+/** The inset every full-width plate shares, so none of them reaches the rolled edge. */
+const SW_INSET = SK_W - cm(0.7);
 
-const FADER_TRAVEL = cm(4.6);
-const FADER_Z = skZ(0.79);
+const FADER_TRAVEL = cm(3.2);
+const FADER_Z = skZ(0.83);
 
 /**
  * One channel fader. Channel 0 is the pads, channel 1 is the background bed, so pushing one down
@@ -355,7 +357,7 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
   return (
     <group position={[x, 0, 0]}>
       <mesh position={[0, SK_H + cm(0.05), FADER_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[cm(0.55), FADER_TRAVEL + cm(1.1)]} />
+        <planeGeometry args={[cm(0.5), FADER_TRAVEL + cm(0.8)]} />
         <meshStandardMaterial color="#2a2c2f" roughness={0.8} />
       </mesh>
       <RoundedBox
@@ -378,7 +380,7 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
 const METER_W = cm(1.5);
 const METER_H = cm(2.4);
 /** Top-right, level with the two large knobs — not mid-panel, which is where it was. */
-const SCREEN_Z = skZ(0.335);
+const SCREEN_Z = skZ(0.35);
 
 const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => {
   const root = useRef<THREE.Group>(null);
@@ -452,8 +454,8 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
     {/* The white upper plate. On the real unit it carries the wordmark; here it is a value
         change, which is what actually reads — the machine splits into a pale head and a grey
         body, and that split is half of its silhouette. */}
-    <mesh position={[0, SK_H + cm(0.02), skZ(0.19)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[SK_W - cm(0.7), cm(6.2)]} />
+    <mesh position={[0, SK_H + cm(0.02), skZ(0.175)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[SW_INSET, cm(4)]} />
       <meshStandardMaterial color="#f3f3f2" roughness={0.5} metalness={0.03} />
     </mesh>
 
@@ -494,17 +496,17 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
     </mesh>
 
     {/* The recessed ring above the volume knob, and the volume knob itself. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.47)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[cm(1.1), cm(1.3), 26]} />
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.475)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[cm(0.9), cm(1.1), 26]} />
       <meshStandardMaterial color="#e9eaea" roughness={0.5} />
     </mesh>
-    <mesh position={[RIGHT_COL, SK_H + cm(0.45), skZ(0.56)]} castShadow>
-      <cylinderGeometry args={[cm(1.15), cm(1.25), cm(0.9), 20]} />
+    <mesh position={[RIGHT_COL, SK_H + cm(0.45), skZ(0.585)]} castShadow>
+      <cylinderGeometry args={[cm(1.05), cm(1.15), cm(0.9), 20]} />
       <meshStandardMaterial color="#f0f0ef" roughness={0.42} />
     </mesh>
 
     {/* The MOD slider — the one orange control below the volume. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.64)]} rotation={[-Math.PI / 2, 0, 0]}>
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.665)]} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[cm(1.5), cm(0.85)]} />
       <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
     </mesh>
@@ -512,7 +514,7 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
     {/* CUE, then the two channel faders, then FX along the front. */}
     {KNOB_COLS.map((x, i) => (
       <group key={`ch-${x}`}>
-        <mesh position={[x, SK_H + cm(0.03), skZ(0.745)]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[x, SK_H + cm(0.03), skZ(0.71)]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[cm(1.9), cm(0.95)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
         </mesh>
