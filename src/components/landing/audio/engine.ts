@@ -13,7 +13,9 @@
  *
  * Two channel strips feed one bus: pads and the background bed each have their own gain so a
  * fader can hold one down without touching the other, while the filter, drive and reverb below
- * them are shared, because on this machine those are master-bus effects.
+ * them are shared, because on this machine those are master-bus effects. Each strip has an
+ * analyser tap in series so the mixer's LCD can meter PAD and BED separately; the master
+ * analyser after the bus still drives the avatar.
  *
  * Nothing outside this folder ever sees a node — `index.ts` re-exports behaviour only.
  *
@@ -27,6 +29,42 @@ import { loadSample } from './samples';
 import { PAD_LAYOUT } from '../layout';
 
 const PAD_NOTE_BY_KEY = new Map<string, string>(PAD_LAYOUT.map(pad => [pad.key, pad.note]));
+
+/** One RMS reader with its own clock, so two callers in the same tick don't double-smooth. */
+type LevelRead = {
+  analyser: AnalyserNode;
+  data: Float32Array;
+  smoothed: number;
+  lastAt: number;
+};
+
+function readSmoothedRms(read: LevelRead, now: number, rate: number): number {
+  const elapsed = now - read.lastAt;
+  if (elapsed <= 0) return read.smoothed;
+  read.lastAt = now;
+  read.analyser.getFloatTimeDomainData(read.data);
+
+  let sumOfSquares = 0;
+  for (let i = 0; i < read.data.length; i += 1) {
+    sumOfSquares += read.data[i] * read.data[i];
+  }
+  const rms = Math.sqrt(sumOfSquares / read.data.length);
+  // Damped against elapsed time rather than by a fixed fraction per call, which would smooth
+  // four times faster at 120fps than at 30. Rate 9 gives a time constant near 110 ms.
+  read.smoothed += (rms - read.smoothed) * (1 - Math.exp(-rate * elapsed));
+  return Math.min(1, Math.max(0, read.smoothed));
+}
+
+function makeAnalyser(ctx: AudioContext, smoothing: number): AnalyserNode {
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = smoothing;
+  return analyser;
+}
+
+function makeLevelRead(analyser: AnalyserNode): LevelRead {
+  return { analyser, data: new Float32Array(analyser.fftSize), smoothed: 0, lastAt: 0 };
+}
 
 // Web Audio's own curve formula for a soft-knee overdrive (as in the MDN WaveShaperNode
 // example): larger `amount` steepens the knee. `amount` here is 0..100, driven by a 0..1 knob.
@@ -56,11 +94,9 @@ class AudioEngine {
   private dryGain: GainNode | null = null;
   private wetGain: GainNode | null = null;
   private masterGain: GainNode | null = null;
-  private analyser: AnalyserNode | null = null;
-
-  private levelData: Float32Array | null = null;
-  private smoothedLevel = 0;
-  private lastLevelAt = 0;
+  private masterLevel: LevelRead | null = null;
+  private padLevel: LevelRead | null = null;
+  private bedLevel: LevelRead | null = null;
 
   private padSamples = new Map<string, AudioBuffer>();
   private bedBuffer: AudioBuffer | null = null;
@@ -106,20 +142,25 @@ class AudioEngine {
     const masterGain = ctx.createGain();
     masterGain.gain.value = 1;
 
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.6;
+    // Channel taps sit in series on each strip so the mixer can see PAD and BED apart. An
+    // AnalyserNode is a pass-through, so this does not change the sound. The master tap after
+    // the bus still feeds the avatar.
+    const padAnalyser = makeAnalyser(ctx, 0.35);
+    const bedAnalyser = makeAnalyser(ctx, 0.7);
+    const masterAnalyser = makeAnalyser(ctx, 0.6);
 
-    padBus.connect(filter);
-    bedBus.connect(filter);
+    padBus.connect(padAnalyser);
+    padAnalyser.connect(filter);
+    bedBus.connect(bedAnalyser);
+    bedAnalyser.connect(filter);
     filter.connect(shaper);
     shaper.connect(dryGain);
     shaper.connect(convolver);
     convolver.connect(wetGain);
     dryGain.connect(masterGain);
     wetGain.connect(masterGain);
-    masterGain.connect(analyser);
-    analyser.connect(ctx.destination);
+    masterGain.connect(masterAnalyser);
+    masterAnalyser.connect(ctx.destination);
 
     this.padBus = padBus;
     this.bedBus = bedBus;
@@ -129,8 +170,9 @@ class AudioEngine {
     this.dryGain = dryGain;
     this.wetGain = wetGain;
     this.masterGain = masterGain;
-    this.analyser = analyser;
-    this.levelData = new Float32Array(analyser.fftSize);
+    this.padLevel = makeLevelRead(padAnalyser);
+    this.bedLevel = makeLevelRead(bedAnalyser);
+    this.masterLevel = makeLevelRead(masterAnalyser);
   }
 
   async resume(): Promise<void> {
@@ -224,31 +266,19 @@ class AudioEngine {
   }
 
   getLevel(): number {
-    if (!this.analyser || !this.levelData || !this.ctx) return 0;
+    if (!this.masterLevel || !this.ctx) return 0;
+    return readSmoothedRms(this.masterLevel, this.ctx.currentTime, 9);
+  }
 
-    // Advance the reading at most once per audio-clock tick, and hand every later caller in the
-    // same tick the same number. The avatar wants this every frame and the pads are likely to
-    // want it too, and a getter that mutates on read would give the second caller a different
-    // answer from the first while advancing the smoothing twice as fast.
+  /** Per-strip meters for the mixer LCD. 0 is pads, 1 is the bed. Faster pad envelope so a
+   * hit punches; slower bed envelope so the floor breathes. */
+  getChannelLevels(): [number, number] {
+    if (!this.padLevel || !this.bedLevel || !this.ctx) return [0, 0];
     const now = this.ctx.currentTime;
-    const elapsed = now - this.lastLevelAt;
-    if (elapsed <= 0) return this.smoothedLevel;
-    this.lastLevelAt = now;
-
-    this.analyser.getFloatTimeDomainData(this.levelData);
-
-    let sumOfSquares = 0;
-    for (let i = 0; i < this.levelData.length; i += 1) {
-      sumOfSquares += this.levelData[i] * this.levelData[i];
-    }
-    const rms = Math.sqrt(sumOfSquares / this.levelData.length);
-
-    // Damped against elapsed time rather than by a fixed fraction per call, which would smooth
-    // four times faster at 120fps than at 30 and change how the avatar reads on every machine.
-    // This is the bug that once left the pads unrenderable on a slow frame, in a new costume —
-    // see the note in Pad's useFrame. Rate 9 gives a time constant near 110 ms.
-    this.smoothedLevel += (rms - this.smoothedLevel) * (1 - Math.exp(-9 * elapsed));
-    return Math.min(1, Math.max(0, this.smoothedLevel));
+    return [
+      readSmoothedRms(this.padLevel, now, 16),
+      readSmoothedRms(this.bedLevel, now, 5),
+    ];
   }
 
   /** Seam for a later step: registers a decoded sample against a pad key. Not called by

@@ -7,27 +7,28 @@
  * it read as set dressing rather than as kit, so it went.
  *
  * The register is bedroom recording, not a treated studio. The monitors are raised on a stack
- * of books rather than isolation wedges, the cables are visible, and the desk is allowed to
- * hold things that have nothing to do with music. A tidy desk would read as a product shot.
+ * of books rather than isolation wedges, and the desk is allowed to hold things that have
+ * nothing to do with music. A tidy desk would read as a product shot.
  *
- * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y
+ * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y ·
+ * mixerLcd.ts · audio `setChannel` / `getChannelDisplayLevels`
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { RoundedBox } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useDrag } from '@use-gesture/react';
-import { getLevel, setChannel } from './audio';
+import { getChannelDisplayLevels, setChannel } from './audio';
 import { bundle, useDisposable } from './useDisposable';
 import { DESK_TOP_Y } from './Stage';
 import { cm, REAL } from './scale';
+import { createMixerLcd, drawMixerLcd } from './mixerLcd';
 
 const CASE_DARK = '#3f4348';
 const BOOK_A = '#c9cbc6';
 const BOOK_B = '#d9d5cc';
 const BOOK_C = '#bfc4c8';
-const CABLE = '#3a3c3f';
 const MUG = '#e3e4e2';
 
 /**
@@ -227,60 +228,10 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
   );
 };
 
-/** Cables. Ranked low by the research, but visible cable is the bedroom-recording tell. */
-const Cables: React.FC = () => {
-  const curves = useMemo(() => {
-    const make = (pts: Array<[number, number, number]>) =>
-      new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p)));
-    return [
-      // Monitor leads, run along the desk where the camera can see them rather than tucked
-      // behind the far edge, which is geometry nobody ever renders.
-      //
-      // They have to go *over* the edge and down, not stop at it. The first version after the
-      // laptop was removed ended its last control point at z = -35 — the back edge exactly — so
-      // the tube reached the rim and was cut off, leaving a blunt black stub sticking out into
-      // space. A cable that ends where a surface ends does not read as tucked away; it reads as
-      // broken geometry, which is what it was.
-      make([
-        [cm(-52), DESK_TOP_Y + cm(1), cm(-30)],
-        [cm(-46), DESK_TOP_Y + cm(0.5), cm(-32)],
-        [cm(-38), DESK_TOP_Y + cm(0.5), cm(-34)],
-        [cm(-34), DESK_TOP_Y - cm(2), cm(-36.5)],
-        [cm(-33), DESK_TOP_Y - cm(13), cm(-37)],
-      ]),
-      make([
-        [cm(52), DESK_TOP_Y + cm(1), cm(-30)],
-        [cm(46), DESK_TOP_Y + cm(0.5), cm(-32)],
-        [cm(38), DESK_TOP_Y + cm(0.5), cm(-34)],
-        [cm(34), DESK_TOP_Y - cm(2), cm(-36.5)],
-        [cm(33), DESK_TOP_Y - cm(13), cm(-37)],
-      ]),
-    ];
-  }, []);
-
-  return (
-    <group>
-      {curves.map((c, i) => (
-        <mesh key={i} castShadow>
-          <tubeGeometry args={[c, 44, cm(0.5), 6, false]} />
-          <meshStandardMaterial color={CABLE} roughness={0.75} metalness={0.05} />
-        </mesh>
-      ))}
-    </group>
-  );
-};
-
 /**
- * The K.O. II Sidekick — the 2-channel mixer that partners the EP-133.
- *
- * It renders about forty pixels across, so it is built from the two things that survive that:
- * its proportion, which is unusually tall and narrow for a desk box, and its colour-coded knob
- * grid, where the four rows go orange, white, grey, black down each channel. Everything printed
- * on the real one — the wordmark, the katakana, GAIN / HIGH / MID / LOW, CUE, FX — is left off
- * for the reason the MPC's own labels were: at this size type is grey mush, and mush reads worse
- * than absence.
- *
- * Knobs and faders are drawn larger than scale. A real 11 mm knob lands at about two pixels here.
+ * Two-channel desk mixer. Layout, two-tone split and force pad are read off a compact
+ * 88 × 240 × 16 mm stereo mixer; the wordmark is BYC — BUS, same house as the MPC. The LCD
+ * meters PAD and BED as two LED columns; the force pad is the silhouette on the right.
  */
 export type FocusHandler = (
   target: THREE.Vector3,
@@ -288,7 +239,7 @@ export type FocusHandler = (
   event: { clientX: number; clientY: number },
 ) => void;
 
-/** 1.76 units across, so it needs to come much closer than the MPC to be workable. */
+/** 1.72 units across, so it needs to come much closer than the MPC to be workable. */
 const SIDEKICK_FOCUS_DISTANCE = 13;
 
 const SK = REAL.sidekick;
@@ -297,37 +248,146 @@ const SK_D = cm(SK.depth);
 const SK_H = cm(SK.height);
 const SK_ORANGE = '#ee5a1e';
 
-/** Fractions of the unit's depth, read off the product shot, back edge to front. */
+/** Fractions of the unit's depth, back edge to front. Shared by the printed face and the 3D controls. */
 const skZ = (fraction: number) => (fraction - 0.5) * SK_D;
 /** Fractions of the unit's width, left to right. */
 const skX = (fraction: number) => (fraction - 0.5) * SK_W;
 
-// All read off the front-on product shot as fractions of the unit, so the panel's proportions are
-// the machine's rather than mine.
-//
-// The crowding in the first pass was not row spacing — it was two things the reference does not
-// do: the knob columns sat too close together, and all four rows were the same size. On the real
-// unit GAIN and HIGH are visibly larger than MID and LOW, and that size step is a stronger shape
-// signal at this distance than any of the labels would have been.
-const KNOB_ROWS = [
-  { z: skZ(0.31), colour: SK_ORANGE, r: cm(0.85) }, // GAIN
-  { z: skZ(0.43), colour: '#f2f2f0', r: cm(0.85) }, // HIGH
-  { z: skZ(0.545), colour: '#83868b', r: cm(0.62) }, // MID
-  { z: skZ(0.645), colour: '#1e2023', r: cm(0.62) }, // LOW
-];
-const KNOB_COLS = [skX(0.19), skX(0.44)];
-/** The display, the volume knob and the headphone knob all share one column on the right. */
-const RIGHT_COL = skX(0.77);
-/** The inset every full-width plate shares, so none of them reaches the rolled edge. */
-const SW_INSET = SK_W - cm(0.7);
+const FACE = {
+  gain: 0.28,
+  high: 0.368,
+  mid: 0.445,
+  low: 0.51,
+  cue: 0.57,
+  fader: 0.73,
+  fx: 0.905,
+  pad: 0.40,
+  volume: 0.54,
+  mod: 0.625,
+  phones: 0.73,
+  select: 0.905,
+} as const;
 
-const FADER_TRAVEL = cm(3.2);
-const FADER_Z = skZ(0.83);
+const COL = {
+  ch1: 0.20,
+  ch2: 0.44,
+  right: 0.80,
+} as const;
+
+/** Printed LCD window, fractions of the face. The 3D meter plane sits in this hole. */
+const LCD = { x: 0.655, y: 0.225, w: 0.29, h: 0.09 } as const;
+
+const KNOB_ROWS = [
+  { z: skZ(FACE.gain), colour: SK_ORANGE, r: cm(0.58) },
+  { z: skZ(FACE.high), colour: '#f2f2f0', r: cm(0.58) },
+  { z: skZ(FACE.mid), colour: '#83868b', r: cm(0.42) },
+  { z: skZ(FACE.low), colour: '#1e2023', r: cm(0.42) },
+];
+const KNOB_COLS = [skX(COL.ch1), skX(COL.ch2)];
+const RIGHT_COL = skX(COL.right);
+
+const FADER_TRAVEL = cm(5.2);
+const FADER_Z = skZ(FACE.fader);
+
+/** Printed face: white head, brushed grey body, wordmark, jack tabs. Controls sit on top as meshes. */
+const createSidekickFace = (): THREE.CanvasTexture | null => {
+  const w = 512;
+  const h = Math.round(w * (SK.depth / SK.width));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const X = (f: number) => f * w;
+  const Y = (f: number) => f * h;
+
+  ctx.fillStyle = '#c2c5c8';
+  ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < w; i += 2) {
+    ctx.strokeStyle = i % 6 === 0 ? 'rgba(255,255,255,0.14)' : 'rgba(90,94,98,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(i + 0.5, 0);
+    ctx.lineTo(i + 0.5, h);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = '#f3f3f2';
+  ctx.fillRect(0, 0, w, Y(0.205));
+
+  const tabs = [
+    { from: 0.035, to: 0.255, colour: '#3a3d41', label: 'OUTPUT' },
+    { from: 0.265, to: 0.455, colour: SK_ORANGE, label: 'AUX' },
+    { from: 0.465, to: 0.655, colour: SK_ORANGE, label: 'INPUT' },
+    { from: 0.665, to: 0.82, colour: '#3a3d41', label: 'USB' },
+  ];
+  const tabY = Y(0.012);
+  const tabH = Y(0.038);
+  ctx.font = `600 ${Math.round(h * 0.014)}px Inter, Helvetica, Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const tab of tabs) {
+    const tw = X(tab.to - tab.from);
+    const tx = X(tab.from);
+    ctx.beginPath();
+    ctx.roundRect(tx, tabY, tw, tabH, 3);
+    ctx.fillStyle = tab.colour;
+    ctx.fill();
+    ctx.fillStyle = '#f4f4f3';
+    ctx.fillText(tab.label, tx + tw / 2, tabY + tabH / 2);
+  }
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#1a1b1d';
+  ctx.font = `700 ${Math.round(h * 0.034)}px Inter, Helvetica, Arial, sans-serif`;
+  ctx.fillText('BYC  —  BUS', X(0.06), Y(0.09));
+  ctx.fillStyle = SK_ORANGE;
+  ctx.font = `600 ${Math.round(h * 0.024)}px "Hiragino Sans", "PingFang TC", sans-serif`;
+  ctx.fillText('ミキサー', X(0.06), Y(0.122));
+  ctx.strokeStyle = '#d5d5d3';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(X(0.06), Y(0.145));
+  ctx.lineTo(X(0.94), Y(0.145));
+  ctx.stroke();
+  ctx.fillStyle = '#1a1b1d';
+  ctx.font = `600 ${Math.round(h * 0.02)}px Inter, Helvetica, Arial, sans-serif`;
+  ctx.fillText('2 CH STEREO MIXER', X(0.06), Y(0.175));
+
+  ctx.beginPath();
+  ctx.roundRect(X(LCD.x), Y(LCD.y), X(LCD.w), Y(LCD.h), 5);
+  ctx.fillStyle = '#141312';
+  ctx.fill();
+
+  ctx.fillStyle = '#5c5f64';
+  ctx.textAlign = 'center';
+  ctx.font = `600 ${Math.round(h * 0.012)}px Inter, Helvetica, Arial, sans-serif`;
+  const caption = (text: string, xf: number, yf: number) => ctx.fillText(text, X(xf), Y(yf));
+  caption('GAIN', COL.ch1, FACE.gain + 0.042);
+  caption('GAIN', COL.ch2, FACE.gain + 0.042);
+  caption('HIGH', COL.ch1, FACE.high + 0.042);
+  caption('HIGH', COL.ch2, FACE.high + 0.042);
+  caption('MID', COL.ch1, FACE.mid + 0.038);
+  caption('MID', COL.ch2, FACE.mid + 0.038);
+  caption('LOW', COL.ch1, FACE.low + 0.038);
+  caption('LOW', COL.ch2, FACE.low + 0.038);
+  caption('VOLUME', COL.right, FACE.volume + 0.048);
+  caption('PHONES', COL.right, FACE.phones + 0.048);
+  caption('PAD', COL.ch1, FACE.fader - 0.085);
+  caption('BED', COL.ch2, FACE.fader - 0.085);
+
+  const t = new THREE.CanvasTexture(canvas);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+};
+
+const LCD_W = LCD.w * SK_W * 0.92;
+const LCD_H = LCD.h * SK_D * 0.88;
 
 /**
- * One channel fader. Channel 0 is the pads, channel 1 is the background bed, so pushing one down
- * leaves you the other — which is the only reason a mixer is on this desk rather than a picture
- * of one.
+ * One channel fader. Channel 0 is the pads, channel 1 is the background bed — printed PAD / BED
+ * on the face. Pushing one down leaves you the other, which is the only reason a mixer is on
+ * this desk rather than a picture of one.
  *
  * The cap measures about four pixels by three on screen, which is not a mouse target. The grab
  * area is therefore a much larger invisible box around the whole travel. It cannot use
@@ -361,10 +421,10 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
         <meshStandardMaterial color="#2a2c2f" roughness={0.8} />
       </mesh>
       <RoundedBox
-        args={[cm(1.7), cm(0.55), cm(1.1)]}
-        radius={cm(0.12)}
+        args={[cm(1.35), cm(0.32), cm(0.85)]}
+        radius={cm(0.1)}
         smoothness={3}
-        position={[0, SK_H + cm(0.35), FADER_Z + (0.5 - value) * FADER_TRAVEL]}
+        position={[0, SK_H + cm(0.22), FADER_Z + (0.5 - value) * FADER_TRAVEL]}
         castShadow
       >
         <meshStandardMaterial color="#6f7378" roughness={0.45} metalness={0.08} />
@@ -377,32 +437,43 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
   );
 };
 
-const METER_W = cm(1.5);
-const METER_H = cm(2.4);
-/** Top-right, level with the two large knobs — not mid-panel, which is where it was. */
-const SCREEN_Z = skZ(0.35);
-
 const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => {
   const root = useRef<THREE.Group>(null);
-  // The lit block grows from the display's near edge, so its origin has to sit at that edge
-  // rather than at its centre — scaling happens about the origin.
-  const meterGeometry = useDisposable(() => {
-    const g = new THREE.PlaneGeometry(METER_W, METER_H);
-    g.translate(0, METER_H / 2, 0);
-    return g;
+  const face = useDisposable(() => createSidekickFace());
+  const lcd = useDisposable(() =>
+    bundle({ texture: createMixerLcd(), geometry: new THREE.PlaneGeometry(LCD_W, LCD_H) }),
+  );
+  const peaks = useRef<[number, number]>([0, 0]);
+  const peakHoldUntil = useRef<[number, number]>([0, 0]);
+  const lastT = useRef(0);
+
+  useFrame((state) => {
+    const texture = lcd?.texture;
+    if (!texture) return;
+    const canvas = texture.image as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const t = state.clock.elapsedTime;
+    const dt = Math.min(0.05, Math.max(0, t - lastT.current));
+    lastT.current = t;
+
+    const [pad, bed] = getChannelDisplayLevels();
+    const shown: [number, number] = [pad, bed];
+    for (let i = 0; i < 2; i += 1) {
+      if (shown[i] >= peaks.current[i]) {
+        peaks.current[i] = shown[i];
+        peakHoldUntil.current[i] = t + 0.55;
+      } else if (t > peakHoldUntil.current[i]) {
+        peaks.current[i] = Math.max(shown[i], peaks.current[i] - dt * 0.9);
+      }
+    }
+
+    drawMixerLcd(ctx, pad, bed, peaks.current, SK_ORANGE);
+    texture.needsUpdate = true;
   });
 
-  const meterRef = useRef<THREE.Mesh>(null);
-  useFrame(() => {
-    const mesh = meterRef.current;
-    if (!mesh) return;
-    // Height and brightness both follow the level. The display renders about six pixels by
-    // eight, so a two-channel bar graph like the real one would be sub-pixel; a single block
-    // that moves and brightens is what survives at this size.
-    const level = Math.min(1, getLevel() * 3.2);
-    mesh.scale.y = 0.08 + level * 0.92;
-    (mesh.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + level * 1.2;
-  });
+  const deck = SK_H + cm(0.04);
 
   return (
   <group
@@ -415,126 +486,103 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
       onFocus(root.current.getWorldPosition(new THREE.Vector3()), SIDEKICK_FOCUS_DISTANCE, e.nativeEvent);
     }}
   >
-    {/* Chassis. A shade darker than the white head above it, because that value split is half of
-        what identifies this object at any size — the real one is a white plate on a grey body. */}
-    <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.35)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
-      <meshStandardMaterial color="#a9acb0" roughness={0.62} metalness={0.06} />
+    <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.22)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
+      <meshStandardMaterial color="#b4b7bb" roughness={0.62} metalness={0.06} />
     </RoundedBox>
 
-    {/* The control area sits in a shallow recess, so the panel has an edge to catch light on
-        rather than the controls appearing to float on an unbroken slab. */}
-    <mesh position={[0, SK_H + cm(0.01), skZ(0.63)]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <planeGeometry args={[SK_W - cm(0.7), SK_D * 0.62]} />
-      <meshStandardMaterial color="#c0c3c6" roughness={0.58} metalness={0.05} />
+    <mesh position={[0, SK_H + cm(0.015), 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <planeGeometry args={[SK_W - cm(0.35), SK_D - cm(0.35)]} />
+      <meshStandardMaterial
+        key={face ? 'face' : 'bare'}
+        map={face ?? undefined}
+        color={face ? '#ffffff' : '#c2c5c8'}
+        roughness={0.55}
+        metalness={0.04}
+      />
     </mesh>
 
-    {/* The connector row, which the reference splits into four labelled blocks — dark OUTPUT,
-        orange AUX and INPUT, dark USB — with a separate orange switch beyond them. Four segments
-        rather than one strip with a patch on it: the alternating rhythm is what reads. */}
-    {[
-      { from: 0.039, to: 0.27, colour: '#33363a' },
-      { from: 0.28, to: 0.47, colour: SK_ORANGE },
-      { from: 0.48, to: 0.66, colour: SK_ORANGE },
-      { from: 0.67, to: 0.8, colour: '#33363a' },
-    ].map((block) => (
-      <mesh
-        key={block.from}
-        position={[skX((block.from + block.to) / 2), SK_H + cm(0.02), skZ(0.05)]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <planeGeometry args={[SK_W * (block.to - block.from), cm(1.5)]} />
-        <meshStandardMaterial color={block.colour} roughness={0.65} />
-      </mesh>
-    ))}
-    <mesh position={[skX(0.905), SK_H + cm(0.16), skZ(0.05)]} castShadow>
-      <boxGeometry args={[cm(1), cm(0.35), cm(0.55)]} />
+    <mesh position={[skX(0.91), deck, skZ(0.032)]} castShadow>
+      <boxGeometry args={[cm(0.9), cm(0.22), cm(0.45)]} />
       <meshStandardMaterial color={SK_ORANGE} roughness={0.5} />
     </mesh>
 
-    {/* The white upper plate. On the real unit it carries the wordmark; here it is a value
-        change, which is what actually reads — the machine splits into a pale head and a grey
-        body, and that split is half of its silhouette. */}
-    <mesh position={[0, SK_H + cm(0.02), skZ(0.175)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[SW_INSET, cm(4)]} />
-      <meshStandardMaterial color="#f3f3f2" roughness={0.5} metalness={0.03} />
-    </mesh>
-
-    {/* Two channels of four knobs. This grid is the whole identity of the object, and the size
-        step between the two large rows and the two small ones is most of what carries it. */}
     {KNOB_COLS.map((x) =>
       KNOB_ROWS.map((row) => (
-        <group key={`${x}-${row.z}`} position={[x, SK_H + cm(0.15), row.z]}>
-          <mesh position={[0, cm(0.3), 0]} castShadow>
-            <cylinderGeometry args={[row.r, row.r * 1.12, cm(0.6), 16]} />
+        <group key={`${x}-${row.z}`} position={[x, deck, row.z]}>
+          <mesh position={[0, cm(0.22), 0]} castShadow>
+            <cylinderGeometry args={[row.r, row.r * 1.1, cm(0.44), 16]} />
             <meshStandardMaterial color={row.colour} roughness={0.42} metalness={0.05} />
           </mesh>
-          {/* Pointer. Sub-pixel from the overview, but it breaks the knob's top into two tones,
-              which is what stops eight discs reading as eight dots — and once the camera can fly
-              in it is legible on its own. */}
-          <mesh position={[0, cm(0.61), -row.r * 0.45]}>
-            <boxGeometry args={[cm(0.16), cm(0.04), row.r * 0.8]} />
+          <mesh position={[0, cm(0.45), -row.r * 0.45]}>
+            <boxGeometry args={[cm(0.12), cm(0.03), row.r * 0.75]} />
             <meshStandardMaterial color={row.colour === '#1e2023' ? '#c9ccd0' : '#3a3d41'} roughness={0.5} />
           </mesh>
         </group>
       )),
     )}
 
-    {/* The display: tall, narrow, and level with the two large knobs, which is where the machine
-        puts it. The first pass had it wide and mid-panel, so it read as a coloured rectangle
-        rather than as a screen. A black bezel around it is what makes it one. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), SCREEN_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[METER_W + cm(0.7), METER_H + cm(0.7)]} />
-      <meshStandardMaterial color="#141312" roughness={0.35} metalness={0.05} />
-    </mesh>
     <mesh
-      ref={meterRef}
-      position={[RIGHT_COL, SK_H + cm(0.04), SCREEN_Z + METER_H / 2]}
+      position={[skX(LCD.x + LCD.w / 2), SK_H + cm(0.03), skZ(LCD.y + LCD.h / 2)]}
       rotation={[-Math.PI / 2, 0, 0]}
-      geometry={meterGeometry ?? undefined}
+      geometry={lcd?.geometry}
     >
-      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
+      <meshStandardMaterial
+        key={lcd ? 'lcd' : 'lcd-bare'}
+        map={lcd?.texture}
+        color={lcd ? '#ffffff' : '#141312'}
+        roughness={0.35}
+        metalness={0.02}
+        emissive={SK_ORANGE}
+        emissiveMap={lcd?.texture}
+        emissiveIntensity={lcd ? 0.55 : 0}
+        toneMapped={false}
+      />
     </mesh>
 
-    {/* The recessed ring above the volume knob, and the volume knob itself. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.475)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[cm(0.9), cm(1.1), 26]} />
-      <meshStandardMaterial color="#e9eaea" roughness={0.5} />
+    {/* Force pad — the large circle that is this machine's silhouette on the right. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.02), skZ(FACE.pad)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[cm(1.05), cm(1.2), 32]} />
+      <meshStandardMaterial color="#9ea2a6" roughness={0.55} />
     </mesh>
-    <mesh position={[RIGHT_COL, SK_H + cm(0.45), skZ(0.585)]} castShadow>
-      <cylinderGeometry args={[cm(1.05), cm(1.15), cm(0.9), 20]} />
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(FACE.pad)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <circleGeometry args={[cm(1.05), 32]} />
+      <meshStandardMaterial color="#d4d6d8" roughness={0.48} metalness={0.04} />
+    </mesh>
+
+    <mesh position={[RIGHT_COL, deck + cm(0.18), skZ(FACE.volume)]} castShadow>
+      <cylinderGeometry args={[cm(0.62), cm(0.7), cm(0.5), 20]} />
       <meshStandardMaterial color="#f0f0ef" roughness={0.42} />
     </mesh>
 
-    {/* The MOD slider — the one orange control below the volume. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.665)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(1.5), cm(0.85)]} />
-      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
+    {/* MOD stick: a short orange post, not a glowing rectangle. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.02), skZ(FACE.mod)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <circleGeometry args={[cm(0.55), 20]} />
+      <meshStandardMaterial color={SK_ORANGE} roughness={0.5} />
+    </mesh>
+    <mesh position={[RIGHT_COL, deck + cm(0.12), skZ(FACE.mod)]} castShadow>
+      <cylinderGeometry args={[cm(0.16), cm(0.2), cm(0.35), 10]} />
+      <meshStandardMaterial color="#f4f4f3" roughness={0.4} />
     </mesh>
 
-    {/* CUE, then the two channel faders, then FX along the front. */}
     {KNOB_COLS.map((x, i) => (
       <group key={`ch-${x}`}>
-        <mesh position={[x, SK_H + cm(0.03), skZ(0.71)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(1.9), cm(0.95)]} />
+        <RoundedBox args={[cm(1.7), cm(0.18), cm(0.85)]} radius={cm(0.08)} smoothness={3} position={[x, deck, skZ(FACE.cue)]}>
           <meshStandardMaterial color="#26282b" roughness={0.6} />
-        </mesh>
+        </RoundedBox>
         <Fader x={x} channel={i} initial={i === 0 ? 0.85 : 0.3} onDragChange={onDragChange} />
-        <mesh position={[x, SK_H + cm(0.03), skZ(0.955)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(1.9), cm(0.95)]} />
+        <RoundedBox args={[cm(1.7), cm(0.18), cm(0.85)]} radius={cm(0.08)} smoothness={3} position={[x, deck, skZ(FACE.fx)]}>
           <meshStandardMaterial color="#26282b" roughness={0.6} />
-        </mesh>
+        </RoundedBox>
       </group>
     ))}
 
-    {/* Headphone level, and the SELECT key below it. */}
-    <mesh position={[RIGHT_COL, SK_H + cm(0.35), skZ(0.86)]} castShadow>
-      <cylinderGeometry args={[cm(1), cm(1.1), cm(0.7), 16]} />
+    <mesh position={[RIGHT_COL, deck + cm(0.14), skZ(FACE.phones)]} castShadow>
+      <cylinderGeometry args={[cm(0.55), cm(0.62), cm(0.42), 16]} />
       <meshStandardMaterial color="#26282b" roughness={0.5} />
     </mesh>
-    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.955)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(2), cm(0.95)]} />
+    <RoundedBox args={[cm(1.8), cm(0.18), cm(0.85)]} radius={cm(0.08)} smoothness={3} position={[RIGHT_COL, deck, skZ(FACE.select)]}>
       <meshStandardMaterial color="#26282b" roughness={0.6} />
-    </mesh>
+    </RoundedBox>
   </group>
   );
 };
@@ -548,9 +596,15 @@ const Clutter: React.FC = () => (
         <cylinderGeometry args={[cm(REAL.mug.diameter) / 2, cm(REAL.mug.diameter) / 2 - cm(0.6), cm(REAL.mug.height), 20]} />
         <meshPhysicalMaterial color={MUG} roughness={0.55} metalness={0.02} clearcoat={0.4} envMapIntensity={0.9} />
       </mesh>
-      <mesh position={[cm(5.4), cm(REAL.mug.height) * 0.55, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[cm(2.2), cm(0.5), 8, 18, Math.PI * 1.1]} />
-        <meshPhysicalMaterial color={MUG} roughness={0.55} clearcoat={0.4} />
+      {/* D-handle in the mug's vertical plane. Rotating the torus onto the desktop made a hook
+          that never came back to the wall; both ends bury in the cylinder now. */}
+      <mesh
+        position={[cm(REAL.mug.diameter) / 2, cm(REAL.mug.height) * 0.5, 0]}
+        rotation={[0, 0, -Math.PI / 2]}
+        castShadow
+      >
+        <torusGeometry args={[cm(1.9), cm(0.42), 12, 24, Math.PI * 1.35]} />
+        <meshPhysicalMaterial color={MUG} roughness={0.55} metalness={0.02} clearcoat={0.4} envMapIntensity={0.9} />
       </mesh>
     </group>
     {[
@@ -570,7 +624,6 @@ export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void; on
     <Sidekick onDragChange={onDragChange} onFocus={onFocus} />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
-    <Cables />
     <Clutter />
   </group>
 );

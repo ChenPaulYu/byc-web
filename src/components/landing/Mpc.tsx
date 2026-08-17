@@ -23,15 +23,6 @@ import {
 import { useLayoutControls } from './useLayoutControls';
 import { cm } from './scale';
 import { useMpcAudio } from './useMpcAudio';
-import { LIGHT_ASH, createWoodMaps } from './wood';
-import { useDisposable } from './useDisposable';
-
-/**
- * Timber on each end. 1.6 cm rather than the 2.5 that looked right first: the knob column sits at
- * x 3.94 with the chassis edge at 4.5, so a wider cheek reaches under the outermost knobs. The
- * layout fills this chassis edge to edge and there is no spare room at either end.
- */
-const CHEEK_W = cm(1.6);
 
 /**
  * Which pads sit lit when nothing is playing. Sixteen identical grey squares read as a grille;
@@ -139,9 +130,6 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
 
   const grille = useGrilleTexture();
   const logo = useLogoTexture();
-  // Finer ring pitch than the desk: the cheek is a tenth of the desk's width on screen, so the
-  // desk's deliberately-coarse grain would read as two or three stripes on it.
-  const cheek = useDisposable(() => createWoodMaps({ ...LIGHT_ASH, repeat: [1.4, 1], seed: 91, ringPitch: 26 }));
   const { positions, responsiveScale, stride } = useLayoutControls();
   const {
     isPlaying,
@@ -162,7 +150,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
       scale={responsiveScale}
       onClick={(e) => {
         // Pads, knobs and transport all stopPropagation, so this only fires from the chassis,
-        // the cheeks, the grille or the screen — playing the instrument never flies the camera.
+        // the grille or the screen — playing the instrument never flies the camera.
         if (!onFocus || !root.current) return;
         e.stopPropagation();
         onFocus(root.current.getWorldPosition(new THREE.Vector3()), MPC_FOCUS_DISTANCE, e.nativeEvent);
@@ -172,37 +160,6 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
       <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#ece7dd" roughness={0.58} metalness={0.04} />
       </RoundedBox>
-
-      {/* Wooden end cheeks, which the MPC 60 and 3000 both had and which most of this family
-          still does. They are the machine's only warm material, and they tie it to the desk
-          without repeating it — a paler timber on purpose, because the chassis separates from
-          the walnut below by about eighty points of luminance and cheeks in the desk's own wood
-          would hand two of its edges back to the background.
-
-          Standing a few millimetres proud rather than flush: coplanar faces z-fight, and a cheek
-          slightly higher than the deck is what the real ones do anyway. */}
-      {cheek && [-1, 1].map((side) => (
-        <RoundedBox
-          key={side}
-          args={[CHEEK_W, 1.004, CONTAINER_DEPTH + 0.01]}
-          radius={0.16}
-          smoothness={4}
-          position={[side * (CONTAINER_WIDTH / 2 - CHEEK_W / 2), -0.498, 0]}
-          castShadow
-          receiveShadow
-        >
-          <meshStandardMaterial
-            key={cheek ? 'ash' : 'bare'}
-            map={cheek.map}
-            normalMap={cheek.normalMap}
-            normalScale={new THREE.Vector2(0.5, 0.5)}
-            roughnessMap={cheek.roughnessMap}
-            roughness={1}
-            metalness={0}
-            envMapIntensity={0.7}
-          />
-        </RoundedBox>
-      ))}
 
       {/* --- LOGO ROW (TOP RIGHT) --- */}
       <mesh position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>

@@ -1,10 +1,7 @@
 /**
  * wood.ts — procedural timber: colour, relief and finish, all read out of one drawing of grain.
  *
- * Extracted from Stage's desk when the MPC's end cheeks became a second consumer. Copying it
- * would have put the same knowledge — what grain is, how a height field becomes a normal map —
- * in two files that then had to be changed together, so it lives here once and both callers pass
- * in the two colours they want.
+ * The desk top is the remaining caller.
  *
  * The design decision worth keeping: real timber is one structure showing three ways. The grain
  * is darker, it sits slightly lower because the soft early wood wears down, and its open pores
@@ -185,14 +182,4 @@ export function createWoodMaps({
 export const WALNUT: Pick<WoodOptions, 'light' | 'dark'> = {
   light: [133, 110, 90],
   dark: [76, 62, 50],
-};
-
-/**
- * Light ash — the MPC's end cheeks. Deliberately paler than the desk it sits on: the machine
- * separates from that desk by about eighty points of luminance, and cheeks in the desk's own
- * timber would hand two of its edges straight back to the background.
- */
-export const LIGHT_ASH: Pick<WoodOptions, 'light' | 'dark'> = {
-  light: [193, 168, 133],
-  dark: [142, 116, 86],
 };

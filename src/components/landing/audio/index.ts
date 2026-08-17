@@ -16,6 +16,13 @@ export const setChannel = (index: number, value: number): void => engine.setChan
 export const startBed = (): void => engine.startBed();
 export const stopBed = (): void => engine.stopBed();
 export const getLevel = (): number => engine.getLevel();
+export const getChannelLevels = (): [number, number] => engine.getChannelLevels();
+
+/** RMS of a live strip is a small number. LCD and avatar share this 0–1 reading. */
+export const getChannelDisplayLevels = (): [number, number] => {
+  const [pad, bed] = engine.getChannelLevels();
+  return [Math.min(1, pad * 5.4), Math.min(1, bed * 4.2)];
+};
 export const loadPadSample = (key: string, filename: string): Promise<void> =>
   engine.loadPadSample(key, filename);
 export const loadBed = (filename: string): Promise<void> => engine.loadBed(filename);

@@ -1,6 +1,7 @@
 /**
  * Renders reusable 3D primitives for the interactive MPC scene.
- * Reads: public media and model assets; receives interaction callbacks from the MPC composition.
+ * Reads: public media and model assets; audio `getChannelDisplayLevels` for the avatar; receives
+ * interaction callbacks from the MPC composition.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -8,7 +9,7 @@ import { useFrame } from '@react-three/fiber';
 import { RoundedBox, Text, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { useDrag } from '@use-gesture/react';
-import { getLevel } from './audio';
+import { getChannelDisplayLevels } from './audio';
 
 export const VideoScreen: React.FC<{
   width: number;
@@ -138,6 +139,7 @@ export const AvatarModel: React.FC = () => {
   const { scene, animations } = useGLTF(AVATAR_URL);
   const { actions } = useAnimations(animations, group);
   const action = useRef<THREE.AnimationAction | null>(null);
+  const punch = useRef(0);
 
   useEffect(() => {
     if (actions && animations.length > 0) {
@@ -147,14 +149,17 @@ export const AvatarModel: React.FC = () => {
     }
   }, [actions, animations]);
 
-  // He dances to the audio rather than unconditionally, so his motion carries information.
-  // model.glb holds exactly one clip, Celebrating_Clean, and no idle — so blending between
-  // resting and dancing is not available and the rate is the dial instead. Near-still at silence
-  // reads as swaying; anyone looking for a second clip to cross-fade will not find one.
-  useFrame(() => {
+  // One clip, two ears. The bed is the sway; a pad hit is a punch — same Celebrating_Clean,
+  // faster and a short hop, then back. No second animation: he is the instrument's output,
+  // not a character with an idle.
+  useFrame((_, delta) => {
     if (!action.current) return;
-    const level = Math.min(1, getLevel() * 3.2);
-    action.current.timeScale = 0.07 + level * 1.05;
+    const [pad, bed] = getChannelDisplayLevels();
+    if (pad > punch.current) punch.current = pad;
+    else punch.current += (pad - punch.current) * (1 - Math.exp(-10 * delta));
+
+    action.current.timeScale = 0.08 + bed * 0.4 + punch.current * 1.35;
+    if (group.current) group.current.position.y = punch.current * 0.08;
   });
 
   return (
