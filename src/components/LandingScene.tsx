@@ -3,15 +3,17 @@
  * Reads: Vite feature flags and the composed landing-scene modules (stage, MPC, overlays); writes: navigation and entry state.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Environment, Lightformer, OrbitControls, SoftShadows } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useNavigate } from 'react-router-dom';
 import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
 import { Stage } from './landing/Stage';
 import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
+import { CameraDirector } from './landing/CameraDirector';
 import { resume } from './landing/audio';
 
 const LandingScene: React.FC = () => {
@@ -39,8 +41,21 @@ const LandingScene: React.FC = () => {
     setTimeout(() => setEntered(true), 500);
   };
 
+  // Camera flight/proximity control: the ref lets CameraDirector read the live OrbitControls
+  // instance (target, damped position) without that instance ever going through React state.
+  const controlsRef = useRef<OrbitControlsImpl>(null);
+
+  // Reported by CameraDirector when the camera crosses close/far of an instrument. Not consumed
+  // yet — the overlay fade that reads it is a later step of this plan — but it has to exist as
+  // real state now so CameraDirector has somewhere to report into.
+  const [isCameraClose, setIsCameraClose] = useState(false);
+  void isCameraClose;
+
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 11, 26]);
+  // The pre-aspect-ratio scalar from the ladder below (48/53/57/62), lifted so CameraDirector can
+  // compute its close/far thresholds as fractions of it rather than as absolute scene units.
+  const [defaultDistance, setDefaultDistance] = useState(62);
 
   useEffect(() => {
     const updateCameraPosition = () => {
@@ -65,6 +80,8 @@ const LandingScene: React.FC = () => {
         // Desktop
         cameraDistance = 62;
       }
+
+      setDefaultDistance(cameraDistance);
 
       // Three-quarter from behind and to one side. Dead-on reads as a product shot; the
       // off-axis angle is what makes it feel like looking over someone's shoulder at a desk
@@ -118,6 +135,7 @@ const LandingScene: React.FC = () => {
         <directionalLight position={[-10, 7, 4]} intensity={0.32} />
 
         <OrbitControls
+          ref={controlsRef}
           target={[0, -6.5, 0]}
           enabled={!isDragging}
           enablePan={false}
@@ -137,6 +155,12 @@ const LandingScene: React.FC = () => {
           // Enable touch zoom with pinch gestures
           enableDamping={true}
           dampingFactor={0.05}
+        />
+
+        <CameraDirector
+          controlsRef={controlsRef}
+          defaultDistance={defaultDistance}
+          onCloseChange={setIsCameraClose}
         />
 
         <Stage />
