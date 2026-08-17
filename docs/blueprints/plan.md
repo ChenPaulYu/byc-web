@@ -12,7 +12,7 @@
 
 > **Nothing has ever been pushed from `polish/landing-instrument`.** The live site is untouched.
 
-## 🚧 Current call —— click an object to focus it
+## 🚧 Current call —— click an object to focus it  ·  **built 2026-08-17**
 
 - **Focus mode** — clicking an instrument snaps the camera to a working view of it and hands over
   interaction; clicking out returns. Raised 2026-08-16 after two findings landed together: at the
@@ -33,7 +33,14 @@
   **Grounded 2026-08-17** in [`2026-08-17-focus-by-flying.md`](plans/2026-08-17-focus-by-flying.md).
   Fully decided; nothing blocks it. `minDistance` drops 24 → 12, which takes the Sidekick's
   faders from 18 px to 35 — a loosening rather than a clamp, and only safe because the overlays
-  now fade out of the way. Ready to build.
+  now fade out of the way.
+
+  **All four steps shipped 2026-08-17.** Verified by driving the controls directly, since the rig
+  cannot simulate wheel zoom: overview reads opacity-100, clicking an instrument flies in and the
+  text layer goes to opacity-0, clicking the desk flies back and it returns, and an orbit drag
+  ending over the MPC rotates the view without launching a flight. The one thing still unchecked
+  by a machine is how the 0.7 s tween *feels* — the rig draws about one frame a second, so there
+  is no mid-flight frame to photograph.
 
 ## ▶ Next
 

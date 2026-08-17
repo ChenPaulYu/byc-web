@@ -40,7 +40,7 @@ const TOP_T = cm(REAL.desk.topThickness);
 const DESK_HEIGHT = cm(REAL.desk.height);
 const FLOOR_Y = DESK_TOP_Y - DESK_HEIGHT;
 
-const Desk: React.FC = () => {
+const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }) => void }> = ({ onOverview }) => {
   const topY = DESK_TOP_Y - TOP_T / 2;
   const legH = DESK_HEIGHT - TOP_T;
   const floorY = FLOOR_Y;
@@ -55,6 +55,8 @@ const Desk: React.FC = () => {
     <group>
       {/* A wider bevel than the geometry strictly needs: the highlight it catches along the
           front edge is what separates the top from the void behind it. */}
+      {/* Clicking the desk flies back out. Not a mode and not an exit button — just the third
+          camera move, which is why it does not contradict "no exit affordance". */}
       <RoundedBox
         args={[DESK_W, TOP_T, DESK_D]}
         radius={0.09}
@@ -62,6 +64,11 @@ const Desk: React.FC = () => {
         position={[0, topY, 0]}
         castShadow
         receiveShadow
+        onClick={(e) => {
+          if (!onOverview) return;
+          e.stopPropagation();
+          onOverview(e.nativeEvent);
+        }}
       >
         {/* Anisotropy is the reason this is a physical material rather than a standard one: wood
             reflects in a streak along its grain instead of a round highlight, which is most of
@@ -201,7 +208,7 @@ const useGround = () =>
     return t;
   });
 
-export const Stage: React.FC = () => {
+export const Stage: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }) => void }> = ({ onOverview }) => {
   useBackdrop();
   const ground = useGround();
   // The floor is FLOOR_Y, the same constant the legs stand on. It used to be worked out here a
@@ -218,7 +225,7 @@ export const Stage: React.FC = () => {
         <meshStandardMaterial color="#ffffff" roughness={0.97} metalness={0} map={ground ?? undefined} transparent />
       </mesh>
 
-      <Desk />
+      <Desk onOverview={onOverview} />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
       <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />

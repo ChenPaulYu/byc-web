@@ -106,15 +106,26 @@ const useGrilleTexture = () =>
     return t;
   }, []);
 
+export type FocusHandler = (
+  target: THREE.Vector3,
+  distance: number,
+  event: { clientX: number; clientY: number },
+) => void;
+
+/** Chassis is 9 units across; this lands it comfortably inside the frame. */
+const MPC_FOCUS_DISTANCE = 27;
+
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
   onScreenReady?: () => void;
   entered?: boolean;
+  onFocus?: FocusHandler;
 }
 
-const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
+  const root = useRef<THREE.Group>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -145,7 +156,18 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered }) => {
   } = useMpcAudio(entered);
 
   return (
-    <group position={[positions.containerX, -1, positions.containerZ]} scale={responsiveScale}>
+    <group
+      ref={root}
+      position={[positions.containerX, -1, positions.containerZ]}
+      scale={responsiveScale}
+      onClick={(e) => {
+        // Pads, knobs and transport all stopPropagation, so this only fires from the chassis,
+        // the cheeks, the grille or the screen — playing the instrument never flies the camera.
+        if (!onFocus || !root.current) return;
+        e.stopPropagation();
+        onFocus(root.current.getWorldPosition(new THREE.Vector3()), MPC_FOCUS_DISTANCE, e.nativeEvent);
+      }}
+    >
       {/* --- MPC CONTAINER (OUTER BOX) --- */}
       <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#ece7dd" roughness={0.58} metalness={0.04} />

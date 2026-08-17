@@ -13,7 +13,7 @@ import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } fr
 import { Stage } from './landing/Stage';
 import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
-import { CameraDirector } from './landing/CameraDirector';
+import { CameraDirector, type FlightRequest } from './landing/CameraDirector';
 import { resume } from './landing/audio';
 
 const LandingScene: React.FC = () => {
@@ -47,6 +47,22 @@ const LandingScene: React.FC = () => {
 
   // True while the camera is close enough that the scene reaches the page's own text.
   const [isCameraClose, setIsCameraClose] = useState(false);
+  const [flight, setFlight] = useState<FlightRequest | null>(null);
+
+  // Where the pointer went down, so a drag that happens to end over an object is not mistaken for
+  // a click on it. R3F fires onClick on pointer-up over the object regardless of how far the
+  // pointer travelled, so orbiting and releasing over the MPC would otherwise launch a flight.
+  const pointerDownAt = useRef<{ x: number; y: number } | null>(null);
+  const wasADrag = (event: { clientX: number; clientY: number }) => {
+    const down = pointerDownAt.current;
+    if (!down) return false;
+    return Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6;
+  };
+
+  const focusOn = useCallback((target: THREE.Vector3, distance: number, event: { clientX: number; clientY: number }) => {
+    if (wasADrag(event)) return;
+    setFlight({ target, distance });
+  }, []);
 
   // Responsive camera positioning
   const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 11, 26]);
@@ -100,7 +116,10 @@ const LandingScene: React.FC = () => {
 
   return (
     <CanvasErrorBoundary fallback={<StaticFallback />}>
-    <div className="w-full h-screen relative bg-[#f9fafb] overflow-hidden">
+    <div
+      className="w-full h-screen relative bg-[#f9fafb] overflow-hidden"
+      onPointerDown={(e) => { pointerDownAt.current = { x: e.clientX, y: e.clientY }; }}
+    >
       {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
       {entered && <LoadingOverlay extraReady={screenReady} />}
       <Canvas
@@ -158,11 +177,12 @@ const LandingScene: React.FC = () => {
           controlsRef={controlsRef}
           defaultDistance={defaultDistance}
           onCloseChange={setIsCameraClose}
+          request={flight}
         />
 
-        <Stage />
-        <DeskGear onDragChange={setIsDragging} />
-        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered={entered} />
+        <Stage onOverview={(event) => focusOn(new THREE.Vector3(0, -6.5, 0), defaultDistance, event)} />
+        <DeskGear onDragChange={setIsDragging} onFocus={focusOn} />
+        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered={entered} onFocus={focusOn} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches

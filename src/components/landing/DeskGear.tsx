@@ -282,6 +282,15 @@ const Cables: React.FC = () => {
  *
  * Knobs and faders are drawn larger than scale. A real 11 mm knob lands at about two pixels here.
  */
+export type FocusHandler = (
+  target: THREE.Vector3,
+  distance: number,
+  event: { clientX: number; clientY: number },
+) => void;
+
+/** 1.76 units across, so it needs to come much closer than the MPC to be workable. */
+const SIDEKICK_FOCUS_DISTANCE = 13;
+
 const SK = REAL.sidekick;
 const SK_W = cm(SK.width);
 const SK_D = cm(SK.depth);
@@ -364,7 +373,8 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
 const METER_W = cm(1.9);
 const METER_H = cm(2.4);
 
-const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ onDragChange }) => {
+const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => {
+  const root = useRef<THREE.Group>(null);
   // The lit block grows from the display's near edge, so its origin has to sit at that edge
   // rather than at its centre — scaling happens about the origin.
   const meterGeometry = useDisposable(() => {
@@ -386,7 +396,16 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ on
   });
 
   return (
-  <group position={[cm(-32), DESK_TOP_Y, cm(8)]} rotation={[0, 0.1, 0]}>
+  <group
+    ref={root}
+    position={[cm(-32), DESK_TOP_Y, cm(8)]}
+    rotation={[0, 0.1, 0]}
+    onClick={(e) => {
+      if (!onFocus || !root.current) return;
+      e.stopPropagation();
+      onFocus(root.current.getWorldPosition(new THREE.Vector3()), SIDEKICK_FOCUS_DISTANCE, e.nativeEvent);
+    }}
+  >
     {/* Chassis. A shade darker than the white head above it, because that value split is half of
         what identifies this object at any size — the real one is a white plate on a grey body. */}
     <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.35)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
@@ -508,9 +527,9 @@ const Clutter: React.FC = () => (
   </group>
 );
 
-export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void }> = ({ onDragChange }) => (
+export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => (
   <group>
-    <Sidekick onDragChange={onDragChange} />
+    <Sidekick onDragChange={onDragChange} onFocus={onFocus} />
     <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
     <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
     <Cables />
