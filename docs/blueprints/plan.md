@@ -31,10 +31,9 @@
   fell out of the first two rather than needing its own answer.
 
   **Grounded 2026-08-17** in [`2026-08-17-focus-by-flying.md`](plans/2026-08-17-focus-by-flying.md).
-  One decision blocks step 4 and nothing else: the Sidekick is 1.76 units wide, so at the current
-  `minDistance` of 24 it reaches about 90 px and its faders 11 px — closer, but not workable.
-  Dropping `minDistance` is a loosening rather than a clamp, so it fits the principle, but it
-  changes a number the design named and is left for the owner.
+  Fully decided; nothing blocks it. `minDistance` drops 24 → 12, which takes the Sidekick's
+  faders from 18 px to 35 — a loosening rather than a clamp, and only safe because the overlays
+  now fade out of the way. Ready to build.
 
 ## ▶ Next
 

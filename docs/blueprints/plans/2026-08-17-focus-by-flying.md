@@ -21,20 +21,27 @@ anyone can get stuck in, and orbit and zoom keep working throughout.
 | `src/components/landing/DeskGear.tsx` | The Sidekick group; its fader handle already stops propagation | A click handler on the Sidekick group |
 | `src/components/landing/Stage.tsx` | The desk top mesh | A click handler that asks for the overview |
 
-## The one number that does not work, and needs a decision
+## `minDistance` drops from 24 to 12 — settled 2026-08-17
 
-**The Sidekick cannot be usefully focused at the current `minDistance` of 24.** At fov 35 and a
-1.6 aspect the visible width at distance *d* is almost exactly *d* scene units, so at 24 the
-Sidekick — 1.76 units wide — reaches about 90 px across and its faders about 11 px. That is 2.6×
-better than the 4 px they are at now, and still not a comfortable target.
+At fov 35 and a 1.6 aspect the visible width at distance *d* is almost exactly *d* scene units, so
+the Sidekick's 1.76 units scale straight off that:
 
-Lowering `minDistance` to around 14 would roughly double it again. That is **loosening** a
-constraint rather than clamping one, so it does not contradict the design's "nothing is clamped" —
-but it is a change to a number the design named, so this plan will not make it silently.
+| distance | Sidekick | its faders |
+|---|---|---|
+| 62 (default) | 36 px | 7 px |
+| 24 (old floor) | 93 px | 18 px |
+| **12 (new floor)** | **186 px** | **35 px** |
 
-**Open question, for the user:** drop `minDistance` so the Sidekick can actually be worked, or
-accept that focusing it means "much closer" rather than "workable"? Everything else in this plan
-is unaffected either way.
+Eighteen pixels is not a fader. Thirty-five is. The owner chose to drop the floor.
+
+This is **loosening** a constraint rather than clamping one, so it agrees with the design's
+"nothing is clamped" rather than contradicting it — and it is only safe to do now because the
+overlays fade: before this plan, a floor of 12 would have buried the navigation completely.
+
+Checked rather than assumed: at the steepest polar angle the controls allow (72°), a camera 12
+units out still sits 3.7 units above its target, so it cannot dive under the desk.
+
+**Focus distances:** MPC 27 (9-unit chassis), Sidekick 13.
 
 ## Approach
 
