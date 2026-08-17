@@ -156,7 +156,11 @@ const LandingScene: React.FC = () => {
           enabled={!isDragging}
           enablePan={false}
           enableZoom={true}
-          minDistance={24}
+          // 12, not 24. The Sidekick is 1.76 units across, and at this fov the visible width in
+          // scene units is almost exactly the camera distance — so a floor of 24 caps its faders
+          // at 18 px, which is not a target. At 12 they reach 35. Loosening, not clamping, and
+          // only safe because the page's text layer now fades out of the way.
+          minDistance={12}
           maxDistance={90}
           // No angular limits at all — the owner asked for free-form rotation, and it is the same
           // call as everywhere else in this feature: never take the camera away from the visitor.

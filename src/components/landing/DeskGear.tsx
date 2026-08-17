@@ -302,17 +302,22 @@ const skZ = (fraction: number) => (fraction - 0.5) * SK_D;
 /** Fractions of the unit's width, left to right. */
 const skX = (fraction: number) => (fraction - 0.5) * SK_W;
 
-// Row spacing is the product shot's; the knob radius is not. Drawing the knobs oversized so they
-// survive at this distance while keeping real spacing is what made the first pass look crowded —
-// the knobs ate their own gaps. Radius comes back down and the rows spread a little to match.
+// All read off the front-on product shot as fractions of the unit, so the panel's proportions are
+// the machine's rather than mine.
+//
+// The crowding in the first pass was not row spacing — it was two things the reference does not
+// do: the knob columns sat too close together, and all four rows were the same size. On the real
+// unit GAIN and HIGH are visibly larger than MID and LOW, and that size step is a stronger shape
+// signal at this distance than any of the labels would have been.
 const KNOB_ROWS = [
-  { z: skZ(0.27), colour: SK_ORANGE },
-  { z: skZ(0.39), colour: '#f2f2f0' },
-  { z: skZ(0.5), colour: '#83868b' },
-  { z: skZ(0.61), colour: '#212326' },
+  { z: skZ(0.31), colour: SK_ORANGE, r: cm(0.85) }, // GAIN
+  { z: skZ(0.43), colour: '#f2f2f0', r: cm(0.85) }, // HIGH
+  { z: skZ(0.54), colour: '#83868b', r: cm(0.62) }, // MID
+  { z: skZ(0.64), colour: '#1e2023', r: cm(0.62) }, // LOW
 ];
-const KNOB_COLS = [skX(0.26), skX(0.48)];
-const KNOB_R = cm(0.7);
+const KNOB_COLS = [skX(0.19), skX(0.44)];
+/** The display, the volume knob and the headphone knob all share one column on the right. */
+const RIGHT_COL = skX(0.74);
 
 const FADER_TRAVEL = cm(4.6);
 const FADER_Z = skZ(0.79);
@@ -370,8 +375,10 @@ const Fader: React.FC<{ x: number; channel: number; initial: number; onDragChang
   );
 };
 
-const METER_W = cm(1.9);
+const METER_W = cm(1.5);
 const METER_H = cm(2.4);
+/** Top-right, level with the two large knobs — not mid-panel, which is where it was. */
+const SCREEN_Z = skZ(0.335);
 
 const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => {
   const root = useRef<THREE.Group>(null);
@@ -419,14 +426,27 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
       <meshStandardMaterial color="#c0c3c6" roughness={0.58} metalness={0.05} />
     </mesh>
 
-    {/* Connector strip across the back, with the orange input section the real one has. */}
-    <mesh position={[0, SK_H + cm(0.02), skZ(0.055)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[SK_W - cm(1), cm(1.6)]} />
-      <meshStandardMaterial color="#3a3d41" roughness={0.7} />
-    </mesh>
-    <mesh position={[skX(0.46), SK_H + cm(0.03), skZ(0.055)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(2.4), cm(1.6)]} />
-      <meshStandardMaterial color={SK_ORANGE} roughness={0.6} />
+    {/* The connector row, which the reference splits into four labelled blocks — dark OUTPUT,
+        orange AUX and INPUT, dark USB — with a separate orange switch beyond them. Four segments
+        rather than one strip with a patch on it: the alternating rhythm is what reads. */}
+    {[
+      { from: 0.06, to: 0.3, colour: '#33363a' },
+      { from: 0.31, to: 0.5, colour: SK_ORANGE },
+      { from: 0.51, to: 0.7, colour: SK_ORANGE },
+      { from: 0.71, to: 0.88, colour: '#33363a' },
+    ].map((block) => (
+      <mesh
+        key={block.from}
+        position={[skX((block.from + block.to) / 2), SK_H + cm(0.02), skZ(0.05)]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[SK_W * (block.to - block.from), cm(1.5)]} />
+        <meshStandardMaterial color={block.colour} roughness={0.65} />
+      </mesh>
+    ))}
+    <mesh position={[skX(0.94), SK_H + cm(0.16), skZ(0.05)]} castShadow>
+      <boxGeometry args={[cm(0.9), cm(0.35), cm(0.55)]} />
+      <meshStandardMaterial color={SK_ORANGE} roughness={0.5} />
     </mesh>
 
     {/* The white upper plate. On the real unit it carries the wordmark; here it is a value
@@ -437,70 +457,86 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
       <meshStandardMaterial color="#f3f3f2" roughness={0.5} metalness={0.03} />
     </mesh>
 
-    {/* Two channels of four knobs. This grid is the whole identity of the object. */}
+    {/* Two channels of four knobs. This grid is the whole identity of the object, and the size
+        step between the two large rows and the two small ones is most of what carries it. */}
     {KNOB_COLS.map((x) =>
       KNOB_ROWS.map((row) => (
         <group key={`${x}-${row.z}`} position={[x, SK_H + cm(0.15), row.z]}>
           <mesh position={[0, cm(0.3), 0]} castShadow>
-            <cylinderGeometry args={[KNOB_R, KNOB_R * 1.12, cm(0.6), 16]} />
+            <cylinderGeometry args={[row.r, row.r * 1.12, cm(0.6), 16]} />
             <meshStandardMaterial color={row.colour} roughness={0.42} metalness={0.05} />
           </mesh>
-          {/* Pointer. Sub-pixel on its own, but it breaks the knob's top into two tones, which
-              is what stops eight identical discs reading as eight dots. */}
-          <mesh position={[0, cm(0.61), -KNOB_R * 0.45]}>
-            <boxGeometry args={[cm(0.16), cm(0.04), KNOB_R * 0.8]} />
-            <meshStandardMaterial color={row.colour === '#212326' ? '#c9ccd0' : '#3a3d41'} roughness={0.5} />
+          {/* Pointer. Sub-pixel from the overview, but it breaks the knob's top into two tones,
+              which is what stops eight discs reading as eight dots — and once the camera can fly
+              in it is legible on its own. */}
+          <mesh position={[0, cm(0.61), -row.r * 0.45]}>
+            <boxGeometry args={[cm(0.16), cm(0.04), row.r * 0.8]} />
+            <meshStandardMaterial color={row.colour === '#1e2023' ? '#c9ccd0' : '#3a3d41'} roughness={0.5} />
           </mesh>
         </group>
       )),
     )}
 
-    {/* Level display. The only lit thing on the unit, and orange like the knobs above it. */}
-    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.33)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(2.6), cm(3.4)]} />
-      <meshStandardMaterial color="#1b1a19" roughness={0.4} />
+    {/* The display: tall, narrow, and level with the two large knobs, which is where the machine
+        puts it. The first pass had it wide and mid-panel, so it read as a coloured rectangle
+        rather than as a screen. A black bezel around it is what makes it one. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), SCREEN_Z]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[METER_W + cm(0.7), METER_H + cm(0.7)]} />
+      <meshStandardMaterial color="#141312" roughness={0.35} metalness={0.05} />
     </mesh>
-    <mesh ref={meterRef} position={[skX(0.76), SK_H + cm(0.04), skZ(0.33) + METER_H / 2]} rotation={[-Math.PI / 2, 0, 0]} geometry={meterGeometry ?? undefined}>
+    <mesh
+      ref={meterRef}
+      position={[RIGHT_COL, SK_H + cm(0.04), SCREEN_Z + METER_H / 2]}
+      rotation={[-Math.PI / 2, 0, 0]}
+      geometry={meterGeometry ?? undefined}
+    >
       <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
     </mesh>
 
-    {/* Master volume, the one large control. */}
-    <mesh position={[skX(0.76), SK_H + cm(0.5), skZ(0.52)]} castShadow>
-      <cylinderGeometry args={[cm(1.3), cm(1.4), cm(1), 18]} />
+    {/* The recessed ring above the volume knob, and the volume knob itself. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.47)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[cm(1.1), cm(1.3), 26]} />
+      <meshStandardMaterial color="#e9eaea" roughness={0.5} />
+    </mesh>
+    <mesh position={[RIGHT_COL, SK_H + cm(0.45), skZ(0.56)]} castShadow>
+      <cylinderGeometry args={[cm(1.15), cm(1.25), cm(0.9), 20]} />
       <meshStandardMaterial color="#f0f0ef" roughness={0.42} />
     </mesh>
-    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.63)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(1.4), cm(0.9)]} />
-      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.35} toneMapped={false} />
+
+    {/* The MOD slider — the one orange control below the volume. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.64)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(1.5), cm(0.85)]} />
+      <meshStandardMaterial color={SK_ORANGE} emissive={SK_ORANGE} emissiveIntensity={0.3} toneMapped={false} />
     </mesh>
 
-    {/* CUE, then the two channel faders, then FX and SELECT along the front. */}
+    {/* CUE, then the two channel faders, then FX along the front. */}
     {KNOB_COLS.map((x, i) => (
       <group key={`ch-${x}`}>
-        <mesh position={[x, SK_H + cm(0.03), skZ(0.645)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(1.8), cm(1)]} />
+        <mesh position={[x, SK_H + cm(0.03), skZ(0.745)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(1.9), cm(0.95)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
         </mesh>
         <Fader x={x} channel={i} initial={i === 0 ? 0.85 : 0.3} onDragChange={onDragChange} />
-        <mesh position={[x, SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[cm(1.8), cm(1)]} />
+        <mesh position={[x, SK_H + cm(0.03), skZ(0.955)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[cm(1.9), cm(0.95)]} />
           <meshStandardMaterial color="#26282b" roughness={0.6} />
         </mesh>
       </group>
     ))}
 
-    {/* Headphone level, and the SELECT key beside it. */}
-    <mesh position={[skX(0.76), SK_H + cm(0.35), skZ(0.85)]} castShadow>
-      <cylinderGeometry args={[cm(1), cm(1.1), cm(0.7), 14]} />
+    {/* Headphone level, and the SELECT key below it. */}
+    <mesh position={[RIGHT_COL, SK_H + cm(0.35), skZ(0.86)]} castShadow>
+      <cylinderGeometry args={[cm(1), cm(1.1), cm(0.7), 16]} />
       <meshStandardMaterial color="#26282b" roughness={0.5} />
     </mesh>
-    <mesh position={[skX(0.76), SK_H + cm(0.03), skZ(0.93)]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[cm(2), cm(1)]} />
+    <mesh position={[RIGHT_COL, SK_H + cm(0.03), skZ(0.955)]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[cm(2), cm(0.95)]} />
       <meshStandardMaterial color="#26282b" roughness={0.6} />
     </mesh>
   </group>
   );
 };
+
 
 /** The desk is allowed to hold things that have nothing to do with music. */
 const Clutter: React.FC = () => (
