@@ -317,7 +317,7 @@ const KNOB_ROWS = [
 ];
 const KNOB_COLS = [skX(0.19), skX(0.44)];
 /** The display, the volume knob and the headphone knob all share one column on the right. */
-const RIGHT_COL = skX(0.74);
+const RIGHT_COL = skX(0.77);
 /** The inset every full-width plate shares, so none of them reaches the rolled edge. */
 const SW_INSET = SK_W - cm(0.7);
 
@@ -432,10 +432,10 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
         orange AUX and INPUT, dark USB — with a separate orange switch beyond them. Four segments
         rather than one strip with a patch on it: the alternating rhythm is what reads. */}
     {[
-      { from: 0.06, to: 0.3, colour: '#33363a' },
-      { from: 0.31, to: 0.5, colour: SK_ORANGE },
-      { from: 0.51, to: 0.7, colour: SK_ORANGE },
-      { from: 0.71, to: 0.88, colour: '#33363a' },
+      { from: 0.039, to: 0.27, colour: '#33363a' },
+      { from: 0.28, to: 0.47, colour: SK_ORANGE },
+      { from: 0.48, to: 0.66, colour: SK_ORANGE },
+      { from: 0.67, to: 0.8, colour: '#33363a' },
     ].map((block) => (
       <mesh
         key={block.from}
@@ -446,8 +446,8 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
         <meshStandardMaterial color={block.colour} roughness={0.65} />
       </mesh>
     ))}
-    <mesh position={[skX(0.94), SK_H + cm(0.16), skZ(0.05)]} castShadow>
-      <boxGeometry args={[cm(0.9), cm(0.35), cm(0.55)]} />
+    <mesh position={[skX(0.905), SK_H + cm(0.16), skZ(0.05)]} castShadow>
+      <boxGeometry args={[cm(1), cm(0.35), cm(0.55)]} />
       <meshStandardMaterial color={SK_ORANGE} roughness={0.5} />
     </mesh>
 
