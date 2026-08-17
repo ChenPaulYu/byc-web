@@ -104,8 +104,7 @@ it hands back immediately.
   `stopPropagation`, so they keep playing without also flying; the click only reaches the group
   from the chassis, cheeks, grille or screen. Focus distance derived from the chassis: 9 units
   wide, so about 27.
-- **Sidekick** — a handler on its group, same shape. Its focus distance is whatever the open
-  question above resolves to.
+- **Sidekick** — a handler on its group, same shape. Focus distance 13, just off the new floor.
 - **Desk top** — flies back to the overview: the responsive default position and target
   `[0, -6.5, 0]`, both of which `LandingScene` already computes.
 
@@ -135,7 +134,6 @@ overview, and each instrument after the flight has settled.
 
 ## Open questions
 
-- **`minDistance`** — see above. This is the only one that blocks a decision rather than a build.
 - **Does the "KEYBOARD:" hint fade with the header and nav?** It sits bottom-centre, which is
   where the desk grows first. Assumed yes, on the grounds that it belongs to the same layer, but
   it was not put to the user.
