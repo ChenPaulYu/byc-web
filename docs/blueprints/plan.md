@@ -28,7 +28,13 @@
   All three forks settled the same way — never take the camera away, move it and let the page
   recede: free orbit and zoom stay untouched, the navigation fades on camera distance rather than
   on state, and focus is a camera move with no mode, no exit and no rules that change. The third
-  fell out of the first two rather than needing its own answer. Ready for `/nav:plan`.
+  fell out of the first two rather than needing its own answer.
+
+  **Grounded 2026-08-17** in [`2026-08-17-focus-by-flying.md`](plans/2026-08-17-focus-by-flying.md).
+  One decision blocks step 4 and nothing else: the Sidekick is 1.76 units wide, so at the current
+  `minDistance` of 24 it reaches about 90 px and its faders 11 px — closer, but not workable.
+  Dropping `minDistance` is a loosening rather than a clamp, so it fits the principle, but it
+  changes a number the design named and is left for the owner.
 
 ## ▶ Next
 
