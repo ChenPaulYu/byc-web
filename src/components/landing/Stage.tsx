@@ -228,7 +228,17 @@ export const Stage: React.FC<{ onOverview?: (event: { clientX: number; clientY: 
       <Desk onOverview={onOverview} />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
-      <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />
+      {/* There is no second ContactShadows at desk height any more. It rendered as an opaque
+          white sheet across the whole desk top once the camera came within about twenty units —
+          grain gone, walnut gone, objects apparently floating on paper — which is exactly the
+          range the focus flights now use. Removing it brings the wood straight back.
+
+          Why it turns opaque was not diagnosed, only that it does and that nothing needs it: the
+          shadows under the mug, the monitors and the instruments come from the directional
+          light's shadow map, and they are all still there without it. A pass that breaks the
+          scene at half the camera range in exchange for a faint darkening at contact points is
+          not worth keeping while the cause is unknown. The floor-level pass below stays; it is
+          eighteen units down and does the work of grounding the desk. */}
     </group>
   );
 };
