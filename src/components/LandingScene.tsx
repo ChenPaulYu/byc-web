@@ -158,15 +158,11 @@ const LandingScene: React.FC = () => {
           enableZoom={true}
           minDistance={24}
           maxDistance={90}
-          minPolarAngle={Math.PI / 3.4}
-          maxPolarAngle={Math.PI / 2.5}
-          // Keep the view off-axis. Letting it swing back to dead-on loses the over-the-shoulder
-          // read the whole composition is built around — and the floor used to be 10°, which is
-          // near enough to frontal that the MPC collapsed into a sliver and the hero disappeared.
-          // 25° still clears every default position (they sit at 28°, 31.5° and 35°), so this
-          // only stops the drag going too far; it does not move the view anyone lands on.
-          minAzimuthAngle={Math.PI / 7.2}
-          maxAzimuthAngle={Math.PI / 2.9}
+          // No angular limits at all — the owner asked for free-form rotation, and it is the same
+          // call as everywhere else in this feature: never take the camera away from the visitor.
+          // This deliberately gives up the off-axis guarantee the azimuth floor used to enforce,
+          // which existed because the MPC collapses into a sliver seen dead-on. Landing there is
+          // now the visitor's own doing, and one drag undoes it.
           zoomSpeed={0.8}
           // Enable touch zoom with pinch gestures
           enableDamping={true}
