@@ -180,6 +180,11 @@ class AudioEngine {
     if (ctx.state !== 'running') await ctx.resume();
   }
 
+  async suspend(): Promise<void> {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    await this.ctx.suspend();
+  }
+
   triggerPad(key: string): void {
     const ctx = this.ensureContext();
     const sample = this.padSamples.get(key);
@@ -246,6 +251,7 @@ class AudioEngine {
     this.bedWanted = true;
     if (!this.bedBuffer || this.bedSource) return; // nothing loaded yet, or already running
     const ctx = this.ensureContext();
+    if (ctx.state === 'suspended') void ctx.resume();
 
     const source = ctx.createBufferSource();
     source.buffer = this.bedBuffer;

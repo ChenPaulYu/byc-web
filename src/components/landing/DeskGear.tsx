@@ -7,11 +7,13 @@
  * it read as set dressing rather than as kit, so it went.
  *
  * The register is bedroom recording, not a treated studio. The monitors are raised on a stack
- * of books rather than isolation wedges, and the desk is allowed to hold things that have
- * nothing to do with music. A tidy desk would read as a product shot.
+ * of books rather than isolation wedges. The 50 Lan cup, football, the FlueBricks preprint and
+ * the assembled flute sit with the gear because they are the same portrait — research, music,
+ * football — not leftover clutter.
  *
  * Reads: layout.ts scene units (the MPC is 9 x 5 at the origin) · Stage's DESK_TOP_Y ·
- * mixerLcd.ts · audio `setChannel` / `getChannelDisplayLevels`
+ * shot.ts (focus distances) · CameraDirector (the click→flight contract) · mixerLcd.ts ·
+ * paperPage.ts · fluebricks.ts · fiftyLan.tsx · audio `setChannel` / `getChannelDisplayLevels`
  */
 
 import React, { useRef, useState } from 'react';
@@ -22,14 +24,26 @@ import { useDrag } from '@use-gesture/react';
 import { getChannelDisplayLevels, setChannel } from './audio';
 import { bundle, useDisposable } from './useDisposable';
 import { DESK_TOP_Y } from './Stage';
+import {
+  FLUTE_FOCUS_DISTANCE,
+  MONITOR_PAIR_FOCUS_DISTANCE,
+  MONITOR_PAIR_TARGET,
+  MONITOR_X,
+  MUG_FOCUS_DISTANCE,
+  PAPER_FOCUS_DISTANCE,
+  SIDEKICK_FOCUS_DISTANCE,
+} from './shot';
+import { requestFocus, pointerCursor, type FocusHandler } from './CameraDirector';
 import { cm, REAL } from './scale';
 import { createMixerLcd, drawMixerLcd } from './mixerLcd';
+import { createFluebricksPage } from './paperPage';
+import { createFluebricksFlute } from './fluebricks';
+import { FiftyLanCup } from './fiftyLan';
 
 const CASE_DARK = '#3f4348';
 const BOOK_A = '#c9cbc6';
 const BOOK_B = '#d9d5cc';
 const BOOK_C = '#bfc4c8';
-const MUG = '#e3e4e2';
 
 /**
  * The front of a Tannoy Gold 5, which is what REAL.monitor has been measured from all along.
@@ -197,10 +211,17 @@ const TannoyBaffle: React.FC = () => {
  * A monitor on a stack of paperbacks. Isolation pads are what a studio uses; books are what a
  * bedroom uses, and the difference is most of the register.
  */
-const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) => {
+const MonitorOnBooks: React.FC<{ x: number; toeIn: number; onFocus?: FocusHandler }> = ({ x, toeIn, onFocus }) => {
   const cabinet = useCabinetGeometry();
   return (
-  <group position={[x, DESK_TOP_Y, cm(-24)]} rotation={[0, toeIn, 0]}>
+  <group
+    position={[x, DESK_TOP_Y, MONITOR_PAIR_TARGET[2]]}
+    rotation={[0, toeIn, 0]}
+    {...pointerCursor}
+    onClick={(e) => {
+      requestFocus(onFocus, new THREE.Vector3(...MONITOR_PAIR_TARGET), MONITOR_PAIR_FOCUS_DISTANCE, e, 'monitors');
+    }}
+  >
     {[
       { i: 0, c: BOOK_A, r: 0.04 },
       { i: 1, c: BOOK_B, r: -0.05 },
@@ -233,15 +254,6 @@ const MonitorOnBooks: React.FC<{ x: number; toeIn: number }> = ({ x, toeIn }) =>
  * 88 × 240 × 16 mm stereo mixer; the wordmark is BYC — BUS, same house as the MPC. The LCD
  * meters PAD and BED as two LED columns; the force pad is the silhouette on the right.
  */
-export type FocusHandler = (
-  target: THREE.Vector3,
-  distance: number,
-  event: { clientX: number; clientY: number },
-) => void;
-
-/** 1.72 units across, so it needs to come much closer than the MPC to be workable. */
-const SIDEKICK_FOCUS_DISTANCE = 13;
-
 const SK = REAL.sidekick;
 const SK_W = cm(SK.width);
 const SK_D = cm(SK.depth);
@@ -446,12 +458,15 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
   const peaks = useRef<[number, number]>([0, 0]);
   const peakHoldUntil = useRef<[number, number]>([0, 0]);
   const lastT = useRef(0);
+  const lastDraw = useRef(0);
+  const lcdCtx = useRef<CanvasRenderingContext2D | null>(null);
 
   useFrame((state) => {
     const texture = lcd?.texture;
     if (!texture) return;
     const canvas = texture.image as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
+    if (!lcdCtx.current) lcdCtx.current = canvas.getContext('2d');
+    const ctx = lcdCtx.current;
     if (!ctx) return;
 
     const t = state.clock.elapsedTime;
@@ -469,6 +484,10 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
       }
     }
 
+    // Peak hold is cheap; uploading a 128×96 canvas every frame is not. 20 Hz still reads as a
+    // meter.
+    if (t - lastDraw.current < 1 / 20) return;
+    lastDraw.current = t;
     drawMixerLcd(ctx, pad, bed, peaks.current, SK_ORANGE);
     texture.needsUpdate = true;
   });
@@ -480,10 +499,10 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
     ref={root}
     position={[cm(-32), DESK_TOP_Y, cm(8)]}
     rotation={[0, 0.1, 0]}
+    {...pointerCursor}
     onClick={(e) => {
-      if (!onFocus || !root.current) return;
-      e.stopPropagation();
-      onFocus(root.current.getWorldPosition(new THREE.Vector3()), SIDEKICK_FOCUS_DISTANCE, e.nativeEvent);
+      if (!root.current) return;
+      requestFocus(onFocus, root.current.getWorldPosition(new THREE.Vector3()), SIDEKICK_FOCUS_DISTANCE, e, null);
     }}
   >
     <RoundedBox args={[SK_W, SK_H, SK_D]} radius={cm(0.22)} smoothness={4} position={[0, SK_H / 2, 0]} castShadow receiveShadow>
@@ -588,42 +607,86 @@ const Sidekick: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?:
 };
 
 
-/** The desk is allowed to hold things that have nothing to do with music. */
-const Clutter: React.FC = () => (
+/** 50 Lan cup, FlueBricks preprint, and the assembled flute that paper is about. */
+const Clutter: React.FC<{ onFocus?: FocusHandler }> = ({ onFocus }) => {
+  const page = useDisposable(createFluebricksPage);
+  const flute = useDisposable(createFluebricksFlute);
+  const fluteT = cm(REAL.fluebricks.thickness) / 2;
+  const mug = useRef<THREE.Group>(null);
+  const paper = useRef<THREE.Group>(null);
+  const fluteRoot = useRef<THREE.Group>(null);
+  return (
   <group>
-    <group position={[cm(-56), DESK_TOP_Y, cm(22)]}>
-      <mesh position={[0, cm(REAL.mug.height) / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[cm(REAL.mug.diameter) / 2, cm(REAL.mug.diameter) / 2 - cm(0.6), cm(REAL.mug.height), 20]} />
-        <meshPhysicalMaterial color={MUG} roughness={0.55} metalness={0.02} clearcoat={0.4} envMapIntensity={0.9} />
+    <group
+      ref={mug}
+      position={[cm(-56), DESK_TOP_Y, cm(22)]}
+      rotation={[0, 0.35, 0]}
+      {...pointerCursor}
+      onClick={(e) => {
+        if (!mug.current) return;
+        const target = mug.current.getWorldPosition(new THREE.Vector3());
+        target.y += cm(REAL.mug.height) / 2;
+        requestFocus(onFocus, target, MUG_FOCUS_DISTANCE, e, 'mug');
+      }}
+    >
+      <FiftyLanCup />
+    </group>
+    <group
+      ref={paper}
+      position={[cm(50), DESK_TOP_Y, cm(18)]}
+      rotation={[0, -0.22, 0]}
+      {...pointerCursor}
+      onClick={(e) => {
+        if (!paper.current) return;
+        requestFocus(onFocus, paper.current.getWorldPosition(new THREE.Vector3()), PAPER_FOCUS_DISTANCE, e, 'paper');
+      }}
+    >
+      <mesh position={[cm(0.8), cm(0.12), cm(0.6)]} rotation={[0, 0.11, 0]} castShadow>
+        <boxGeometry args={[cm(21), cm(0.18), cm(29.7)]} />
+        <meshStandardMaterial color="#efebe3" roughness={0.92} />
       </mesh>
-      {/* D-handle in the mug's vertical plane. Rotating the torus onto the desktop made a hook
-          that never came back to the wall; both ends bury in the cylinder now. */}
-      <mesh
-        position={[cm(REAL.mug.diameter) / 2, cm(REAL.mug.height) * 0.5, 0]}
-        rotation={[0, 0, -Math.PI / 2]}
-        castShadow
-      >
-        <torusGeometry args={[cm(1.9), cm(0.42), 12, 24, Math.PI * 1.35]} />
-        <meshPhysicalMaterial color={MUG} roughness={0.55} metalness={0.02} clearcoat={0.4} envMapIntensity={0.9} />
+      <mesh position={[0, cm(0.28), 0]} castShadow receiveShadow>
+        <boxGeometry args={[cm(21), cm(0.12), cm(29.7)]} />
+        <meshStandardMaterial color="#f6f3ec" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, cm(0.36), 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[cm(21), cm(29.7)]} />
+        <meshStandardMaterial
+          key={page ? 'print' : 'bare'}
+          map={page ?? undefined}
+          color={page ? '#ffffff' : '#f6f3ec'}
+          roughness={0.88}
+          metalness={0}
+        />
       </mesh>
     </group>
-    {[
-      { p: [cm(52), cm(0.5), cm(20)] as [number, number, number], r: 0.14, w: cm(21), d: cm(29.7), c: '#eceae5' },
-      { p: [cm(54), cm(1.5), cm(21)] as [number, number, number], r: -0.08, w: cm(21), d: cm(29.7), c: '#dedbd4' },
-    ].map((b, i) => (
-      <mesh key={i} position={[b.p[0], DESK_TOP_Y + b.p[1], b.p[2]]} rotation={[0, b.r, 0]} castShadow receiveShadow>
-        <boxGeometry args={[b.w, cm(0.8), b.d]} />
-        <meshStandardMaterial color={b.c} roughness={0.9} />
-      </mesh>
-    ))}
+    {/* In the gap between the MPC and the preprint, mouthpiece toward the chair. Laid down, not
+        displayed — the paper is what you were reading, the flute is what you just put down. */}
+    {flute && (
+      <group
+        ref={fluteRoot}
+        position={[cm(33), DESK_TOP_Y + fluteT, cm(6)]}
+        rotation={[0, -0.38, 0]}
+        {...pointerCursor}
+        onClick={(e) => {
+          if (!fluteRoot.current) return;
+          requestFocus(onFocus, fluteRoot.current.getWorldPosition(new THREE.Vector3()), FLUTE_FOCUS_DISTANCE, e, 'flute');
+        }}
+      >
+        <group rotation={[Math.PI / 2, Math.PI, 0]}>
+          <primitive object={flute} />
+        </group>
+      </group>
+    )}
   </group>
-);
+  );
+};
 
 export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => (
   <group>
     <Sidekick onDragChange={onDragChange} onFocus={onFocus} />
-    <MonitorOnBooks x={cm(-52)} toeIn={0.42} />
-    <MonitorOnBooks x={cm(52)} toeIn={-0.42} />
-    <Clutter />
+    <MonitorOnBooks x={-MONITOR_X} toeIn={0.42} onFocus={onFocus} />
+    <MonitorOnBooks x={MONITOR_X} toeIn={-0.42} onFocus={onFocus} />
+    <Clutter onFocus={onFocus} />
   </group>
 );

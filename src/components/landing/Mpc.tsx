@@ -1,6 +1,8 @@
 /**
  * Composes the interactive MPC surface from layout, audio, and reusable 3D primitive boundaries.
- * Reads: public media assets, Vite feature flags, and the MPC audio configuration.
+ * Reads: public media assets, Vite feature flags, the MPC audio configuration, shot.ts
+ * for the working-distance that fills a third of the frame, and CameraDirector for the
+ * click→flight contract.
  * Writes: pad, knob, transport, and keyboard interaction state.
  */
 
@@ -21,20 +23,9 @@ import {
   ROW_MAIN_Z,
 } from './layout';
 import { useLayoutControls } from './useLayoutControls';
-import { cm } from './scale';
 import { useMpcAudio } from './useMpcAudio';
-
-/**
- * Which pads sit lit when nothing is playing. Sixteen identical grey squares read as a grille;
- * a handful of lit ones read as an instrument someone has a session loaded on. Deliberately
- * sparse and desaturated — the glow is the machine's only colour, so it does not need to shout.
- */
-const IDLE_TINTS: Array<string | undefined> = [
-  '#e8dcc2', undefined, undefined, '#d6cdba',
-  undefined, '#eadfc4', undefined, undefined,
-  undefined, undefined, '#d9d0bd', undefined,
-  '#e4d8bf', undefined, undefined, undefined,
-];
+import { MPC_FOCUS_DISTANCE } from './shot';
+import { requestFocus, pointerCursor, type FocusHandler } from './CameraDirector';
 
 /**
  * The BYC mark, drawn into a canvas.
@@ -60,51 +51,18 @@ const useLogoTexture = () =>
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#ef4444';
-    ctx.font = '800 78px Inter, Helvetica, Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('BYC', w / 2, h / 2 - 4);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '800 72px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillText('BYC', w / 2, h / 2 - 22);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '600 20px Inter, Helvetica, Arial, sans-serif';
+    ctx.fillText('P R O F E S S I O N A L', w / 2, h / 2 + 28);
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }, []);
-
-/** A perforated speaker grille, drawn once. Rows of small holes on a slightly darker field. */
-const useGrilleTexture = () =>
-  useMemo(() => {
-    const w = 512;
-    const h = 128;
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    ctx.fillStyle = '#cdc7bb';
-    ctx.fillRect(0, 0, w, h);
-    const pitch = 7;
-    ctx.fillStyle = '#8e887d';
-    for (let y = pitch / 2; y < h; y += pitch) {
-      const offset = ((y / pitch) | 0) % 2 ? pitch / 2 : 0;
-      for (let x = pitch / 2 + offset; x < w; x += pitch) {
-        ctx.beginPath();
-        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }, []);
-
-export type FocusHandler = (
-  target: THREE.Vector3,
-  distance: number,
-  event: { clientX: number; clientY: number },
-) => void;
-
-/** Chassis is 9 units across; this lands it comfortably inside the frame. */
-const MPC_FOCUS_DISTANCE = 27;
 
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
@@ -128,7 +86,6 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const grille = useGrilleTexture();
   const logo = useLogoTexture();
   const { positions, responsiveScale, stride } = useLayoutControls();
   const {
@@ -148,87 +105,47 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
       ref={root}
       position={[positions.containerX, -1, positions.containerZ]}
       scale={responsiveScale}
+      {...pointerCursor}
       onClick={(e) => {
-        // Pads, knobs and transport all stopPropagation, so this only fires from the chassis,
-        // the grille or the screen — playing the instrument never flies the camera.
-        if (!onFocus || !root.current) return;
-        e.stopPropagation();
-        onFocus(root.current.getWorldPosition(new THREE.Vector3()), MPC_FOCUS_DISTANCE, e.nativeEvent);
+        // Pads, knobs and transport all stopPropagation, so this only fires from the chassis
+        // or the screen — playing the instrument never flies the camera.
+        if (!root.current) return;
+        requestFocus(onFocus, root.current.getWorldPosition(new THREE.Vector3()), MPC_FOCUS_DISTANCE, e, null);
       }}
     >
       {/* --- MPC CONTAINER (OUTER BOX) --- */}
-      <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.2} smoothness={4} position={[0, -0.5, 0]} receiveShadow castShadow>
-        <meshStandardMaterial color="#ece7dd" roughness={0.58} metalness={0.04} />
+      <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.08} smoothness={4} position={[0, -0.5, 0]} castShadow>
+        <meshStandardMaterial color="#f3f4f6" roughness={0.5} metalness={0.1} />
       </RoundedBox>
 
       {/* --- LOGO ROW (TOP RIGHT) --- */}
       <mesh position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[positions.logoMainSize * 4.2, positions.logoMainSize * 2.1]} />
-        <meshBasicMaterial map={logo ?? undefined} transparent toneMapped={false} />
+        <planeGeometry args={[positions.logoMainSize * 5.4, positions.logoMainSize * 3.4]} />
+        <meshBasicMaterial map={logo ?? undefined} transparent alphaTest={0.15} toneMapped={false} />
       </mesh>
-
-      {/* Speaker grille, on the front vertical face rather than the top deck — which is where
-          the machines it stands in for put it, and also the only place it fits: once the pad
-          well and the transport row have taken their space the top has about 2 cm of front
-          edge left. The chassis box spans y -1..0, so this strip sits mid-face. */}
-      <mesh position={[0, -0.55, CONTAINER_DEPTH / 2 + 0.005]}>
-        <planeGeometry args={[CONTAINER_WIDTH - cm(10), cm(3)]} />
-        <meshStandardMaterial map={grille ?? undefined} color="#cfc9bd" roughness={0.9} metalness={0.02} />
-      </mesh>
-
-      {/* No large control knob here, though the machines this stands in for have one.
-          The knob column is 5.8 cm wide and already full: four knobs with their tick rings run
-          from z -1.19 to 2.19, the chassis ends at 2.5, and the logo holds the back of the
-          column. A fifth control was added here for size contrast and overlapped two of the four
-          — and those four are the ones that will actually do something, so they win. */}
 
       {/* --- COLUMN 1: PADS (2/4 = 50%) --- */}
       <group position={[COL_PADS_X + positions.padsSectionX, 0, ROW_MAIN_Z + positions.padsSectionZ]}>
-        {/* The pad well: the one dark mass on an all-cream body, so it carries the silhouette.
-            It is a single plate, not a rim around a floor — the pad grid is 3.93 units across
-            inside a 9-unit chassis and clears the left edge by 1.5 cm, which leaves no room for
-            two concentric rings. The cream chassis is the pale surround.
+        {PAD_LAYOUT.map((pad, i) => {
+          const row = Math.floor(i / 4);
+          const col = i % 4;
+          const x = (col - 1.5) * stride;
+          const z = (row - 1.5) * stride;
+          const handleTrigger = () => triggerPad(pad.key);
 
-            Most of the darkness comes from the gaps rather than the border: the plate sits just
-            above the deck, so the three channels between pad columns and rows read dark instead
-            of cream, and the grid becomes a lattice rather than sixteen tiles on a white slab. */}
-        <RoundedBox
-          args={[cm(22), cm(1), cm(22)]}
-          radius={cm(0.5)}
-          smoothness={4}
-          position={[0, 0.02 - cm(0.5), 0]}
-          receiveShadow
-        >
-          <meshStandardMaterial color="#877b6b" roughness={0.85} metalness={0.03} />
-        </RoundedBox>
-
-        <group position={[0, 0, 0]}>
-          {PAD_LAYOUT.map((pad, i) => {
-            const row = Math.floor(i / 4);
-            const col = i % 4;
-            const x = (col - 1.5) * stride;
-            const z = (row - 1.5) * stride;
-
-            // Which pad has a sample and which falls back to the synth voice is the audio
-            // layer's business, not this component's — it used to be decided here, against a
-            // ref to the Tone graph.
-            const handleTrigger = () => triggerPad(pad.key);
-
-            return (
-              <Pad
-                key={pad.key}
-                position={[x, 0.1, z]}
-                size={positions.padSize}
-                height={positions.padHeight}
-                triggerKey={pad.key}
-                color={PAD_COLORS[row]}
-                idleTint={IDLE_TINTS[i]}
-                onTrigger={handleTrigger}
-                registerTrigger={(key, fn) => padTriggersRef.current.set(key, fn)}
-              />
-            );
-          })}
-        </group>
+          return (
+            <Pad
+              key={pad.key}
+              position={[x, 0.1, z]}
+              size={positions.padSize}
+              height={positions.padHeight}
+              triggerKey={pad.key}
+              color={PAD_COLORS[row]}
+              onTrigger={handleTrigger}
+              registerTrigger={(key, fn) => padTriggersRef.current.set(key, fn)}
+            />
+          );
+        })}
       </group>
 
       {/* --- COLUMN 2: SCREEN (1.5/4 = 37.5%) --- */}
@@ -260,7 +177,6 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
           <AvatarStage
             armed={Boolean(entered)}
             scale={positions.avatarScale}
-            drive={knobValues[1]}
             space={knobValues[2]}
           >
             <Suspense fallback={<AvatarFallback />}>
@@ -276,7 +192,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="PREV"
-            ledColor="#d6a854"
+            ledColor="#fbbf24"
             onClick={handlePrev}
             isActive={activeBtn === 'PREV'}
           />
@@ -285,7 +201,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="NXT"
-            ledColor="#a49b8e"
+            ledColor="#9ca3af"
             onClick={handleNext}
             isActive={activeBtn === 'NXT'}
           />
@@ -294,7 +210,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="STOP"
-            ledColor="#c47a66"
+            ledColor="#f87171"
             onClick={handleStop}
             isActive={activeBtn === 'STOP'}
           />
@@ -303,7 +219,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
             width={positions.buttonWidth}
             height={positions.buttonHeight}
             label="PLAY"
-            ledColor="#89a37c"
+            ledColor="#4ade80"
             onClick={handlePlay}
             isActive={isPlaying}
           />

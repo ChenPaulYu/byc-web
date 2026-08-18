@@ -1,11 +1,16 @@
 /**
  * Renders the landing scene's DOM overlays and non-WebGL fallbacks.
- * Reads: drei loading progress and navigation callbacks; writes: route navigation through the router.
+ * Reads: drei loading progress, captions.ts, the focused object's world position and a
+ * standoff beside it (projected inside the Canvas); writes: route navigation through the router.
+ * Power on lives in welcome.tsx so this file's drei imports cannot leak onto the first paint.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useProgress } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
+import * as THREE from 'three';
+import type { Caption } from './captions';
 
 export const LoadingOverlay: React.FC<{ extraReady: boolean }> = ({ extraReady }) => {
   const { active, progress } = useProgress();
@@ -89,91 +94,160 @@ export const StaticFallback: React.FC = () => {
   );
 };
 
-/**
- * The power-on check the instrument runs before you play it.
- *
- * Both reference sites spend real design effort on the entry sequence — it is the cheapest
- * place to buy character, since it costs nothing but words and timing. The register here is a
- * sampler warming up rather than a BIOS booting: it belongs to the machine on the desk, not to
- * a terminal. Kept in the site's quiet editorial voice, so it is small monospace in neutral
- * greys with no colour of its own.
- */
-const CHECKS = [
-  { label: 'sample bank', value: '16 pads' },
-  { label: 'audio engine', value: 'ready' },
-  { label: 'transport', value: 'stopped' },
-] as const;
+/** Projects the pin on the object and the sentence beside it. Lives inside the Canvas. */
+export function FocusAnchor({
+  popupRef,
+  anchorRef,
+  haloRef,
+}: {
+  popupRef: React.RefObject<HTMLDivElement | null>;
+  anchorRef: React.RefObject<THREE.Vector3 | null>;
+  haloRef: React.RefObject<number>;
+}) {
+  const { camera, size } = useThree();
+  const pinNdc = useRef(new THREE.Vector3());
+  const textNdc = useRef(new THREE.Vector3());
+  const right = useRef(new THREE.Vector3());
+  const up = useRef(new THREE.Vector3());
 
-const usePrefersReducedMotion = () => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(query.matches);
-    const onChange = () => setReduced(query.matches);
-    query.addEventListener('change', onChange);
-    return () => query.removeEventListener('change', onChange);
-  }, []);
-  return reduced;
-};
-
-export const WelcomeScreen: React.FC<{ onEnter: () => void; fadeOut?: boolean }> = ({ onEnter, fadeOut }) => {
-  const reducedMotion = usePrefersReducedMotion();
-  // How many check lines have appeared. Reduced motion shows the finished list immediately.
-  const [revealed, setRevealed] = useState(reducedMotion ? CHECKS.length : 0);
-
-  useEffect(() => {
-    if (reducedMotion) {
-      setRevealed(CHECKS.length);
+  useFrame(() => {
+    const root = popupRef.current;
+    const anchor = anchorRef.current;
+    if (!root) return;
+    if (!anchor) {
+      if (!root.querySelector('[data-focus-cap]')) root.style.visibility = 'hidden';
       return;
     }
-    // Short on purpose: the whole sequence resolves in well under a second, so it reads as
-    // the machine waking rather than as a loading screen standing between you and the page.
-    const timers = CHECKS.map((_, i) => window.setTimeout(() => setRevealed(i + 1), 160 * (i + 1)));
-    return () => timers.forEach(window.clearTimeout);
-  }, [reducedMotion]);
+
+    right.current.setFromMatrixColumn(camera.matrixWorld, 0);
+    up.current.setFromMatrixColumn(camera.matrixWorld, 1);
+    pinNdc.current.copy(anchor).project(camera);
+    textNdc.current
+      .copy(anchor)
+      .addScaledVector(right.current, haloRef.current * 0.75)
+      .addScaledVector(up.current, haloRef.current * 0.9)
+      .project(camera);
+
+    if (pinNdc.current.z > 1) {
+      root.style.visibility = 'hidden';
+      return;
+    }
+
+    const rootRect = root.getBoundingClientRect();
+    const toLocal = (v: THREE.Vector3) => ({
+      x: (v.x * 0.5 + 0.5) * size.width + size.left - rootRect.left,
+      y: (-v.y * 0.5 + 0.5) * size.height + size.top - rootRect.top,
+    });
+    const pin = toLocal(pinNdc.current);
+    const standoff = toLocal(textNdc.current);
+    const pinEl = root.querySelector<HTMLElement>('[data-focus-pin]');
+    const capEl = root.querySelector<HTMLElement>('[data-focus-cap]');
+    const leader = root.querySelector<SVGLineElement>('[data-focus-leader]');
+
+    const margin = 20;
+    const capMaxW = 288;
+    let dx = standoff.x - pin.x;
+    let dy = standoff.y - pin.y;
+    if (Math.abs(dx) < 48) dx = dx >= 0 ? 72 : -72;
+    if (Math.abs(dy) < 32) dy = dy <= 0 ? -40 : 40;
+
+    let capX = pin.x + dx;
+    let capY = pin.y + dy - 10;
+    if (capX + capMaxW > rootRect.width - margin) capX = pin.x - dx - capMaxW;
+    if (capX < margin) capX = margin;
+    if (capY < margin) capY = margin;
+    if (capY > rootRect.height - margin - 48) capY = rootRect.height - margin - 48;
+
+    root.style.visibility = 'visible';
+    if (pinEl) {
+      pinEl.style.left = `${pin.x}px`;
+      pinEl.style.top = `${pin.y}px`;
+    }
+    if (capEl) {
+      capEl.style.left = `${capX}px`;
+      capEl.style.top = `${capY}px`;
+    }
+    if (leader && capEl) {
+      const capRect = capEl.getBoundingClientRect();
+      const endX = capRect.left - rootRect.left;
+      const endY = capRect.top - rootRect.top + capRect.height * 0.38;
+      leader.setAttribute('x1', String(pin.x));
+      leader.setAttribute('y1', String(pin.y));
+      leader.setAttribute('x2', String(endX));
+      leader.setAttribute('y2', String(endY));
+    }
+  });
+
+  return null;
+}
+
+export const FocusCaption: React.FC<{
+  visible: boolean;
+  caption: Caption | null;
+  popupRef: React.RefObject<HTMLDivElement | null>;
+}> = ({ visible, caption, popupRef }) => {
+  const navigate = useNavigate();
+  const [held, setHeld] = useState<Caption | null>(null);
+  const [inView, setInView] = useState(false);
+  const display = caption ?? held;
+  const shown = visible && caption !== null;
+  const href = display?.href;
+
+  useEffect(() => {
+    if (caption) {
+      setHeld(caption);
+      return;
+    }
+    const t = window.setTimeout(() => setHeld(null), 240);
+    return () => window.clearTimeout(t);
+  }, [caption]);
+
+  useEffect(() => {
+    if (!shown) {
+      setInView(false);
+      return;
+    }
+    setInView(false);
+    let inner = 0;
+    const outer = window.requestAnimationFrame(() => {
+      inner = window.requestAnimationFrame(() => setInView(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(outer);
+      window.cancelAnimationFrame(inner);
+    };
+  }, [shown, display?.line]);
 
   return (
     <div
-      className={`absolute inset-0 z-30 bg-[#f9fafb] flex flex-col items-center justify-center cursor-pointer select-none transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
-      onClick={onEnter}
+      ref={popupRef}
+      aria-hidden={!shown}
+      className={`pointer-events-none absolute inset-0 z-20 ${inView ? 'is-in' : ''}`}
     >
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-neutral-900 mb-3">
-        Bo-Yu Chen
-      </h1>
-      <p className="text-neutral-500 font-mono text-sm sm:text-base tracking-wide mb-10">
-        Researcher // Engineer // Creator
-      </p>
-
-      {/* Decorative: the button below carries the real instruction, so screen readers are not
-          made to sit through a fake self-test. */}
-      <dl aria-hidden="true" className="w-[248px] sm:w-[280px] font-mono text-xs text-neutral-400 mb-10">
-        {CHECKS.map((check, i) => (
-          <div
-            key={check.label}
-            className={`flex items-baseline justify-between py-1 border-b border-neutral-100 transition-opacity duration-300 ${
-              i < revealed ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <dt className="tracking-wide">{check.label}</dt>
-            <dd className="tabular-nums text-neutral-500">{check.value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <button
-        onClick={onEnter}
-        aria-label="Enter the interactive scene"
-        className="group flex items-center gap-3 px-6 py-3 rounded-full border border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f9fafb] transition-all duration-300"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" className="group-hover:scale-110 transition-transform" aria-hidden="true">
-          <polygon points="3,1 13,8 3,15" />
-        </svg>
-        <span className="text-sm font-medium tracking-wide uppercase">Power on</span>
-      </button>
-
-      <p className="absolute bottom-8 text-xs text-neutral-300 font-mono tracking-wide">
-        Play it with the pads or your keyboard
-      </p>
+      <svg className="absolute inset-0 h-full w-full overflow-visible" aria-hidden>
+        <line data-focus-leader className="focus-leader" pathLength={1} />
+      </svg>
+      <div data-focus-pin className="focus-pin" />
+      {display && (
+        <div data-focus-cap className="focus-caption w-max max-w-xs rounded-md border border-neutral-900 bg-white px-3 py-2">
+          <p className="text-sm leading-snug text-neutral-800">{display.line}</p>
+          {href && (
+            <button
+              type="button"
+              onClick={() => navigate(href)}
+              className={`focus-caption-door group/door relative mt-1.5 text-xs font-medium uppercase tracking-wide text-neutral-500 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
+                shown ? 'pointer-events-auto' : 'pointer-events-none'
+              }`}
+            >
+              View project
+              <span
+                aria-hidden
+                className="absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-blue-600 transition-transform duration-200 ease-out group-hover/door:scale-x-100 group-focus-visible/door:scale-x-100"
+              />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

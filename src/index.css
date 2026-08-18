@@ -62,6 +62,93 @@ body {
   }
 }
 
+/* CHI-style figure annotation: hollow pin, ink leader, white stroked label. Same 240ms enter as pageIn. */
+.focus-pin {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 1.5px #171717;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  transition: opacity 240ms ease-out, transform 240ms ease-out;
+}
+
+.is-in .focus-pin {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.focus-leader {
+  stroke: #171717;
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 240ms ease-out;
+}
+
+.is-in .focus-leader {
+  stroke-dashoffset: 0;
+}
+
+.focus-caption {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 240ms ease-out, transform 240ms ease-out;
+  transition-delay: 80ms;
+}
+
+.is-in .focus-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.focus-caption-door {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 240ms ease-out, transform 240ms ease-out, color 200ms ease-out;
+}
+
+.is-in .focus-caption-door {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 80ms, 80ms, 0ms;
+}
+
+:not(.is-in) .focus-caption {
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .focus-pin,
+  .focus-leader,
+  .focus-caption,
+  .focus-caption-door {
+    animation: none;
+    transition: opacity 120ms ease-out;
+    transform: none;
+  }
+
+  .focus-pin {
+    transform: translate(-50%, -50%);
+  }
+
+  .is-in .focus-leader {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+
+  .is-in .focus-caption,
+  .is-in .focus-caption-door {
+    transition-delay: 0ms;
+  }
+}
+
 h1,
 h2,
 h3,

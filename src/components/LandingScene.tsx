@@ -1,25 +1,27 @@
 /**
- * Hosts the public landing route, Canvas lifecycle, camera behavior, and navigation overlay.
- * Reads: Vite feature flags and the composed landing-scene modules (stage, MPC, overlays); writes: navigation and entry state.
+ * Hosts the instrument after Power on: Canvas lifecycle, camera behavior, and navigation overlay.
+ * Reads: the composed landing-scene modules (stage, MPC, overlays, shot.ts for the authored
+ * camera frame, captions.ts for the last flown object's line); writes: navigation and focus
+ * state. The welcome gate lives in Home so this module — and three.js — stay out of the first
+ * paint.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
-import { Environment, Lightformer, OrbitControls, SoftShadows } from '@react-three/drei';
+import { Environment, Lightformer, OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useNavigate } from 'react-router-dom';
-import { CanvasErrorBoundary, LoadingOverlay, StaticFallback, WelcomeScreen } from './landing/overlays';
+import { CanvasErrorBoundary, FocusAnchor, FocusCaption, LoadingOverlay, StaticFallback } from './landing/overlays';
 import { Stage } from './landing/Stage';
 import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
 import { CameraDirector, type FlightRequest } from './landing/CameraDirector';
-import { resume } from './landing/audio';
+import { authoredShot, CAPTION_HALO, FOOTBALL_FOCUS_DISTANCE } from './landing/shot';
+import { CAPTIONS, type Caption, type CaptionSubject } from './landing/captions';
 
 const LandingScene: React.FC = () => {
   const navigate = useNavigate();
-  const [entered, setEntered] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [screenReady, setScreenReady] = useState(false);
 
@@ -35,12 +37,6 @@ const LandingScene: React.FC = () => {
   // rebuilds its video element whenever it sees one.
   const handleScreenReady = useCallback(() => setScreenReady(true), []);
 
-  const handleEnter = async () => {
-    await resume();
-    setFadeOut(true);
-    setTimeout(() => setEntered(true), 500);
-  };
-
   // Camera flight/proximity control: the ref lets CameraDirector read the live OrbitControls
   // instance (target, damped position) without that instance ever going through React state.
   const controlsRef = useRef<OrbitControlsImpl>(null);
@@ -48,6 +44,10 @@ const LandingScene: React.FC = () => {
   // True while the camera is close enough that the scene reaches the page's own text.
   const [isCameraClose, setIsCameraClose] = useState(false);
   const [flight, setFlight] = useState<FlightRequest | null>(null);
+  const [captionSubject, setCaptionSubject] = useState<CaptionSubject | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const captionAnchorRef = useRef<THREE.Vector3 | null>(null);
+  const captionHaloRef = useRef(0);
 
   // Where the pointer went down, so a drag that happens to end over an object is not mistaken for
   // a click on it. R3F fires onClick on pointer-up over the object regardless of how far the
@@ -59,60 +59,54 @@ const LandingScene: React.FC = () => {
     return Math.hypot(event.clientX - down.x, event.clientY - down.y) > 6;
   };
 
-  const focusOn = useCallback((target: THREE.Vector3, distance: number, event: { clientX: number; clientY: number }) => {
-    if (wasADrag(event)) return;
-    setFlight({ target, distance });
-  }, []);
-
-  // Responsive camera positioning
-  const [cameraPosition, setCameraPosition] = useState<[number, number, number]>([0, 11, 26]);
-  // The pre-aspect-ratio scalar from the ladder below (48/53/57/62), lifted so CameraDirector can
-  // compute its close/far thresholds as fractions of it rather than as absolute scene units.
-  const [defaultDistance, setDefaultDistance] = useState(62);
+  // Authored overview: target and distance are derived from the portrait (desk + football),
+  // not from a ladder of magic numbers. The opening pose is frozen so a resize cannot yank a
+  // camera the visitor is already orbiting; distance still updates for the fade threshold and
+  // for restoring the shot when they click the desk.
+  const opening = useRef(
+    typeof window === 'undefined' ? authoredShot(1440, 900) : authoredShot(window.innerWidth, window.innerHeight),
+  ).current;
+  const [shot, setShot] = useState(opening);
 
   useEffect(() => {
-    const updateCameraPosition = () => {
-      const { innerWidth, innerHeight } = window;
-      const aspectRatio = innerWidth / innerHeight;
-
-      // Over-the-shoulder framing: the viewer stands behind the chair rather than above the
-      // desk, so the camera sits low and well back and the object reads as a diorama with
-      // room around it.
-      let cameraDistance = 62;
-
-      if (innerWidth < 480) {
-        // Mobile phones - closer, since the whole vignette has to survive a narrow frame
-        cameraDistance = 48;
-      } else if (innerWidth < 768) {
-        // Large phones / small tablets
-        cameraDistance = 53;
-      } else if (innerWidth < 1024) {
-        // Tablets
-        cameraDistance = 57;
-      } else {
-        // Desktop
-        cameraDistance = 62;
-      }
-
-      setDefaultDistance(cameraDistance);
-
-      // Three-quarter from behind and to one side. Dead-on reads as a product shot; the
-      // off-axis angle is what makes it feel like looking over someone's shoulder at a desk
-      // they were just working at.
-      if (aspectRatio < 0.8) {
-        // Portrait - swing further round so the desk still fills a narrow frame
-        setCameraPosition([cameraDistance * 0.5, cameraDistance * 0.66, cameraDistance * 0.72]);
-      } else if (aspectRatio > 2.0) {
-        setCameraPosition([cameraDistance * 0.42, cameraDistance * 0.55, cameraDistance * 0.78]);
-      } else {
-        setCameraPosition([cameraDistance * 0.46, cameraDistance * 0.6, cameraDistance * 0.75]);
-      }
-    };
-
-    updateCameraPosition();
-    window.addEventListener('resize', updateCameraPosition);
-    return () => window.removeEventListener('resize', updateCameraPosition);
+    const onResize = () => setShot(authoredShot(window.innerWidth, window.innerHeight));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  const [hasLookedCloser, setHasLookedCloser] = useState(false);
+  const overviewDistance = useRef(opening.distance);
+  overviewDistance.current = shot.distance;
+
+  const focusOn = useCallback((
+    target: THREE.Vector3,
+    distance: number,
+    event: { clientX: number; clientY: number },
+    subject: CaptionSubject | null,
+  ) => {
+    if (wasADrag(event)) return;
+    setFlight({ target, distance });
+    setCaptionSubject(subject);
+    captionAnchorRef.current = subject ? target : null;
+    captionHaloRef.current = subject ? CAPTION_HALO[subject] : 0;
+    if (distance < overviewDistance.current * 0.9) setHasLookedCloser(true);
+  }, []);
+
+  const focusCaption = useMemo((): Caption | null => {
+    if (!captionSubject) return null;
+    return CAPTIONS[captionSubject];
+  }, [captionSubject]);
+
+  const resetToOverview = useCallback(() => {
+    setFlight({
+      target: new THREE.Vector3(...shot.target),
+      distance: shot.distance,
+      position: new THREE.Vector3(...shot.position),
+    });
+    setCaptionSubject(null);
+    captionAnchorRef.current = null;
+    captionHaloRef.current = 0;
+  }, [shot]);
 
   return (
     <CanvasErrorBoundary fallback={<StaticFallback />}>
@@ -120,13 +114,14 @@ const LandingScene: React.FC = () => {
       className="w-full h-screen relative bg-[#f9fafb] overflow-hidden"
       onPointerDown={(e) => { pointerDownAt.current = { x: e.clientX, y: e.clientY }; }}
     >
-      {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
-      {entered && <LoadingOverlay extraReady={screenReady} />}
+      <LoadingOverlay extraReady={screenReady} />
       <Canvas
+        frameloop="always"
         shadows={{ type: THREE.PCFSoftShadowMap }}
-        camera={{ position: cameraPosition, fov: 35 }}
+        camera={{ position: opening.position, fov: opening.fov, near: opening.near, far: opening.far }}
         dpr={[1, 1.5]} // Limit pixel ratio for performance
         performance={{ min: 0.5 }} // Allow frame rate to drop for performance
+        onPointerLeave={() => { document.body.style.cursor = 'auto'; }}
         // Neutral, not ACESFilmic. ACES is built for cinematic HDR contrast and desaturates
         // light surfaces — on a near-white set that shows up as a grey, muddy wash.
         gl={{ toneMapping: THREE.NeutralToneMapping, toneMappingExposure: 1.06 }}
@@ -141,7 +136,7 @@ const LandingScene: React.FC = () => {
           position={[9, 15, 7]}
           intensity={1.5}
           castShadow
-          shadow-mapSize={[2048, 2048]}
+          shadow-mapSize={[1024, 1024]}
           shadow-camera-left={-24}
           shadow-camera-right={24}
           shadow-camera-top={24}
@@ -152,7 +147,7 @@ const LandingScene: React.FC = () => {
 
         <OrbitControls
           ref={controlsRef}
-          target={[0, -6.5, 0]}
+          target={opening.target}
           enabled={!isDragging}
           enablePan={false}
           enableZoom={true}
@@ -175,14 +170,19 @@ const LandingScene: React.FC = () => {
 
         <CameraDirector
           controlsRef={controlsRef}
-          defaultDistance={defaultDistance}
+          defaultDistance={shot.distance}
           onCloseChange={setIsCameraClose}
           request={flight}
         />
+        <FocusAnchor popupRef={popupRef} anchorRef={captionAnchorRef} haloRef={captionHaloRef} />
 
-        <Stage onOverview={(event) => focusOn(new THREE.Vector3(0, -6.5, 0), defaultDistance, event)} />
+        <Stage
+          onOverview={(event) => focusOn(new THREE.Vector3(...shot.target), shot.distance, event, null)}
+          onFocus={focusOn}
+          footballDistance={FOOTBALL_FOCUS_DISTANCE}
+        />
         <DeskGear onDragChange={setIsDragging} onFocus={focusOn} />
-        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered={entered} onFocus={focusOn} />
+        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered onFocus={focusOn} />
 
         {/* A three-light studio rig rendered into a cube map at runtime. This replaces
             `preset="city"`, which reads as one innocuous prop but actually fetches
@@ -226,11 +226,20 @@ const LandingScene: React.FC = () => {
           {/* Mobile: Center everything, Desktop: Left Spacer */}
           <div className="hidden sm:block sm:w-1/3"></div>
 
-          {/* Center: Keyboard Guide */}
+          {/* Center: look-closer hint until the first flight, then the keyboard. */}
           <div className="w-full sm:w-1/3 text-center pb-1 sm:pb-4">
             <p className="text-neutral-300 text-xs sm:text-xs md:text-sm font-mono tracking-widest uppercase">
-              <span className="hidden sm:inline">Keyboard: 1-4, Q-R, A-F, Z-V</span>
-              <span className="sm:hidden">Tap pads to play</span>
+              {hasLookedCloser ? (
+                <>
+                  <span className="hidden sm:inline">Keyboard: 1-4, Q-R, A-F, Z-V</span>
+                  <span className="sm:hidden">Tap pads to play</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Click something to look closer</span>
+                  <span className="sm:hidden">Tap something to look closer</span>
+                </>
+              )}
             </p>
           </div>
 
@@ -269,6 +278,41 @@ const LandingScene: React.FC = () => {
           </nav>
         </div>
       </div>
+      {/* Pin on the object, leader to the sentence. Same close/far boolean; whoever last flew. */}
+      <FocusCaption
+        popupRef={popupRef}
+        visible={isCameraClose && captionSubject !== null}
+        caption={focusCaption}
+      />
+
+      {/* Overview sits where the name was — away from floor objects and caption labels. */}
+      {isCameraClose && (
+        <button
+          type="button"
+          onClick={resetToOverview}
+          aria-label="Return to overview"
+          className="group absolute top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8 z-20 flex items-center gap-2.5 rounded-full border border-neutral-200/90 bg-white/75 py-1.5 pl-1.5 pr-3.5 text-neutral-500 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-300 hover:border-neutral-300 hover:bg-white hover:text-neutral-900 hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f9fafb] touch-manipulation"
+        >
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-neutral-200/90 bg-[#f9fafb] text-neutral-500 transition-colors duration-300 group-hover:border-neutral-300 group-hover:text-neutral-900">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="transition-transform duration-300 group-hover:scale-105"
+              aria-hidden="true"
+            >
+              <path d="M2.5 6V2.5H6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M10 2.5H13.5V6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13.5 10V13.5H10" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M6 13.5H2.5V10" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="text-xs font-medium tracking-wide sm:text-sm">Overview</span>
+        </button>
+      )}
     </div>
     </CanvasErrorBoundary>
   );

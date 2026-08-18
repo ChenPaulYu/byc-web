@@ -37,6 +37,7 @@ export interface WoodOptions {
   ringPitch?: number;
   /** How hard the relief pushes. The grain is shallow in reality; this is not. */
   relief?: number;
+  /** Pixels on a side. 512 is enough at homepage distance; 1024 was a hitch drawing three maps. */
   size?: number;
 }
 
@@ -47,7 +48,7 @@ export function createWoodMaps({
   seed = 21,
   ringPitch = 48,
   relief = 3.4,
-  size = 1024,
+  size = 512,
 }: WoodOptions): WoodMaps | null {
   const grain = document.createElement('canvas');
   grain.width = grain.height = size;
@@ -178,7 +179,7 @@ export function createWoodMaps({
   };
 }
 
-/** Walnut — the desk. Dark enough that the MPC's cream chassis reads as a silhouette on it. */
+/** Walnut — the desk. Dark enough that a grey chassis reads as a silhouette on it. */
 export const WALNUT: Pick<WoodOptions, 'light' | 'dark'> = {
   light: [133, 110, 90],
   dark: [76, 62, 50],

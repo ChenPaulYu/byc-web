@@ -32,4 +32,5 @@ The graph already matches: two channel strips into a shared filter / drive / rev
 the slab, `keydown` on `window` in `Mpc.tsx` so keys still fire after the camera has flown.
 The mixer's LCD meters the two strips as separate LED columns — pad punches, bed breathes —
 so a silent left column is readable as "nobody is hitting", not as a broken screen. The avatar
-on the MPC listens to the same split: bed is the sway, a pad hit is a punch on the same clip.
+on the MPC still listens to the bed as a slow sway on the same clip; pad hits stay on the LCD.
+A hop and a drive-shake were tried and read as a shiver, not as playing.

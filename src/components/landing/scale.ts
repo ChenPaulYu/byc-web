@@ -37,8 +37,18 @@ export const REAL = {
   monitor: { width: 19, height: 30, depth: 25 },
   /** Compact stereo mixer. Sized off an 88 × 240 × 16 mm slab. */
   sidekick: { width: 8.8, depth: 24, height: 1.6 },
-  mug: { diameter: 9, height: 10 },
+  /**
+   * 50 Lan 手搖杯. Diameter is the rim; bottom is the base; height is cup plus the film lid.
+   */
+  mug: { diameter: 9.4, height: 13.2, bottom: 6.2 },
   paperback: { width: 13, height: 2, depth: 20 },
+  /** Size 5 football. Lives on the floor, not the desk — 22 cm on the desktop would swallow the mug. */
+  football: { diameter: 22 },
+  /**
+   * Assembled FlueBricks on the desk. Cuboid generator plus three cylindrical nodes; thickness
+   * is the face it lies on, pipe is the round nodes' diameter.
+   */
+  fluebricks: { length: 22, width: 4.2, thickness: 3.2, pipe: 3.4 },
   /** Square-tube desk leg section. */
   legSection: 6,
 } as const;

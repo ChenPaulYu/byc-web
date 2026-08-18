@@ -12,7 +12,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { loadBed, loadPadSample, resume, setParam, startBed, stopBed, triggerPad } from './audio';
+import { loadBed, loadPadSample, resume, setParam, startBed, stopBed, suspend, triggerPad } from './audio';
 
 export interface MpcConfig {
   bpm: number;
@@ -86,10 +86,16 @@ export function useMpcAudio(entered = false): MpcAudioState {
   // The bed starts on entry, so the scene is alive for the visitors who never press a pad — and
   // POWER ON is the user gesture browsers require before any of this may make a sound. The engine
   // remembers the request if the loop is still decoding, so this cannot lose the race.
+  // Leaving the homepage unmounts the instrument; the engine is a singleton, so without this
+  // cleanup the loop would keep playing over About.
   useEffect(() => {
     if (!entered) return;
     startBed();
     setIsPlaying(true);
+    return () => {
+      stopBed();
+      void suspend();
+    };
   }, [entered]);
 
   const handlePlay = useCallback(async () => {

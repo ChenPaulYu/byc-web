@@ -1,0 +1,406 @@
+<!--
+  Focus caption look — 2026-08-18, pass 2
+  What: first pass was ten treatments of the same idea (a sentence floating near the object).
+        This pass is the patterns used on the web for labels on 3D / objects.
+  Candidates:
+    Don't · Now (shipped) · Pin (Sketchfab) · Leader (model-viewer / drawings)
+    Plus (Dopple) · Dimension (model-viewer) · Rule (Atlantic / Pentagram) · Edge (ACMI)
+  Pick: Leader (model-viewer / drawing standoff). Pin on the object, thin line to the sentence in empty space. Not a chip.
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Focus caption — look, pass 2</title>
+  <style>
+    :root {
+      --canvas: #f9fafb;
+      --ink: #171717;
+      --body: #525252;
+      --quiet: #a3a3a3;
+      --quiet-2: #737373;
+      --blue: #2563eb;
+      --border: #e5e5e5;
+      --white: #ffffff;
+      --wood: #d7b48a;
+      --wood-dark: #c4a06e;
+      --mug: #e7d9c4;
+      --paper: #f6f3ec;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--white); color: var(--ink); }
+    body {
+      font-family: Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, .grotesk { font-family: "Space Grotesk", Inter, sans-serif; }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+    .lede { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; }
+    .sub { margin: 0 0 20px; color: var(--quiet-2); font-size: 14px; line-height: 1.55; max-width: 44rem; }
+    .row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .toggle { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; font-size: 12px; }
+    .toggle button {
+      background: var(--white); border: 0; padding: 6px 12px; color: var(--quiet-2); cursor: pointer; font: inherit;
+    }
+    .toggle button.on { background: var(--ink); color: var(--white); }
+    .hint { font-size: 12px; color: var(--quiet); }
+
+    .stage {
+      position: relative;
+      height: 440px;
+      background: var(--canvas);
+      overflow: hidden;
+      border: 1px solid #f0f0f0;
+    }
+    .desk {
+      position: absolute;
+      left: 8%; right: 8%; top: 40%;
+      height: 46%;
+      background: linear-gradient(#e3c49a, var(--wood-dark));
+      border-radius: 2px;
+    }
+    .mug {
+      position: absolute;
+      left: 22%; top: 48%;
+      width: 54px; height: 62px;
+      background: var(--mug);
+      border-radius: 4px 4px 8px 8px;
+      cursor: pointer;
+    }
+    .mug::after {
+      content: "";
+      position: absolute;
+      right: -12px; top: 16px;
+      width: 16px; height: 22px;
+      border: 5px solid var(--mug);
+      border-left: 0;
+      border-radius: 0 10px 10px 0;
+    }
+    .paper {
+      position: absolute;
+      left: 54%; top: 46%;
+      width: 92px; height: 124px;
+      background: var(--paper);
+      transform: rotate(-8deg);
+      box-shadow: 2px 3px 0 #ece7dc;
+      cursor: pointer;
+    }
+    .paper i { display: block; margin: 14px 10px 0; height: 4px; background: #e0d8c8; }
+    .paper i:nth-child(2) { width: 70%; }
+    .paper i:nth-child(3) { width: 82%; }
+    .paper i:nth-child(4) { width: 60%; }
+
+    svg.leaders {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    #leader {
+      stroke: #a3a3a3;
+      stroke-width: 1;
+      fill: none;
+      stroke-dasharray: 120;
+      stroke-dashoffset: 120;
+      transition: stroke-dashoffset 320ms ease-out;
+    }
+    .stage.is-in #leader { stroke-dashoffset: 0; }
+    .stage.look-dont #leader,
+    .stage.look-now #leader,
+    .stage.look-rule #leader,
+    .stage.look-edge #leader,
+    .stage.look-plus #leader { opacity: 0; }
+
+    .pin {
+      position: absolute;
+      width: 8px; height: 8px;
+      margin: -4px 0 0 -4px;
+      border-radius: 50%;
+      background: var(--ink);
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.4);
+      transition: opacity 240ms ease-out, transform 240ms ease-out;
+    }
+    .stage.is-in .pin { opacity: 1; transform: scale(1); }
+    .stage.look-dont .pin,
+    .stage.look-now .pin,
+    .stage.look-rule .pin,
+    .stage.look-edge .pin { display: none; }
+    .stage.look-plus .pin {
+      width: 18px; height: 18px; margin: -9px 0 0 -9px;
+      background: var(--white);
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+    .stage.look-plus .pin::before,
+    .stage.look-plus .pin::after {
+      content: "";
+      position: absolute;
+      background: var(--ink);
+      left: 50%; top: 50%;
+    }
+    .stage.look-plus .pin::before { width: 8px; height: 1px; margin: -0.5px 0 0 -4px; }
+    .stage.look-plus .pin::after { width: 1px; height: 8px; margin: -4px 0 0 -0.5px; }
+    .stage.look-dimension .pin {
+      width: 7px; height: 7px;
+      background: transparent;
+      border: 1px solid var(--ink);
+      border-radius: 0;
+    }
+
+    .cap {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 240ms ease-out, transform 240ms ease-out;
+      white-space: nowrap;
+    }
+    .stage.is-in .cap { opacity: 1; transform: none; }
+    .stage.look-dont .cap { display: none; }
+    .stage.look-leader .cap,
+    .stage.look-pin .cap,
+    .stage.look-plus .cap,
+    .stage.look-dimension .cap { transition-delay: 80ms; }
+    .stage:not(.is-in) .cap { transition-delay: 0ms; }
+
+    .line { margin: 0; }
+    .door {
+      display: none;
+      margin: 8px 0 0;
+      padding: 0; border: 0; background: none;
+      cursor: pointer; pointer-events: auto; font: inherit;
+      position: relative;
+    }
+    .stage.has-door .door { display: inline-block; }
+
+    /* Now — shipped */
+    .look-now .surface {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(8px);
+      padding: 8px 12px;
+      border-radius: 2px;
+    }
+    .look-now .line { font-size: 14px; font-style: italic; color: var(--quiet-2); }
+    .look-now .door {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--quiet);
+    }
+    .look-now .door:hover { color: var(--blue); }
+
+    /* Pin — Sketchfab: dot on the thing, note beside it */
+    .look-pin .line { font-size: 13px; color: var(--ink); }
+    .look-pin .door { margin-top: 6px; font-size: 12px; color: var(--quiet-2); }
+    .look-pin .door:hover { color: var(--blue); }
+
+    /* Leader — model-viewer standoff + drawing leader */
+    .look-leader .line { font-size: 13px; color: var(--ink); }
+    .look-leader .door { margin-top: 6px; font-size: 12px; color: var(--quiet-2); }
+    .look-leader .door:hover { color: var(--blue); }
+
+    /* Plus — Dopple / Framer hotspot */
+    .look-plus .line { font-size: 13px; color: var(--body); }
+    .look-plus .door { margin-top: 6px; font-size: 12px; color: var(--blue); }
+    .look-plus .door:hover { opacity: 0.7; }
+
+    /* Dimension — model-viewer Show Dimensions */
+    .look-dimension .line {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .look-dimension .door {
+      margin-top: 6px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--quiet);
+    }
+    .look-dimension .door:hover { color: var(--blue); }
+
+    /* Rule — Atlantic / Pentagram magazine caption */
+    .look-rule .surface { padding-top: 10px; border-top: 2px solid var(--ink); display: inline-block; }
+    .look-rule .line { font-size: 16px; font-style: italic; color: var(--ink); line-height: 1.4; }
+    .look-rule .door {
+      display: block;
+      margin-top: 6px;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--quiet-2);
+    }
+    .look-rule .door:hover { color: var(--blue); }
+    .look-rule .surface { transform: scaleX(0.2); transform-origin: left; transition: transform 280ms ease-out; }
+    .look-rule.is-in .surface,
+    .stage.look-rule.is-in .surface { transform: none; }
+
+    /* Edge — ACMI: don't overlay the work; sit on the frame */
+    .look-edge .cap {
+      left: auto !important;
+      right: 24px;
+      top: auto !important;
+      bottom: 24px;
+      transform: translateY(8px);
+    }
+    .look-edge.is-in .cap { transform: none; }
+    .look-edge .line { font-size: 13px; color: var(--quiet-2); }
+    .look-edge .door { margin-top: 6px; font-size: 12px; color: var(--ink); }
+    .look-edge .door:hover { color: var(--blue); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+    @media (max-width: 800px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    .pick {
+      text-align: left;
+      border: 1px solid var(--border);
+      background: var(--white);
+      padding: 10px 10px 12px;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      min-height: 108px;
+    }
+    .pick.on { border-color: var(--ink); }
+    .pick .k { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); margin-bottom: 4px; }
+    .pick .n { display: block; font-size: 13px; font-weight: 500; }
+    .pick .d { display: block; margin-top: 4px; font-size: 12px; color: var(--quiet-2); line-height: 1.4; }
+    .note { margin-top: 20px; font-size: 12px; color: var(--quiet); line-height: 1.5; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1 class="lede">上一輪都是「句子浮在旁邊」。網路上不是這樣做的。</h1>
+    <p class="sub">3D 標註幾乎都是：物件上一個點，字離開物件，中間用線連。雜誌 caption 則是一條粗線加斜體，不做成卡片。點一版看進場；View project 可以 hover。</p>
+
+    <div class="row">
+      <div class="toggle" role="group" aria-label="Subject">
+        <button type="button" id="btn-mug" class="on">Mug · 沒有門</button>
+        <button type="button" id="btn-paper">Paper · 有 View project</button>
+      </div>
+      <span class="hint">點杯子或紙可以重播</span>
+    </div>
+
+    <div class="stage look-leader" id="stage">
+      <div class="desk"></div>
+      <div class="mug" id="mug" title="Replay"></div>
+      <div class="paper" id="paper" title="Replay"><i></i><i></i><i></i><i></i></div>
+      <svg class="leaders" id="svg" aria-hidden="true">
+        <line id="leader" x1="0" y1="0" x2="0" y2="0" />
+      </svg>
+      <div class="pin" id="pin"></div>
+      <div class="cap" id="cap">
+        <div class="surface">
+          <p class="line" id="line">Coffee, still warm.</p>
+          <button type="button" class="door" id="door">View project</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <p class="note">來源：<a href="https://www.devfab.io/guide/annotations/">Sketchfab 標註解剖</a>（點 → 註記）· <a href="https://modelviewer.dev/examples/annotations/">Google model-viewer</a>（standoff line）· 建築圖 leader 從邊緣拉出 · <a href="https://www.pravinkumar.co/blog/webflow-image-captions-magazine-pull-quotes-design-2026">Atlantic / Pentagram 兩像素線</a> · ACMI「字不要蓋在作品上」。</p>
+  </div>
+
+  <script>
+    const LOOKS = [
+      { id: "dont", k: "Don't", n: "不要", d: "飛過去什麼都不說" },
+      { id: "now", k: "Now", n: "現在這版", d: "上一輪的毛玻璃卡片" },
+      { id: "pin", k: "Sketchfab", n: "點", d: "物件上一個點，字在旁邊" },
+      { id: "leader", k: "model-viewer", n: "引線", d: "點到字，一條細線連過去" },
+      { id: "plus", k: "Dopple", n: "加號", d: "電商 hotspot 的 + 標記" },
+      { id: "dimension", k: "Dimensions", n: "尺寸", d: "像量尺寸的標，偏研究" },
+      { id: "rule", k: "Atlantic", n: "線 + 斜體", d: "雜誌 caption，不是 UI" },
+      { id: "edge", k: "ACMI", n: "畫面邊緣", d: "字離開作品，靠畫框" }
+    ];
+
+    const stage = document.getElementById("stage");
+    const cap = document.getElementById("cap");
+    const pin = document.getElementById("pin");
+    const lineEl = document.getElementById("line");
+    const leader = document.getElementById("leader");
+    const grid = document.getElementById("grid");
+    const btnMug = document.getElementById("btn-mug");
+    const btnPaper = document.getElementById("btn-paper");
+    const mug = document.getElementById("mug");
+    const paper = document.getElementById("paper");
+
+    let look = "leader";
+    let subject = "mug";
+    const copy = {
+      mug: "Coffee, still warm.",
+      paper: "FlueBricks, CHI '26."
+    };
+
+    function anchor() {
+      const el = subject === "mug" ? mug : paper;
+      const r = el.getBoundingClientRect();
+      const s = stage.getBoundingClientRect();
+      return {
+        x: r.left - s.left + r.width * 0.7,
+        y: r.top - s.top + r.height * 0.15
+      };
+    }
+
+    function layout() {
+      const a = anchor();
+      pin.style.left = a.x + "px";
+      pin.style.top = a.y + "px";
+
+      const textX = a.x + 56;
+      const textY = a.y - 28;
+      cap.style.left = textX + "px";
+      cap.style.top = textY + "px";
+
+      leader.setAttribute("x1", a.x);
+      leader.setAttribute("y1", a.y);
+      leader.setAttribute("x2", textX);
+      leader.setAttribute("y2", textY + 10);
+    }
+
+    function replay() {
+      stage.classList.remove("is-in");
+      layout();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          layout();
+          stage.classList.add("is-in");
+        });
+      });
+    }
+
+    function apply() {
+      stage.className = "stage look-" + look + (subject === "paper" ? " has-door" : "");
+      lineEl.textContent = copy[subject];
+      [...grid.children].forEach((el) => el.classList.toggle("on", el.dataset.id === look));
+      btnMug.classList.toggle("on", subject === "mug");
+      btnPaper.classList.toggle("on", subject === "paper");
+      replay();
+    }
+
+    LOOKS.forEach((item) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pick" + (item.id === "leader" ? " on" : "");
+      b.dataset.id = item.id;
+      b.innerHTML = '<span class="k">' + item.k + '</span><span class="n">' + item.n + '</span><span class="d">' + item.d + "</span>";
+      b.addEventListener("click", () => { look = item.id; apply(); });
+      grid.appendChild(b);
+    });
+
+    btnMug.addEventListener("click", () => { subject = "mug"; apply(); });
+    btnPaper.addEventListener("click", () => { subject = "paper"; apply(); });
+    mug.addEventListener("click", () => { subject = "mug"; apply(); });
+    paper.addEventListener("click", () => { subject = "paper"; apply(); });
+    window.addEventListener("resize", layout);
+    apply();
+  </script>
+</body>
+</html>

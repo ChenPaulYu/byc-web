@@ -69,7 +69,9 @@ kit — no such photo exists. The *shape* of the arrangement is sourced.
 
 Cable routing detail, port and jack icons, exact triangle geometry, real Strudel text on the
 laptop screen (a warm rectangle with a few bright lines says "screen is on" just as well),
-per-prop surface texture stories, and the football and rug from the abandoned room iteration.
+per-prop surface texture stories, and the rug from the abandoned room iteration. The football
+came back 2026-08-17, on the floor in front of the desk — a size 5 on the desktop would swallow
+the mug, and the owner asked for it.
 
 Sources: Universal Audio, Sonarworks, Dynaudio and ADAM Audio monitor-placement primers;
 StudioDesk's producer-desk layout guide; Gearspace and HomeRecording setup threads.
