@@ -2,7 +2,7 @@
 title: "TMC-CL1"
 date: "2024-06-01"
 year: "2024"
-category: "Engineering"
+category: "Side Project"
 role: "Tech Lead"
 tags: ["Web Audio", "React", "DSP", "Education"]
 cover: "https://picsum.photos/600/402?grayscale"

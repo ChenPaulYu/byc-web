@@ -14,8 +14,9 @@ const staticColumns: Column[] = [
       const cat = (item.metadata as Record<string, unknown>)?.category as string | undefined;
       const colors: Record<string, string> = {
         Research: 'bg-blue-50 text-blue-700',
-        Engineering: 'bg-amber-50 text-amber-700',
-        Creative: 'bg-purple-50 text-purple-700',
+        'Side Project': 'bg-amber-50 text-amber-700',
+        Demo: 'bg-purple-50 text-purple-700',
+        Pieces: 'bg-neutral-100 text-neutral-600',
       };
       return cat ? (
         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors[cat] || 'bg-neutral-100 text-neutral-600'}`}>

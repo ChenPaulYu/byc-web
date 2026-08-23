@@ -8,17 +8,20 @@
  * while putting back the warmth the scene lost when the chair was removed, and a cheap wooden
  * desk is the right register for bedroom recording anyway.
  *
- * Reads: site-style neutrals · scale.ts for every dimension. No texture files, no generated
- * meshes; the wood, the backdrop and the ground fade are all drawn into canvases at runtime.
+ * Reads: site-style neutrals · scale.ts · wood.ts · football.ts · CameraDirector (football
+ * click). Exports the desk datum and football placement the camera shot is built from.
+ * Does not import shot.ts — that file already reads the datums from here.
  */
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ContactShadows, RoundedBox } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { cm, REAL } from './scale';
 import { WALNUT, createWoodMaps } from './wood';
+import { createFootball } from './football';
 import { useDisposable } from './useDisposable';
+import { pointerCursor, requestFocus, type FocusHandler } from './CameraDirector';
 
 /** Matches the MPC chassis bottom: its group sits at y = -1 with a box of height 1 below. */
 export const DESK_TOP_Y = -2;
@@ -30,6 +33,7 @@ const DESK_FRAME = '#3a3e43';
 // joints still read as separate parts rather than as the frame simply getting thicker.
 const FRAME_DARK = '#4f545a';
 const EDGE_BAND = '#6b563f';
+const WOOD_NORMAL_SCALE = new THREE.Vector2(0.8, 0.8);
 
 // Every dimension below comes from a real measurement through cm(). See scale.ts — before
 // that module existed this desk worked out to 15 cm tall, which is why the MPC read as a
@@ -38,7 +42,10 @@ const DESK_W = cm(REAL.desk.width);
 const DESK_D = cm(REAL.desk.depth);
 const TOP_T = cm(REAL.desk.topThickness);
 const DESK_HEIGHT = cm(REAL.desk.height);
-const FLOOR_Y = DESK_TOP_Y - DESK_HEIGHT;
+/** Floor the legs stand on. The football sits here; the camera shot is derived from it. */
+export const FLOOR_Y = DESK_TOP_Y - DESK_HEIGHT;
+/** Size 5, on the floor in front-right of the desk — one owner, so the shot cannot drift off it. */
+export const FOOTBALL = { x: cm(42), z: cm(48) } as const;
 
 const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }) => void }> = ({ onOverview }) => {
   const topY = DESK_TOP_Y - TOP_T / 2;
@@ -84,7 +91,7 @@ const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }
           key={wood ? 'oak' : 'bare'}
           map={wood?.map}
           normalMap={wood?.normalMap}
-          normalScale={new THREE.Vector2(0.8, 0.8)}
+          normalScale={WOOD_NORMAL_SCALE}
           roughnessMap={wood?.roughnessMap}
           color={wood ? '#ffffff' : DESK_TOP}
           roughness={1}
@@ -215,7 +222,32 @@ const useGround = () =>
     return t;
   });
 
-export const Stage: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }) => void }> = ({ onOverview }) => {
+const Football: React.FC<{ onFocus?: FocusHandler; focusDistance: number }> = ({ onFocus, focusDistance }) => {
+  const r = cm(REAL.football.diameter) / 2;
+  const ball = useDisposable(() => createFootball(r));
+  const root = useRef<THREE.Group>(null);
+  if (!ball) return null;
+  return (
+    <group
+      ref={root}
+      position={[FOOTBALL.x, FLOOR_Y + r, FOOTBALL.z]}
+      rotation={[0.45, -0.7, 0.18]}
+      {...pointerCursor}
+      onClick={(e) => {
+        if (!root.current) return;
+        requestFocus(onFocus, root.current.getWorldPosition(new THREE.Vector3()), focusDistance, e, 'football');
+      }}
+    >
+      <primitive object={ball} />
+    </group>
+  );
+};
+
+const StageComponent: React.FC<{
+  onOverview?: (event: { clientX: number; clientY: number }) => void;
+  onFocus?: FocusHandler;
+  footballDistance: number;
+}> = ({ onOverview, onFocus, footballDistance }) => {
   useBackdrop();
   const ground = useGround();
   // The floor is FLOOR_Y, the same constant the legs stand on. It used to be worked out here a
@@ -233,9 +265,12 @@ export const Stage: React.FC<{ onOverview?: (event: { clientX: number; clientY: 
       </mesh>
 
       <Desk onOverview={onOverview} />
+      <Football onFocus={onFocus} focusDistance={footballDistance} />
 
       <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
       <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />
     </group>
   );
 };
+
+export const Stage = React.memo(StageComponent);

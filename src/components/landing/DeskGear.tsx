@@ -682,7 +682,7 @@ const Clutter: React.FC<{ onFocus?: FocusHandler }> = ({ onFocus }) => {
   );
 };
 
-export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => (
+const DeskGearComponent: React.FC<{ onDragChange?: (dragging: boolean) => void; onFocus?: FocusHandler }> = ({ onDragChange, onFocus }) => (
   <group>
     <Sidekick onDragChange={onDragChange} onFocus={onFocus} />
     <MonitorOnBooks x={-MONITOR_X} toeIn={0.42} onFocus={onFocus} />
@@ -690,3 +690,5 @@ export const DeskGear: React.FC<{ onDragChange?: (dragging: boolean) => void; on
     <Clutter onFocus={onFocus} />
   </group>
 );
+
+export const DeskGear = React.memo(DeskGearComponent);

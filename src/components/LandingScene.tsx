@@ -92,6 +92,10 @@ const LandingScene: React.FC = () => {
     if (distance < overviewDistance.current * 0.9) setHasLookedCloser(true);
   }, []);
 
+  const handleOverview = useCallback((event: { clientX: number; clientY: number }) => {
+    focusOn(new THREE.Vector3(...shot.target), shot.distance, event, null);
+  }, [focusOn, shot]);
+
   const focusCaption = useMemo((): Caption | null => {
     if (!captionSubject) return null;
     return CAPTIONS[captionSubject];
@@ -177,7 +181,7 @@ const LandingScene: React.FC = () => {
         <FocusAnchor popupRef={popupRef} anchorRef={captionAnchorRef} haloRef={captionHaloRef} />
 
         <Stage
-          onOverview={(event) => focusOn(new THREE.Vector3(...shot.target), shot.distance, event, null)}
+          onOverview={handleOverview}
           onFocus={focusOn}
           footballDistance={FOOTBALL_FOCUS_DISTANCE}
         />

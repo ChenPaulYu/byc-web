@@ -69,7 +69,7 @@ export function useLayoutControls(): LayoutControls {
       if (aspectRatio > 2.5) scale *= 0.8; // Ultra-wide
       if (aspectRatio < 0.6) scale *= 0.7; // Portrait mobile
 
-      setResponsiveScale(scale);
+      setResponsiveScale(previous => previous === scale ? previous : scale);
     };
 
     updateResponsiveScale();

@@ -4,7 +4,7 @@
  * interaction callbacks from the MPC composition.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RoundedBox, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
@@ -307,14 +307,14 @@ export interface PadProps {
   size: number;
   triggerKey: string;
   color: string;
-  onTrigger: () => void;
+  onTrigger: (key: string) => void;
   height?: number;
   registerTrigger?: (key: string, fn: () => void) => void;
   /** Colour this pad sits at when nothing is playing, so the grid is not sixteen grey squares. */
   idleTint?: string;
 }
 
-export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2, registerTrigger, idleTint }) => {
+const PadComponent: React.FC<PadProps> = ({ position, size, triggerKey, color, onTrigger, height = 0.2, registerTrigger, idleTint }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const [active, setActive] = useState(false);
   const idleColor = useMemo(() => new THREE.Color(idleTint ?? '#6b7280'), [idleTint]);
@@ -353,14 +353,14 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
     }
   }, [active]);
 
-  const trigger = () => {
+  const trigger = useCallback(() => {
     setActive(true);
-    onTrigger();
-  };
+    onTrigger(triggerKey);
+  }, [onTrigger, triggerKey]);
 
   useEffect(() => {
     registerTrigger?.(triggerKey, trigger);
-  }, [triggerKey, registerTrigger]);
+  }, [registerTrigger, trigger, triggerKey]);
 
   return (
     <RoundedBox
@@ -375,6 +375,8 @@ export const Pad: React.FC<PadProps> = ({ position, size, triggerKey, color, onT
     </RoundedBox>
   );
 };
+
+export const Pad = React.memo(PadComponent);
 
 export interface KnobProps {
   position: [number, number, number];

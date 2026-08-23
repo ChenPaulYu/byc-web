@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DeleteDialog from '../components/DeleteDialog';
 import MarkdownEditor from '../components/MarkdownEditor';
 import { getContent, createContent, updateContent, deleteContent, hasZhContent, getZhContent, saveZhContent, getGitHubHistoryUrl } from '../api';
+import { PROJECT_GROUPS, type ProjectGroup } from '@shared/types/content';
 
 interface ProjectLink {
   label: string;
@@ -14,7 +15,7 @@ interface ProjectMetadata {
   title: string;
   date: string;
   year: string;
-  category: 'Research' | 'Engineering' | 'Creative';
+  category: ProjectGroup;
   role: string;
   tags: string[];
   cover: string;
@@ -236,9 +237,9 @@ const ProjectEdit: React.FC = () => {
         <div>
           <label className="block text-xs font-medium text-neutral-400 tracking-wide mb-1">Category</label>
           <select value={metadata.category} onChange={(e) => setMetadata({ ...metadata, category: e.target.value as ProjectMetadata['category'] })} className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-300">
-            <option value="Research">Research</option>
-            <option value="Engineering">Engineering</option>
-            <option value="Creative">Creative</option>
+            {PROJECT_GROUPS.map((group) => (
+              <option key={group} value={group}>{group}</option>
+            ))}
           </select>
         </div>
         <div>

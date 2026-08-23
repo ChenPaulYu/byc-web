@@ -4,7 +4,7 @@ date: "2025-01-01"
 year: "2026"
 category: "Research"
 role: "Lead Researcher"
-tags: ["HCI", "Instrument Design", "Acoustics", "CHI 2026"]
+tags: ["instrument", "music"]
 cover: "/content/projects/fluebricks/1-teaser.jpg"
 pinned: true
 importance: 5

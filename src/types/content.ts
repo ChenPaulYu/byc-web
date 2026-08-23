@@ -3,11 +3,14 @@
  * Reads: none.
  */
 
+export const PROJECT_GROUPS = ['Research', 'Side Project', 'Demo', 'Pieces'] as const;
+export type ProjectGroup = (typeof PROJECT_GROUPS)[number];
+
 export interface ProjectMetadata {
   title: string;
   date: string;
   year: string;
-  category: 'Research' | 'Engineering' | 'Creative';
+  category: ProjectGroup;
   role: string;
   tags: string[];
   cover: string;

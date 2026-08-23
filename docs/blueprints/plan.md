@@ -1,6 +1,6 @@
 # byc-web — plan
 
-> 2026-08-16 · status index (one layer, by status). Only "what to do + which doc".
+> 2026-08-23 · status index (one layer, by status). Only "what to do + which doc".
 > Design lives in `thoughts/`; grounded implementation plans live in `plans/`.
 > A visual view renders on demand via `shape-mockup`.
 
@@ -10,37 +10,11 @@
 > setting and stops earning polish. Procedural three.js and raw Web Audio only — no downloaded
 > models, textures, HDRIs or impulse responses.
 
-> **Nothing has ever been pushed from `polish/landing-instrument`.** The live site is untouched.
+> The current homepage, content-source, and bundle-splitting batches are implemented and verified.
 
-## 🚧 Current call —— click an object to focus it  ·  **built 2026-08-17**
+## 🚧 In progress —— no active implementation batch
 
-- **Focus mode** — clicking an instrument snaps the camera to a working view of it and hands over
-  interaction; clicking out returns. Raised 2026-08-16 after two findings landed together: at the
-  closest allowed zoom the desk pushes about 20,000 pixels of geometry under the navigation
-  column, *and* free zoom still does not get near enough to actually operate either machine. So
-  tightening the zoom range is the wrong fix — it moves away from what is wanted.
-
-  This is worth having beyond the immediate complaint. It closes the 20 px pad — a pad is not a
-  mouse target at the default framing — without asking anyone to fly a camera, and the framing
-  becomes something the code chooses rather than something the visitor can break.
-
-  **Designed 2026-08-17** in [`2026-08-17-focus-by-flying.md`](thoughts/2026-08-17-focus-by-flying.md).
-  All three forks settled the same way — never take the camera away, move it and let the page
-  recede: free orbit and zoom stay untouched, the navigation fades on camera distance rather than
-  on state, and focus is a camera move with no mode, no exit and no rules that change. The third
-  fell out of the first two rather than needing its own answer.
-
-  **Grounded 2026-08-17** in [`2026-08-17-focus-by-flying.md`](plans/2026-08-17-focus-by-flying.md).
-  Fully decided; nothing blocks it. `minDistance` drops 24 → 12, which takes the Sidekick's
-  faders from 18 px to 35 — a loosening rather than a clamp, and only safe because the overlays
-  now fade out of the way.
-
-  **All four steps shipped 2026-08-17.** Verified by driving the controls directly, since the rig
-  cannot simulate wheel zoom: overview reads opacity-100, clicking an instrument flies in and the
-  text layer goes to opacity-0, clicking the desk flies back and it returns, and an orbit drag
-  ending over the MPC rotates the view without launching a flight. The one thing still unchecked
-  by a machine is how the 0.7 s tween *feels* — the rig draws about one frame a second, so there
-  is no mid-flight frame to photograph.
+> The homepage, content-source, and bundle-splitting batches are implemented and verified.
 
 ## ▶ Next
 
@@ -48,32 +22,38 @@
   still the carried-over version; it needs a capture step against this homepage's single Canvas,
   waiting on a real paint signal rather than a timeout. Verified 2026-08-16: the file is present
   and nothing calls it.
-- **Make Projects Markdown-backed** — execute
-  [`2026-08-09-project-index-content-source.md`](plans/2026-08-09-project-index-content-source.md);
-  preserve the current card UI while removing the stale static project array. Verified 2026-08-16
-  as **not started**: `src/pages/Projects.tsx` still does `import { PROJECTS } from '../constants'`
-  and filters that array.
 
-## ⏭ After next
+## ⏸ Future —— deferred
 
 - **Audit actual admin usage** — identify which small text edits, asset uploads, configuration
   changes, and deployment actions still need a browser surface before narrowing admin pages. Do
   not delete pages speculatively.
 
-## ⏸ Future —— not yet prioritised
-
-- **The two scene questions nobody has answered.** Whether the desk vignette is the right frame at
-  all — the instrument-only alternative was rendered once and takes a pad from 20 px to about 60 —
-  and whether navigation belongs inside the scene, which is the one thing both reference sites
-  explicitly do not leave as corner links. Focus mode may answer the first by making it moot.
-- **Ambient-occlusion bake** — `three-mesh-bvh` in Node is the chosen approach. Not started. The
-  scene has no AO at all, which is the largest remaining gap between it and the references.
-- **Review production chunk sizes** — verified 2026-08-16 and still large: `three-vendor` 1218 KB,
-  `MarkdownRenderer` 493 KB, `cytoscape` 432 KB. Assess only when a performance goal makes the
-  trade-off worthwhile. Note that `public/model.glb` is 2.7 MB on its own — larger than the whole
-  three.js chunk — and is the first place to look if page weight ever becomes the subject.
+- **Revisit the scene frame and navigation placement** — decide whether the desk vignette is still
+  the right frame and whether navigation belongs inside the scene.
+- **Bake ambient occlusion** — the `three-mesh-bvh` Node approach is chosen, but the scene-first
+  visual question is not currently the active homepage goal.
+- **Review remaining page weight** — after the Mermaid split, the remaining candidates are the
+  `three-vendor` chunk and `public/model.glb`; revisit only with an explicit performance target.
 
 ## ✅ Shipped
+
+- **Homepage bundle splitting (2026-08-23)** — Mermaid now loads only when a `language-mermaid`
+  block renders; `MarkdownRenderer` dropped from roughly 505 KB to 6.7 KB minified. See
+  [`2026-08-23-bundle-splitting.md`](plans/2026-08-23-bundle-splitting.md).
+- **Portrait focus and captions (2026-08-18)** — every authored portrait object can fly to a
+  working view; captions and the single project door are wired without changing instrument
+  behavior. See [`2026-08-18-portrait-focus.md`](plans/2026-08-18-portrait-focus.md) and
+  [`2026-08-18-focus-caption.md`](plans/2026-08-18-focus-caption.md).
+- **Focus by flying (2026-08-17)** — focus moves the camera while preserving free orbit and zoom;
+  the page layer fades out of the way. See
+  [`2026-08-17-focus-by-flying.md`](plans/2026-08-17-focus-by-flying.md).
+
+- **Projects index is Markdown-backed (2026-08-18).** `src/pages/Projects.tsx` loads
+  `loadAllProjects()`; filters are `Research` / `Side Project` / `Demo` / `Pieces` from
+  `PROJECT_GROUPS`. `tmc-cl1` is disabled. Evidence: no `PROJECTS` array in `src/constants.ts`,
+  no `src/types.ts`. Remaining pages still follow
+  [`2026-08-18-project-inventory.md`](thoughts/2026-08-18-project-inventory.md).
 
 ### The instrument — 2026-08-15/16, branch `polish/landing-instrument`, unpushed
 

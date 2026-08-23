@@ -6,7 +6,7 @@
  * Writes: pad, knob, transport, and keyboard interaction state.
  */
 
-import React, { Suspense, useEffect, useMemo, useRef } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox } from '@react-three/drei';
 import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, VideoScreen } from './primitives';
@@ -26,6 +26,7 @@ import { useLayoutControls } from './useLayoutControls';
 import { useMpcAudio } from './useMpcAudio';
 import { MPC_FOCUS_DISTANCE } from './shot';
 import { requestFocus, pointerCursor, type FocusHandler } from './CameraDirector';
+import { useDisposable } from './useDisposable';
 
 /**
  * The BYC mark, drawn into a canvas.
@@ -42,7 +43,7 @@ import { requestFocus, pointerCursor, type FocusHandler } from './CameraDirector
  * looked. A canvas costs nothing and the mark renders about ten pixels wide.
  */
 const useLogoTexture = () =>
-  useMemo(() => {
+  useDisposable(() => {
     const w = 256;
     const h = 128;
     const canvas = document.createElement('canvas');
@@ -62,7 +63,7 @@ const useLogoTexture = () =>
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
-  }, []);
+  });
 
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
@@ -100,6 +101,16 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
     handleNext,
   } = useMpcAudio(entered);
 
+  const padPositions = useMemo(() => PAD_LAYOUT.map((_, i) => {
+    const row = Math.floor(i / 4);
+    const col = i % 4;
+    return [(col - 1.5) * stride, 0.1, (row - 1.5) * stride] as [number, number, number];
+  }), [stride]);
+  const handlePadTrigger = useCallback((key: string) => triggerPad(key), [triggerPad]);
+  const registerPadTrigger = useCallback((key: string, fn: () => void) => {
+    padTriggersRef.current.set(key, fn);
+  }, []);
+
   return (
     <group
       ref={root}
@@ -128,21 +139,17 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
       <group position={[COL_PADS_X + positions.padsSectionX, 0, ROW_MAIN_Z + positions.padsSectionZ]}>
         {PAD_LAYOUT.map((pad, i) => {
           const row = Math.floor(i / 4);
-          const col = i % 4;
-          const x = (col - 1.5) * stride;
-          const z = (row - 1.5) * stride;
-          const handleTrigger = () => triggerPad(pad.key);
 
           return (
             <Pad
               key={pad.key}
-              position={[x, 0.1, z]}
+              position={padPositions[i]}
               size={positions.padSize}
               height={positions.padHeight}
               triggerKey={pad.key}
               color={PAD_COLORS[row]}
-              onTrigger={handleTrigger}
-              registerTrigger={(key, fn) => padTriggersRef.current.set(key, fn)}
+              onTrigger={handlePadTrigger}
+              registerTrigger={registerPadTrigger}
             />
           );
         })}
@@ -247,4 +254,4 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
   );
 };
 
-export default Mpc;
+export default React.memo(Mpc);

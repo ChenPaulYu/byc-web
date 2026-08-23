@@ -107,7 +107,7 @@ Content starts here...
 | `title` | string | Project title |
 | `date` | string | Date (YYYY-MM-DD) |
 | `year` | string | Display year |
-| `category` | string | Research / Engineering / Creative |
+| `category` | string | Research / Side Project / Demo / Pieces |
 | `role` | string | Your role |
 | `tags` | array | Tag list |
 | `cover` | string | Cover image path |

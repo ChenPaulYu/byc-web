@@ -57,8 +57,7 @@ public/
 
 1. Create `public/content/projects/my-project.md` with frontmatter
 2. Add `{"slug": "my-project", "enabled": true}` to the `projects` array in `content.config.json`
-3. Add a corresponding entry in `src/constants.ts` `PROJECTS` array for the gallery card
-4. Place project assets in `public/content/projects/my-project/` (compress first)
+3. Place project assets in `public/content/projects/my-project/` (compress first)
 
 ### New Blog Post
 

@@ -4,7 +4,7 @@ date: "2022-05-01"
 year: "2022"
 category: "Research"
 role: "AI Researcher"
-tags: ["AI Music", "GANs", "Python", "Audio Processing"]
+tags: ["music"]
 cover: "https://picsum.photos/600/401?grayscale"
 pinned: false
 importance: 4

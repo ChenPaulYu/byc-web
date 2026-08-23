@@ -2,9 +2,9 @@
 title: "Taptap"
 date: "2019-11-01"
 year: "2019"
-category: "Creative"
+category: "Demo"
 role: "Interactive Engineer"
-tags: ["Tone.js", "Interactive", "Web Audio"]
+tags: ["music"]
 cover: "https://picsum.photos/600/403?grayscale"
 pinned: false
 importance: 2

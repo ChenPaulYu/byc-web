@@ -12,7 +12,6 @@ import {
   BibtexCopyButton,
   getYouTubeVideoId,
   isYouTubeUrl,
-  MermaidDiagram,
   parseCustomComponent,
   VideoFigure,
 } from './markdown/blocks';
@@ -20,6 +19,7 @@ import {
 // Lazy load heavy components
 const Lightbox = lazy(() => import('./blog/Lightbox'));
 const AudioPlayer = lazy(() => import('./blog/AudioPlayer'));
+const MermaidDiagram = lazy(() => import('./markdown/MermaidDiagram'));
 
 interface MarkdownRendererProps {
   content: string;
@@ -94,7 +94,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
             // Handle Mermaid diagrams
             if (language === 'mermaid') {
-              return <MermaidDiagram code={code} />;
+              return (
+                <Suspense fallback={
+                  <pre className="markdown-code-block">
+                    <code>{code}</code>
+                  </pre>
+                }>
+                  <MermaidDiagram code={code} />
+                </Suspense>
+              );
             }
 
             // Handle BibTeX blocks

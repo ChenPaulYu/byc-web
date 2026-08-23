@@ -4,13 +4,6 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import mermaid from 'mermaid';
-
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'neutral',
-  securityLevel: 'loose'
-});
 
 const CUSTOM_COMPONENT_PATTERN = /^::(\w+)\[([^\]]*)\]$/;
 
@@ -38,43 +31,6 @@ export const getYouTubeVideoId = (url: string): string | null => {
 
 export const isYouTubeUrl = (text: string): boolean => {
   return YOUTUBE_PATTERNS.some(p => p.test(text));
-};
-
-export const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
-  const [svgContent, setSvgContent] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!code) return;
-
-    const renderDiagram = async () => {
-      try {
-        const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-        const { svg } = await mermaid.render(id, code);
-        setSvgContent(svg);
-      } catch (err) {
-        console.error('Mermaid rendering error:', err);
-        // Show code block as fallback
-        setSvgContent(null);
-      }
-    };
-
-    renderDiagram();
-  }, [code]);
-
-  if (!svgContent) {
-    return (
-      <pre className="markdown-code-block">
-        <code>{code}</code>
-      </pre>
-    );
-  }
-
-  return (
-    <div
-      className="mermaid-container"
-      dangerouslySetInnerHTML={{ __html: svgContent }}
-    />
-  );
 };
 
 export const BibtexCopyButton: React.FC<{ contentRef: React.RefObject<string> }> = ({ contentRef }) => {
