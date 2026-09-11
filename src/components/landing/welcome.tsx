@@ -3,12 +3,12 @@
  * site, not a sampler running a self-test.
  *
  * Lives outside the Canvas on purpose: importing this file must not pull three.js. Home shows
- * this first, then lazy-loads the instrument.
+ * this first, then loads the instrument on button intent or entry, not an idle timer.
  */
 
 import React from 'react';
 
-export const WelcomeScreen: React.FC<{ onEnter: () => void; fadeOut?: boolean }> = ({ onEnter, fadeOut }) => (
+export const WelcomeScreen: React.FC<{ onEnter: () => void; onIntent?: () => void; fadeOut?: boolean }> = ({ onEnter, onIntent, fadeOut }) => (
   <div
     className={`absolute inset-0 z-30 bg-[#f9fafb] flex flex-col items-center justify-center cursor-pointer select-none transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}
     onClick={onEnter}
@@ -17,10 +17,13 @@ export const WelcomeScreen: React.FC<{ onEnter: () => void; fadeOut?: boolean }>
       Bo-Yu Chen
     </h1>
     <p className="text-neutral-500 font-mono text-sm sm:text-base tracking-wide mb-10">
-      Researcher // Engineer // Creator
+      Researcher // Engineer // Builder
     </p>
 
     <button
+      onPointerEnter={onIntent}
+      onFocus={onIntent}
+      onPointerDown={onIntent}
       onClick={onEnter}
       aria-label="Enter the interactive scene"
       className="group flex items-center gap-3 px-6 py-3 rounded-full border border-neutral-300 text-neutral-600 hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f9fafb] transition-all duration-300"

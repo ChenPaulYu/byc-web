@@ -1,27 +1,19 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useState } from 'react';
 import { WelcomeScreen } from '../components/landing/welcome';
 import { resume } from '../components/landing/audio';
 import { usePageTitle } from '../utils/usePageTitle';
 
 const LandingScene = lazy(() => import('../components/LandingScene'));
+const preloadScene = () => { void import('../components/LandingScene').catch(() => {}); };
 
 const Home: React.FC = () => {
   usePageTitle();
   const [entered, setEntered] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
 
-  // Fetch the instrument chunk after the name is on screen, so opening the tab is not a
-  // three.js parse. Power on still waits for the fade; this just means the wait is a fade,
-  // not a download.
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      void import('../components/LandingScene');
-    }, 400);
-    return () => window.clearTimeout(id);
-  }, []);
-
   const handleEnter = useCallback(async () => {
     if (fadeOut || entered) return;
+    preloadScene();
     await resume();
     setFadeOut(true);
     window.setTimeout(() => setEntered(true), 500);
@@ -34,7 +26,7 @@ const Home: React.FC = () => {
           <LandingScene />
         </Suspense>
       )}
-      {!entered && <WelcomeScreen onEnter={handleEnter} fadeOut={fadeOut} />}
+      {!entered && <WelcomeScreen onEnter={handleEnter} onIntent={preloadScene} fadeOut={fadeOut} />}
     </div>
   );
 };

@@ -1,31 +1,15 @@
 /**
- * CameraDirector — watches the orbit camera's distance from its target, and flies it on request.
- *
- * Lives inside the Canvas because both jobs need `useFrame`, same as the `OrbitControls` it
- * drives. Distance is recomputed every frame, but it only crosses into React as a single boolean,
- * and only on the frame it actually flips — pushing the raw distance into state would re-render
- * the whole Canvas subtree at ~60fps for a number nothing outside this component needs at that
- * resolution.
- *
- * The threshold is doubled rather than singular: fade out below 0.58x the authored overview
- * distance, restore above 0.68x. `OrbitControls` has damping on, so the distance keeps drifting
- * for a moment after the visitor lets go of the mouse — a camera resting near a single line would
- * flip the boolean back and forth on that drift alone. Between the two lines the boolean just
- * holds whatever it last was.
- *
- * Flying preserves the viewing angle and changes only the target and the distance, which is why
- * one rule serves every portrait object and why the controls' polar and azimuth limits keep
- * holding through a flight — the angles never move. The overview those flights restore is owned
- * by shot.ts, derived from the portrait's size rather than from a tuned offset.
- *
- * Reads: `OrbitControls` from three-stdlib, for the ref shape drei does not re-export by name.
- * captions.ts for the subject ids a click can name.
+ * CameraDirector — bounded object/overview flights and proximity-based overlay visibility.
+ * Reads: RoomControlHandle for target, constraints and input-start cancellation; caption ids.
+ * Flight endpoints and each update obey the interior boundary. User input cancels a flight;
+ * reduced motion applies the destination immediately. Proximity crosses into React only when
+ * its hysteresis boolean changes, never at frame frequency.
  */
 
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import type { RoomControlHandle } from './roomCamera';
 import type { CaptionSubject } from './captions';
 
 // Fractions of the authored overview distance (shot.ts), not absolute scene units — that is
@@ -40,6 +24,9 @@ export interface FlightRequest {
   distance: number;
   /** When set, fly to this exact camera position instead of preserving the current view ray. */
   position?: THREE.Vector3;
+  /** Interior overview is already close; an explicit object focus still clears page chrome. */
+  focused?: boolean;
+  fov?: number;
 }
 
 /** Click on a portrait object. Drag-vs-click stays in LandingScene; this just packages the look-at. */
@@ -73,28 +60,32 @@ export const pointerCursor = {
 };
 
 interface CameraDirectorProps {
-  /** Ref to the live OrbitControls instance; null until the controls mount. */
-  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+  /** Ref to the interior look/approach controller; null until it mounts. */
+  controlsRef: React.RefObject<RoomControlHandle | null>;
   /** The current authored overview distance, so fade thresholds track the shot. */
   defaultDistance: number;
   /** Called only on the frame the close/far boolean actually changes. */
   onCloseChange: (isClose: boolean) => void;
   /** Set by a click on a portrait object or on the desk. A new object starts a new flight. */
   request: FlightRequest | null;
+  reducedMotion?: boolean;
 }
 
-export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, request }: CameraDirectorProps) {
+export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, request, reducedMotion = false }: CameraDirectorProps) {
   const { camera } = useThree();
 
   // Last value handed to the caller, kept out of React state on purpose — this is the guard that
   // turns "recompute every frame" into "notify only on a real flip".
   const lastReported = useRef(false);
+  const focused = useRef(false);
 
   const flight = useRef<{
     fromPosition: THREE.Vector3;
     fromTarget: THREE.Vector3;
     toPosition: THREE.Vector3;
     toTarget: THREE.Vector3;
+    fromFov: number;
+    toFov: number;
     elapsed: number;
   } | null>(null);
 
@@ -105,6 +96,7 @@ export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, re
   useEffect(() => {
     const controls = controlsRef.current;
     if (!request || !controls) return;
+    focused.current = request.focused ?? false;
 
     const toTarget = request.target.clone();
     const toPosition = request.position
@@ -113,14 +105,17 @@ export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, re
           camera.position.clone().sub(controls.target).normalize(),
           request.distance,
         );
+    controls.constrain(toPosition);
     flight.current = {
       fromPosition: camera.position.clone(),
       fromTarget: controls.target.clone(),
       toPosition,
       toTarget,
-      elapsed: 0,
+      fromFov: (camera as THREE.PerspectiveCamera).fov,
+      toFov: request.fov ?? (camera as THREE.PerspectiveCamera).fov,
+      elapsed: reducedMotion ? FLIGHT_SECONDS : 0,
     };
-  }, [request, camera, controlsRef]);
+  }, [request, camera, controlsRef, reducedMotion]);
 
   // Any touch of the controls hands the camera straight back. Finishing a tween over someone who
   // has grabbed the mouse is the fastest way to make a camera feel broken.
@@ -143,6 +138,10 @@ export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, re
       const eased = 1 - Math.pow(1 - t, 3);
       camera.position.lerpVectors(inFlight.fromPosition, inFlight.toPosition, eased);
       controls.target.lerpVectors(inFlight.fromTarget, inFlight.toTarget, eased);
+      if (camera instanceof THREE.PerspectiveCamera && inFlight.fromFov !== inFlight.toFov) {
+        camera.fov = THREE.MathUtils.lerp(inFlight.fromFov, inFlight.toFov, eased);
+        camera.updateProjectionMatrix();
+      }
       controls.update();
       if (t >= 1) flight.current = null;
     }
@@ -152,7 +151,7 @@ export function CameraDirector({ controlsRef, defaultDistance, onCloseChange, re
     const restoreAt = defaultDistance * RESTORE_FRACTION;
 
     let isClose = lastReported.current;
-    if (distance < fadeOutAt) {
+    if (focused.current || distance < fadeOutAt) {
       isClose = true;
     } else if (distance > restoreAt) {
       isClose = false;

@@ -48,3 +48,42 @@ boundary that activates only for `language-mermaid` code blocks.
 - Changing Markdown output, Mermaid diagrams, syntax-highlighting behavior, or route UX.
 - Replacing Mermaid, React Markdown, or the existing Vite vendor policy.
 - Optimizing the separate admin bundle.
+
+## 2026-09-11 initial-loading correction
+
+The earlier statement that Three.js loads only after Power on was disproved by the production
+output: dist/index.html preloaded three-vendor and the entry imported shared runtime from it.
+Baseline initial JavaScript was 1,307,535 bytes (1,277 KiB), excluding CSS/media/fonts.
+
+User authorized loading optimization. Scope is the public entry boundary, not a new visual
+design or removal of equipment. Keep the room/101 refinement pending visual review.
+
+- Use explicit manual chunk membership, with React/React DOM and shared bundler helpers owned
+  by the common runtime rather than the optional Three.js chunk. Merely adding React to the
+  old object-form manualChunks did not fix the dependency leak; two production checks failed.
+- The first explicit scene/vendor split passed the size gate but failed actual Power on with
+  a temporal-dead-zone error. The manifest confirmed LandingScene -> three-vendor -> LandingScene.
+  A new all-static-chunk cycle gate reproduced that failure and caught the equivalent Markdown
+  split. Remove both forced optional-vendor groups; retain only explicit shared React ownership
+  and let Rollup co-locate optional dependencies at lazy boundaries.
+- Replace Home's unconditional 400 ms scene import with Power on pointer/focus/entry intent.
+  No background 3D download for someone who only opens the welcome page.
+- Add a production manifest gate: npm run build:main && npm run check:payload. Follow static
+  imports recursively; reject eager Three/LandingScene/Markdown/Mermaid and initial JS >400 KiB.
+- Verify typecheck/tests and a muted Luna production browser pass: welcome without 3D requests,
+  entry still loads the room, and a direct content route still renders.
+
+### Measured result
+
+- Production build and manifest/cycle gates pass: entry + react-vendor total 279,895 bytes, versus
+  baseline 1,307,535 bytes (~79% reduction). Locally gzip-compressed total is 90,326 bytes;
+  this is not a claim about the deployed server's compression or real-world load time.
+- Final typecheck and all 43 tests pass. No equipment/model/video replacement, no deployment.
+- Production preview for browser verification: http://localhost:4175. Do not use Vite's dev
+  module graph as evidence of production loading behavior. Model/video download and scene
+  initialization after entry remain outside this measured improvement.
+- Final fresh muted Luna production pass succeeded: welcome had five resources with no scene,
+  GLB, video or audio requests; Power on rendered the room at 1440x900; direct /about rendered
+  readable content with no Canvas or 3D/media requests. Runtime errors were empty. Parent
+  inspected /tmp/byc-loading-room-final.png and /tmp/byc-loading-about-final.png. Own session
+  closed. This supersedes the failed intermediate chunk-split browser result above.

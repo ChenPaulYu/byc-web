@@ -673,7 +673,8 @@ const Clutter: React.FC<{ onFocus?: FocusHandler }> = ({ onFocus }) => {
           requestFocus(onFocus, fluteRoot.current.getWorldPosition(new THREE.Vector3()), FLUTE_FOCUS_DISTANCE, e, 'flute');
         }}
       >
-        <group rotation={[Math.PI / 2, Math.PI, 0]}>
+        {/* Local −Z is the window face; lay it facing up toward +Y. */}
+        <group rotation={[Math.PI / 2, 0, 0]}>
           <primitive object={flute} />
         </group>
       </group>

@@ -1,7 +1,7 @@
 /**
  * wood.ts — procedural timber: colour, relief and finish, all read out of one drawing of grain.
  *
- * The desk top is the remaining caller.
+ * The desk top and room floor/shelving share this generator.
  *
  * The design decision worth keeping: real timber is one structure showing three ways. The grain
  * is darker, it sits slightly lower because the soft early wood wears down, and its open pores
@@ -71,7 +71,7 @@ export function createWoodMaps({
   // between. So neighbours share one warp, and the spacing is a squared random.
   const waves = Array.from({ length: 5 }, () => ({
     frequency: 0.3 + rand() * 2.2,
-    amplitude: 6 + rand() * 34,
+    amplitude: 2 + rand() * 7,
     phase: rand() * Math.PI * 2,
   }));
   const warpAt = (x: number, drift: number) =>
@@ -80,16 +80,15 @@ export function createWoodMaps({
       0,
     );
 
-  // Deliberately coarser and stronger than the real thing. These surfaces render small — the desk
-  // is about two hundred pixels across — so grain at true scale is sub-pixel and averages away to
-  // a flat plane, which is what a correctly-scaled first attempt did.
+  // Fine, shallow figure: the full board is now one texture rather than repeated unit tiles.
+  // Large high-contrast strokes read as embossed stripes when the camera approaches the desk.
   for (let y = 0; y < size; ) {
     y += ringPitch * 0.19 + rand() ** 2 * ringPitch;
     // The arc changes slowly down the board, so the figure is not one repeated curve.
     const drift = (y / size) * 1.5;
     const latewood = rand() > 0.55;
-    gctx.lineWidth = latewood ? 2.6 + rand() * 5 : 1 + rand() * 1.8;
-    gctx.strokeStyle = `rgba(0,0,0,${latewood ? 0.34 + rand() * 0.38 : 0.12 + rand() * 0.2})`;
+    gctx.lineWidth = latewood ? 0.8 + rand() * 1.4 : 0.3 + rand() * 0.8;
+    gctx.strokeStyle = `rgba(0,0,0,${latewood ? 0.2 + rand() * 0.24 : 0.08 + rand() * 0.12})`;
     gctx.beginPath();
     for (let x = 0; x <= size; x += 8) {
       const yy = y + warpAt(x, drift);
@@ -101,9 +100,9 @@ export function createWoodMaps({
 
   // Open pores: short dark dashes lying along the grain. These separate an open-grained timber
   // from a smooth close-grained one, and they are the detail the roughness map lives on.
-  gctx.fillStyle = 'rgba(0,0,0,0.5)';
+  gctx.fillStyle = 'rgba(0,0,0,0.16)';
   for (let i = 0; i < 2600; i += 1) {
-    gctx.fillRect(rand() * size, rand() * size, 2 + rand() * 9, 1);
+    gctx.fillRect(rand() * size, rand() * size, 0.5 + rand() * 3, 0.6);
   }
 
   const field = gctx.getImageData(0, 0, size, size).data;

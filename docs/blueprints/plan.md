@@ -12,9 +12,11 @@
 
 > The current homepage, content-source, and bundle-splitting batches are implemented and verified.
 
-## 🚧 In progress —— no active implementation batch
+## 🚧 In progress
 
-> The homepage, content-source, and bundle-splitting batches are implemented and verified.
+- **Taipei window refinement (2026-09-11)** — photo-grounded 101 plus cream/terracotta tile apartments, grilles/AC details, dimensional balconies/awnings/water tanks and distant glass buildings. Muted Luna window screenshot reviewed, runtime errors empty; 45 tests, typecheck, public build and payload gate pass. Room 25 batches / 23,212 triangles; initial JS unchanged. [`Evidence`](plans/2026-09-11-immersive-studio.md#taiwanese-neighborhood-refinement).
+
+- **Inside the studio (2026-09-11)** — bright daylight room now includes ceiling cornices/joints, an opal fixture, vent, wall trim and finer plaster finish; upper shelf lowered for book headroom. Original gear, Taipei 101, cloth flag and physical-only FlueBricks retained. Typecheck and 49 tests passed; room 26 batches / 23,992 triangles. Muted Luna entry/upward screenshots reviewed; no runtime errors. User art-direction acceptance and real-device performance remain open. [`Current evidence`](plans/2026-09-11-immersive-studio.md#wall-and-ceiling-finishing) · [`Prior room iterations`](plans/2026-09-11-blue-hour-room.md).
 
 ## ▶ Next
 
@@ -33,10 +35,19 @@
   the right frame and whether navigation belongs inside the scene.
 - **Bake ambient occlusion** — the `three-mesh-bvh` Node approach is chosen, but the scene-first
   visual question is not currently the active homepage goal.
-- **Review remaining page weight** — after the Mermaid split, the remaining candidates are the
-  `three-vendor` chunk and `public/model.glb`; revisit only with an explicit performance target.
+- **Remaining interactive-scene load** — the initial-entry 3D dependency leak is fixed below.
+  Model/video payload and scene initialization still need separate measurement; no visual
+  degradation or asset replacement approved by this optimization pass.
 
 ## ✅ Shipped
+
+- **Wall light-switch (2026-09-11, local branch)** — the existing door-side rocker turns the ceiling light off/on; direct lamp clicks disabled per user clarification. Window daylight and desk lamp remain, no tutorial or camera flight. Reuses mounted room resources and existing lights. Latest verification in [`Evidence`](plans/2026-09-11-immersive-studio.md#wall-and-ceiling-finishing).
+
+- **Taiwan cloth flag + Builder (2026-09-11, local branch)** — reference-inspired pinned fabric above the left speaker, compact central research notes and clear separation from the right shelves; replaces the desk flag and sticker iterations. Click-only “Taiwan No. 1!” / “I’m from Taiwan.” caption retained. Creator wording updated throughout live self-descriptions. Latest verification evidence lives in the linked plan. [`Evidence`](plans/2026-09-11-immersive-studio.md#personal-taiwan-flag-and-builder-wording).
+
+- **Initial loading boundary (2026-09-11, local branch)** — explicit shared-runtime ownership and intent-only scene preload reduce initial production JavaScript from 1,307,535 to 279,895 bytes (~79%). Manifest size/dependency/cycle gates, 43 tests, typecheck and public build pass. Final muted Luna production check passed welcome without 3D/media requests, working room entry and direct About without 3D; no runtime errors. Not deployed. [`Evidence and scope`](plans/2026-08-23-bundle-splitting.md#2026-09-11-initial-loading-correction).
+
+- **Living sketch desk + wordless Echo Desk (2026-09-11)** — concept 4 implemented, original layout and personal equipment preserved. Physical-avatar-initiated call-and-response, automatic rounds, object feedback, FlueBricks study, sound drawing, project introductions and material polish; no tutorial HUD or duplicate pad controls. Photo-grounded FlueBricks correction adds a bent regulator and real openings, merges 17 meshes into 5, and turns the desk model face-up; 30 tests, typecheck and both builds pass. Previously reported scene lag remains unresolved. Muted Luna browser verification passed desktop/mobile avatar entry, correct response, automatic continuation and exit; mobile MPC remains scale 1. Plan and verification scope: [`2026-09-11-living-sketch-desk.md`](plans/2026-09-11-living-sketch-desk.md). Local branch: `experiment/astra-landing-polish`, not deployed.
 
 - **Homepage bundle splitting (2026-08-23)** — Mermaid now loads only when a `language-mermaid`
   block renders; `MarkdownRenderer` dropped from roughly 505 KB to 6.7 KB minified. See

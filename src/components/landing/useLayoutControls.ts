@@ -1,6 +1,7 @@
 /**
- * Owns responsive scaling and development-only dat.gui controls for the MPC layout.
- * Reads: viewport dimensions, Vite development flags, and the canonical layout defaults.
+ * Owns development-only dat.gui controls for the MPC layout. Physical size is viewport-invariant;
+ * shot.ts owns responsive framing for the whole scene.
+ * Reads: Vite development flags and the canonical layout defaults.
  * Writes: layout state and a temporary dat.gui panel in development.
  */
 
@@ -33,50 +34,10 @@ if (import.meta.env.DEV) {
 
 export interface LayoutControls {
   positions: MpcPositions;
-  responsiveScale: number;
   stride: number;
 }
 
 export function useLayoutControls(): LayoutControls {
-  const [responsiveScale, setResponsiveScale] = useState(1);
-
-  useEffect(() => {
-    const updateResponsiveScale = () => {
-      const { innerWidth, innerHeight } = window;
-      const aspectRatio = innerWidth / innerHeight;
-
-      // Scale based on viewport size while maintaining MPC proportions
-      let scale = 1;
-
-      if (innerWidth < 480) {
-        // Mobile phones
-        scale = 0.5;
-      } else if (innerWidth < 768) {
-        // Large phones / small tablets
-        scale = 0.65;
-      } else if (innerWidth < 1024) {
-        // Tablets
-        scale = 0.8;
-      } else if (innerWidth > 1920) {
-        // Large desktops
-        scale = 1.2;
-      } else {
-        // Standard desktop (1024-1920px)
-        scale = 1.0;
-      }
-
-      // Further adjust for very wide or narrow screens
-      if (aspectRatio > 2.5) scale *= 0.8; // Ultra-wide
-      if (aspectRatio < 0.6) scale *= 0.7; // Portrait mobile
-
-      setResponsiveScale(previous => previous === scale ? previous : scale);
-    };
-
-    updateResponsiveScale();
-    window.addEventListener('resize', updateResponsiveScale);
-    return () => window.removeEventListener('resize', updateResponsiveScale);
-  }, []);
-
   const [positions, setPositions] = useState<MpcPositions>(DEFAULT_MPC_POSITIONS);
   const stride = positions.padSize + positions.padSpacing;
 
@@ -229,5 +190,5 @@ export function useLayoutControls(): LayoutControls {
     }
   }, [positions]);
 
-  return { positions, responsiveScale, stride };
+  return { positions, stride };
 }

@@ -171,6 +171,8 @@ export const AvatarModel: React.FC = () => {
   );
 };
 
+const AVATAR_PROJECTION_POSITION = [0, 0, -0.45] as const;
+
 /**
  * The avatar's entrance, and the effects that act on him afterwards.
  *
@@ -192,6 +194,8 @@ export const AvatarStage: React.FC<{
   space: number;
   children: React.ReactNode;
 }> = ({ armed, scale, space, children }) => {
+  // Keep the projection toward the back of the screen so the avatar does not cover the main
+  // video readout when the MPC is focused. The whole stage moves together, including its light.
   const rig = useRef<THREE.Group>(null);
   const beam = useRef<THREE.Mesh>(null);
   const ring = useRef<THREE.Mesh>(null);
@@ -243,7 +247,7 @@ export const AvatarStage: React.FC<{
   });
 
   return (
-    <group>
+    <group position={AVATAR_PROJECTION_POSITION}>
       <mesh ref={beam} position={[0, 1.15, 0]} visible={false}>
         <cylinderGeometry args={[0.34, 0.58, 2.4, 18, 1, true]} />
         <meshBasicMaterial
@@ -371,7 +375,7 @@ const PadComponent: React.FC<PadProps> = ({ position, size, triggerKey, color, o
       position={position}
       onClick={(e) => { e.stopPropagation(); trigger(); }}
     >
-      <meshStandardMaterial color={idleTint ?? "#6b7280"} roughness={0.4} metalness={0.2} />
+      <meshStandardMaterial color={idleTint ?? "#6b7280"} roughness={0.78} metalness={0} />
     </RoundedBox>
   );
 };
@@ -443,11 +447,11 @@ export const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDra
       {/* Sit on the deck, not in it. The cylinder used to cross y = 0, so the chassis
           punched a ring around every knob and the contact shadow read as a well. */}
       <mesh position={[0, 0.155, 0]} rotation={[0, rotation, 0]}>
-        <cylinderGeometry args={[0.25, 0.25, 0.24, 16]} />
+        <cylinderGeometry args={[0.24, 0.26, 0.24, 32]} />
         <meshStandardMaterial
           color={hovered ? "#4b5563" : "#374151"}
-          roughness={0.3}
-          metalness={0.6}
+          roughness={0.56}
+          metalness={0.18}
         />
 
         {/* Indicator Line - Positioned at -Z (Up/12 o'clock) */}

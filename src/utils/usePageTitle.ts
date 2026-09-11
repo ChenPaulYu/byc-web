@@ -4,9 +4,9 @@ const BASE_TITLE = 'Bo-Yu Chen';
 
 export function usePageTitle(title?: string) {
   useEffect(() => {
-    document.title = title ? `${title} | ${BASE_TITLE}` : `${BASE_TITLE} | Researcher // Engineer // Creator`;
+    document.title = title ? `${title} | ${BASE_TITLE}` : `${BASE_TITLE} | Researcher // Engineer // Builder`;
     return () => {
-      document.title = `${BASE_TITLE} | Researcher // Engineer // Creator`;
+      document.title = `${BASE_TITLE} | Researcher // Engineer // Builder`;
     };
   }, [title]);
 }

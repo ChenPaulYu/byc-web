@@ -1,26 +1,30 @@
 /**
- * Builds the desk vignette the MPC sits on: a workspace seen from behind an empty chair,
- * floating in a soft grey void with no walls or floor edge.
+ * Composes the enclosed daylight room, measured desk, Taiwan flag, MPC support and football.
+ * Room architecture/material batches live in room.ts; this stage routes wall-switch clicks and
+ * updates its owned lamp material without rebuilding room resources. Physical floor/desk datums stay here.
  *
  * An all-near-white set gives the eye nothing to separate forms against, so one surface has to
- * carry weight. That is the desk top: a warm light oak, drawn as a canvas texture at runtime.
+ * carry weight. That is the walnut desk top, drawn as a canvas texture at runtime.
  * Near-black was tried first and read as heavy and airless; wood holds the same structural job
  * while putting back the warmth the scene lost when the chair was removed, and a cheap wooden
  * desk is the right register for bedroom recording anyway.
  *
- * Reads: site-style neutrals · scale.ts · wood.ts · football.ts · CameraDirector (football
+ * Reads: room.ts · TaiwanFlag · site-style neutrals · scale.ts · wood.ts · football.ts · CameraDirector (football
  * click). Exports the desk datum and football placement the camera shot is built from.
  * Does not import shot.ts — that file already reads the datums from here.
  */
 
 import React, { useEffect, useRef } from 'react';
-import { ContactShadows, RoundedBox } from '@react-three/drei';
+import { RoundedBox } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { cm, REAL } from './scale';
 import { WALNUT, createWoodMaps } from './wood';
 import { createFootball } from './football';
 import { useDisposable } from './useDisposable';
+import { createRoom, ROOM, setCeilingLamp } from './room';
+import { isLightSwitch } from './roomFinish';
+import { TaiwanFlag } from './TaiwanFlag';
 import { pointerCursor, requestFocus, type FocusHandler } from './CameraDirector';
 
 /** Matches the MPC chassis bottom: its group sits at y = -1 with a box of height 1 below. */
@@ -33,7 +37,7 @@ const DESK_FRAME = '#3a3e43';
 // joints still read as separate parts rather than as the frame simply getting thicker.
 const FRAME_DARK = '#4f545a';
 const EDGE_BAND = '#6b563f';
-const WOOD_NORMAL_SCALE = new THREE.Vector2(0.8, 0.8);
+const WOOD_NORMAL_SCALE = new THREE.Vector2(0.22, 0.22);
 
 // Every dimension below comes from a real measurement through cm(). See scale.ts — before
 // that module existed this desk worked out to 15 cm tall, which is why the MPC read as a
@@ -55,7 +59,9 @@ const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }
   // drift out of contact again.
   const legX = DESK_W / 2 - cm(7);
   const legZ = DESK_D / 2 - cm(7);
-  const wood = useDisposable(() => createWoodMaps({ ...WALNUT, repeat: [2.2, 1] }));
+  // Drei's extruded RoundedBox uses world-unit UVs, not a normalized 0–1 face.
+  // One board-sized drawing avoids repeating the grain once per scene unit.
+  const wood = useDisposable(() => createWoodMaps({ ...WALNUT, repeat: [1 / DESK_W, 1 / DESK_D], ringPitch: 20, relief: 0.7 }));
 
 
   return (
@@ -94,7 +100,7 @@ const Desk: React.FC<{ onOverview?: (event: { clientX: number; clientY: number }
           normalScale={WOOD_NORMAL_SCALE}
           roughnessMap={wood?.roughnessMap}
           color={wood ? '#ffffff' : DESK_TOP}
-          roughness={1}
+          roughness={0.86}
           metalness={0}
           anisotropy={0.55}
           anisotropyRotation={Math.PI / 2}
@@ -185,9 +191,8 @@ const useBackdrop = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     const grad = ctx.createLinearGradient(0, 0, 0, 512);
-    grad.addColorStop(0, '#d9dade');
-    grad.addColorStop(0.55, '#e9eaec');
-    grad.addColorStop(1, '#f7f7f8');
+    grad.addColorStop(0, ROOM.skyTop);
+    grad.addColorStop(1, ROOM.skyHorizon);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 4, 512);
     const t = new THREE.CanvasTexture(canvas);
@@ -203,24 +208,6 @@ const useBackdrop = () => {
     return () => { scene.background = previous; };
   }, [scene, texture]);
 };
-
-/** A ground disc whose alpha falls off at the rim, so the floor never shows an edge. */
-const useGround = () =>
-  useDisposable(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    const grad = ctx.createRadialGradient(128, 128, 16, 128, 128, 128);
-    grad.addColorStop(0, 'rgba(238,239,241,1)');
-    grad.addColorStop(0.55, 'rgba(240,241,243,0.9)');
-    grad.addColorStop(1, 'rgba(247,247,248,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 256, 256);
-    const t = new THREE.CanvasTexture(canvas);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  });
 
 const Football: React.FC<{ onFocus?: FocusHandler; focusDistance: number }> = ({ onFocus, focusDistance }) => {
   const r = cm(REAL.football.diameter) / 2;
@@ -247,28 +234,27 @@ const StageComponent: React.FC<{
   onOverview?: (event: { clientX: number; clientY: number }) => void;
   onFocus?: FocusHandler;
   footballDistance: number;
-}> = ({ onOverview, onFocus, footballDistance }) => {
+  ceilingOn: boolean;
+  onCeilingToggle: (event: { clientX: number; clientY: number }) => void;
+}> = ({ onOverview, onFocus, footballDistance, ceilingOn, onCeilingToggle }) => {
   useBackdrop();
-  const ground = useGround();
+  const room = useDisposable(() => createRoom(FLOOR_Y, DESK_TOP_Y));
+  useEffect(() => { if (room) setCeilingLamp(room, ceilingOn); }, [room, ceilingOn]);
   // The floor is FLOOR_Y, the same constant the legs stand on. It used to be worked out here a
   // second time, as the desk top minus its thickness minus a tuned 2.6 — which put the ground
   // 65 cm above the feet. The legs passed straight through it and carried on below, and the
   // contact shadow was a haze floating at mid-leg height, so nothing in the scene was ever
   // standing on anything. One fact, one owner; this is what scale.ts exists to prevent.
-  const floorY = FLOOR_Y;
-
   return (
     <group>
-      <mesh position={[0, floorY, 1.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[52, 36]} />
-        <meshStandardMaterial key={ground ? 'disc' : 'bare'} color="#ffffff" roughness={0.97} metalness={0} map={ground ?? undefined} transparent />
-      </mesh>
-
+      {room && <primitive object={room} onClick={(event: import('@react-three/fiber').ThreeEvent<MouseEvent>) => {
+        if (!isLightSwitch(event.object.name)) return;
+        event.stopPropagation();
+        onCeilingToggle(event.nativeEvent);
+      }} />}
       <Desk onOverview={onOverview} />
+      <TaiwanFlag deskY={DESK_TOP_Y} onFocus={onFocus} />
       <Football onFocus={onFocus} focusDistance={footballDistance} />
-
-      <ContactShadows position={[0, floorY + 0.01, 1.2]} opacity={0.5} scale={30} blur={2.2} far={18} />
-      <ContactShadows position={[0, DESK_TOP_Y + 0.01, 0]} opacity={0.4} scale={16} blur={1.1} far={3} />
     </group>
   );
 };

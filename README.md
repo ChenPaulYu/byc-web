@@ -1,6 +1,6 @@
 # byc-web
 
-Personal portfolio website for Bo-Yu Chen — Researcher // Engineer // Creator.
+Personal portfolio website for Bo-Yu Chen — Researcher // Engineer // Builder.
 
 ## Features
 

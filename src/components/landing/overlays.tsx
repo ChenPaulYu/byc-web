@@ -77,7 +77,7 @@ export const StaticFallback: React.FC = () => {
         Bo-Yu Chen
       </h1>
       <p className="text-neutral-500 font-mono text-sm sm:text-base tracking-wide mb-12">
-        Researcher // Engineer // Creator
+        Researcher // Engineer // Builder
       </p>
       <nav className="flex flex-wrap gap-4 justify-center">
         {['About', 'Projects', 'Blog', 'CV'].map((page) => (
@@ -145,7 +145,8 @@ export function FocusAnchor({
     const leader = root.querySelector<SVGLineElement>('[data-focus-leader]');
 
     const margin = 20;
-    const capMaxW = 288;
+    const capMaxW = capEl?.offsetWidth ?? 288;
+    const capHeight = capEl?.offsetHeight ?? 180;
     let dx = standoff.x - pin.x;
     let dy = standoff.y - pin.y;
     if (Math.abs(dx) < 48) dx = dx >= 0 ? 72 : -72;
@@ -156,7 +157,12 @@ export function FocusAnchor({
     if (capX + capMaxW > rootRect.width - margin) capX = pin.x - dx - capMaxW;
     if (capX < margin) capX = margin;
     if (capY < margin) capY = margin;
-    if (capY > rootRect.height - margin - 48) capY = rootRect.height - margin - 48;
+    capY = Math.min(capY, rootRect.height - margin - capHeight);
+    if (rootRect.width < 640) {
+      capX = (rootRect.width - capMaxW) / 2;
+      capY = rootRect.height - margin - capHeight;
+    }
+    capY = Math.max(margin, capY);
 
     root.style.visibility = 'visible';
     if (pinEl) {
@@ -229,17 +235,20 @@ export const FocusCaption: React.FC<{
       </svg>
       <div data-focus-pin className="focus-pin" />
       {display && (
-        <div data-focus-cap className="focus-caption w-max max-w-xs rounded-md border border-neutral-900 bg-white px-3 py-2">
-          <p className="text-sm leading-snug text-neutral-800">{display.line}</p>
+        <div data-focus-cap className="focus-caption w-[288px] max-w-[calc(100vw-40px)] rounded-xl border border-neutral-300/80 bg-white/95 p-5 shadow-[0_12px_40px_-20px_rgba(30,45,45,0.3)] backdrop-blur-md">
+          <p className="mb-3 text-[9px] font-mono tracking-[0.16em] text-neutral-500">{display.eyebrow}</p>
+          <p className="text-lg font-medium leading-tight tracking-tight text-neutral-800">{display.line}</p>
+          {display.description && <p className="mt-2 text-xs leading-relaxed text-neutral-500">{display.description}</p>}
           {href && (
             <button
               type="button"
+              tabIndex={shown ? 0 : -1}
               onClick={() => navigate(href)}
               className={`focus-caption-door group/door relative mt-1.5 text-xs font-medium uppercase tracking-wide text-neutral-500 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
                 shown ? 'pointer-events-auto' : 'pointer-events-none'
               }`}
             >
-              View project
+              Explore FlueBricks ↗
               <span
                 aria-hidden
                 className="absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-blue-600 transition-transform duration-200 ease-out group-hover/door:scale-x-100 group-focus-visible/door:scale-x-100"

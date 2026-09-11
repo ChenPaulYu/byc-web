@@ -2,13 +2,15 @@
  * Composes the interactive MPC surface from layout, audio, and reusable 3D primitive boundaries.
  * Reads: public media assets, Vite feature flags, the MPC audio configuration, shot.ts
  * for the working-distance that fills a third of the frame, and CameraDirector for the
- * click→flight contract.
- * Writes: pad, knob, transport, and keyboard interaction state.
+ * click→flight contract; optional EchoGame cues reuse the registered physical pad triggers.
+ * Writes: pad, knob, transport, keyboard interaction state and game input events.
  */
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoundedBox } from '@react-three/drei';
+import type { PadCue } from './EchoGame';
+import type { EchoPhase } from './echoRules';
 import { AvatarFallback, AvatarModel, AvatarStage, Knob, MpcButton, Pad, VideoScreen } from './primitives';
 import {
   COL_KNOBS_X,
@@ -70,25 +72,28 @@ export interface MpcProps {
   onScreenReady?: () => void;
   entered?: boolean;
   onFocus?: FocusHandler;
+  game?: { active: boolean; phase: EchoPhase; cue: PadCue | null; onPad: (key: string) => void; onChallenge: (event: { clientX: number; clientY: number }) => void };
 }
 
-const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus, game }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
   const root = useRef<THREE.Group>(null);
 
   useEffect(() => {
+    if (!entered) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (game?.active && e.repeat) return;
       const key = e.key.toLowerCase();
       const triggerFn = padTriggersRef.current.get(key);
       if (triggerFn) triggerFn();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [entered, game?.active]);
 
   const logo = useLogoTexture();
-  const { positions, responsiveScale, stride } = useLayoutControls();
+  const { positions, stride } = useLayoutControls();
   const {
     isPlaying,
     knobValues,
@@ -106,16 +111,27 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
     const col = i % 4;
     return [(col - 1.5) * stride, 0.1, (row - 1.5) * stride] as [number, number, number];
   }), [stride]);
-  const handlePadTrigger = useCallback((key: string) => triggerPad(key), [triggerPad]);
+  const onGamePad = game?.onPad;
+  const handlePadTrigger = useCallback((key: string) => {
+    triggerPad(key);
+    onGamePad?.(key);
+  }, [triggerPad, onGamePad]);
   const registerPadTrigger = useCallback((key: string, fn: () => void) => {
     padTriggersRef.current.set(key, fn);
   }, []);
 
+  useEffect(() => {
+    if (game?.active) handleStop();
+  }, [game?.active, handleStop]);
+  useEffect(() => {
+    if (game?.cue) padTriggersRef.current.get(game.cue.key)?.();
+  }, [game?.cue]);
+
   return (
     <group
       ref={root}
+      name="mpc"
       position={[positions.containerX, -1, positions.containerZ]}
-      scale={responsiveScale}
       {...pointerCursor}
       onClick={(e) => {
         // Pads, knobs and transport all stopPropagation, so this only fires from the chassis
@@ -126,8 +142,17 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
     >
       {/* --- MPC CONTAINER (OUTER BOX) --- */}
       <RoundedBox args={[CONTAINER_WIDTH, 1, CONTAINER_DEPTH]} radius={0.08} smoothness={4} position={[0, -0.5, 0]} castShadow>
-        <meshStandardMaterial color="#f3f4f6" roughness={0.5} metalness={0.1} />
+        <meshPhysicalMaterial color="#f3f4f6" roughness={0.38} metalness={0.12} clearcoat={0.18} clearcoatRoughness={0.45} />
       </RoundedBox>
+      <RoundedBox args={[CONTAINER_WIDTH - 0.08, 0.15, CONTAINER_DEPTH - 0.08]} radius={0.04} smoothness={3} position={[0, -0.96, 0]} castShadow>
+        <meshStandardMaterial color="#42464b" roughness={0.72} metalness={0.08} />
+      </RoundedBox>
+      {[-1, 1].flatMap(x => [-1, 1].map(z => (
+        <mesh key={`${x}-${z}`} position={[x * (CONTAINER_WIDTH / 2 - 0.19), 0.008, z * (CONTAINER_DEPTH / 2 - 0.19)]}>
+          <cylinderGeometry args={[0.046, 0.046, 0.014, 12]} />
+          <meshStandardMaterial color="#989ca0" roughness={0.35} metalness={0.8} />
+        </mesh>
+      )))}
 
       {/* --- LOGO ROW (TOP RIGHT) --- */}
       <mesh position={[COL_KNOBS_X, 0.01, ROW_LOGO_Z]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -148,6 +173,7 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
               height={positions.padHeight}
               triggerKey={pad.key}
               color={PAD_COLORS[row]}
+              idleTint={row === 3 && game?.active ? game.phase === 'success' || game.phase === 'complete' ? '#a7d7c0' : '#8295aa' : undefined}
               onTrigger={handlePadTrigger}
               registerTrigger={registerPadTrigger}
             />
@@ -181,15 +207,21 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
 
           {/* The avatar is projected out of the screen once the visitor is in, rather than
               already standing there when the lights come up. */}
+          <group name="echo-avatar" {...pointerCursor} onClick={(event) => { event.stopPropagation(); game?.onChallenge(event.nativeEvent); }}>
+          <mesh position={[0, 1.3, 0]}>
+            <boxGeometry args={[1.1, 2.4, 1.4]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
           <AvatarStage
             armed={Boolean(entered)}
             scale={positions.avatarScale}
-            space={knobValues[2]}
+            space={game?.phase === 'success' || game?.phase === 'complete' ? Math.max(knobValues[2], 0.7) : knobValues[2]}
           >
             <Suspense fallback={<AvatarFallback />}>
               <AvatarModel />
             </Suspense>
           </AvatarStage>
+          </group>
         </group>
 
         {/* Transport Buttons */}

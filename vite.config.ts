@@ -11,11 +11,16 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [react()],
     build: {
+      manifest: true,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
-            'markdown-vendor': ['react-markdown', 'remark-gfm', 'rehype-highlight', 'highlight.js'],
+          onlyExplicitManualChunks: true,
+          manualChunks(id) {
+            // Shared runtime/helpers must never be owned by an optional scene chunk.
+            if (id.includes('commonjsHelpers') || id.includes('vite/preload-helper') ||
+                /node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-vendor';
+            // Let Rollup place optional scene/Markdown dependencies together; partial vendor
+            // lists leave their other dependencies in circular chunk graphs.
           },
         },
       },
