@@ -150,7 +150,7 @@ const MpcAssets: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest">Audio Samples</h3>
           <div>
-            <input ref={sampleInputRef} type="file" accept=".wav,.mp3,.ogg" onChange={handleUploadSample} className="hidden" />
+            <input ref={sampleInputRef} type="file" accept=".wav,.flac,.mp3,.ogg" onChange={handleUploadSample} className="hidden" />
             <button
               onClick={() => sampleInputRef.current?.click()}
               disabled={uploading === 'sample'}

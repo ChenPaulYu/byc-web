@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber';
 import { RoundedBox, useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { useDrag } from '@use-gesture/react';
 import { getChannelDisplayLevels } from './audio';
 import { useDisposable } from './useDisposable';
@@ -20,25 +21,18 @@ export const VideoScreen: React.FC<{
   rotationX?: number;
   rotationY?: number;
   rotationZ?: number;
-  onReady?: () => void;
-}> = ({ width, height: _height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0, onReady }) => {
+}> = ({ width, height: _height, depth, opacity = 1.0, rotationX = 0, rotationY = 0, rotationZ = 0 }) => {
   const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
-  const video = useRef<HTMLVideoElement | null>(null);
-  const ready = useRef(onReady);
-  ready.current = onReady;
 
   useEffect(() => {
     // Create video element following Codrops tutorial approach
     const element = document.createElement('video');
-    video.current = element;
     const videoEl = element;
     videoEl.src = '/animation.mp4';
     videoEl.crossOrigin = 'anonymous';
     videoEl.loop = true;
     videoEl.muted = true;
     videoEl.playsInline = true;
-
-    console.log('🎬 Creating video texture...');
 
     // Create video texture with proper color space and orientation
     const texture = new THREE.VideoTexture(videoEl);
@@ -55,25 +49,19 @@ export const VideoScreen: React.FC<{
     const startVideo = async () => {
       try {
         await videoEl.play();
-        console.log('🎬 Video playing successfully');
-      } catch (error) {
-        console.log('🎬 Video autoplay blocked, will play on user interaction');
+      } catch {
+        // A later gesture can retry playback without blocking the room.
       }
     };
 
     // Play on user interaction
     const handleInteraction = () => {
-      videoEl.play().then(() => {
-        console.log('🎬 Video started on user interaction');
-      }).catch(err => {
-        console.error('🎬 Video play error:', err);
-      });
+      void startVideo();
     };
 
-    // Mark ready when the first frame is available
+    // Video readiness is local to the screen; the room can already be used.
     const handleLoaded = () => {
-      ready.current?.();
-      startVideo();
+      void startVideo();
     };
 
     // Try autoplay first, then on click
@@ -82,28 +70,17 @@ export const VideoScreen: React.FC<{
 
     return () => {
       videoEl.pause();
-      videoEl.src = '';
+      videoEl.removeAttribute('src');
+      videoEl.load();
       document.removeEventListener('click', handleInteraction);
       videoEl.removeEventListener('loadeddata', handleLoaded);
       texture.dispose();
     };
-    // Deliberately empty: this effect owns a video element and a texture for the component's
-    // whole life. Listing `onReady` here was tearing both down and rebuilding them on every
-    // render of the parent, because that callback is an inline arrow with a new identity each
-    // time — and rebuilding a video element per render is what eventually took the WebGL context
-    // down. The ref keeps the latest callback without making the effect depend on it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // One video and GPU texture per mount, including StrictMode's cleanup/recreate cycle.
   }, []);
 
-  // Update texture on every frame
-  useFrame(() => {
-    // Only ask for an upload once the element actually holds a frame. Setting needsUpdate
-    // unconditionally makes three.js call texImage2D on an empty video every frame, which the
-    // driver answers with INVALID_VALUE and, often enough, by dropping the context.
-    if (videoTexture && video.current && video.current.readyState >= 2) {
-      videoTexture.needsUpdate = true;
-    }
-  });
+  // VideoTexture schedules uploads when a new video frame arrives. Marking needsUpdate in
+  // useFrame uploads the same pixels again at the canvas frame rate, even while paused.
 
   return (
     <group>
@@ -401,6 +378,19 @@ const KNOB_TICKS = Array.from({ length: 11 }, (_, i) => {
 
 export const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDragChange }) => {
   const [hovered, setHover] = useState(false);
+  // Eleven identical, stationary tick marks share one draw call. Preserve their exact
+  // geometry and transforms; hover/drag events still bubble to this knob's group.
+  const ticks = useDisposable(() => {
+    const pieces = KNOB_TICKS.map(tick => {
+      const geometry = new THREE.BoxGeometry(0.01, 0.006, 0.038);
+      geometry.rotateY(tick.rotation);
+      geometry.translate(tick.x, 0, tick.z);
+      return geometry;
+    });
+    const geometry = mergeGeometries(pieces);
+    pieces.forEach(piece => piece.dispose());
+    return geometry;
+  });
 
   const bind = useDrag(
     ({ delta: [_, dy], event, first, last }) => {
@@ -436,14 +426,9 @@ export const Knob: React.FC<KnobProps> = ({ position, value = 0, onChange, onDra
       onPointerOver={() => { document.body.style.cursor = 'ns-resize'; setHover(true); }}
       onPointerOut={() => { document.body.style.cursor = 'pointer'; setHover(false); }}
     >
-      <group position={[0, 0.012, 0]}>
-        {KNOB_TICKS.map((tick, i) => (
-          <mesh key={i} position={[tick.x, 0, tick.z]} rotation={[0, tick.rotation, 0]}>
-            <boxGeometry args={[0.01, 0.006, 0.038]} />
-            <meshStandardMaterial color="#9ca3af" />
-          </mesh>
-        ))}
-      </group>
+      <mesh position={[0, 0.012, 0]} geometry={ticks ?? undefined}>
+        <meshStandardMaterial color="#9ca3af" />
+      </mesh>
       {/* Sit on the deck, not in it. The cylinder used to cross y = 0, so the chassis
           punched a ring around every knob and the contact shadow read as a well. */}
       <mesh position={[0, 0.155, 0]} rotation={[0, rotation, 0]}>
@@ -523,7 +508,9 @@ export const MpcButton: React.FC<MpcButtonProps> = ({
     if (!groupRef.current) return;
     const targetY = isPressed ? -0.02 : 0;
     if (!isPressed && Math.abs(groupRef.current.position.y - targetY) < 0.0002) return;
-    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, delta * 20);
+    // Match the pads' bounded damping: delta * 20 diverges below 10 fps and sends the
+    // transport controls thousands of units off the desk during a sustained slow frame rate.
+    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, 1 - Math.exp(-20 * delta));
   });
 
   return (

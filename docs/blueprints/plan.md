@@ -36,8 +36,11 @@
 - **Bake ambient occlusion** — the `three-mesh-bvh` Node approach is chosen, but the scene-first
   visual question is not currently the active homepage goal.
 - **Remaining interactive-scene load** — the initial-entry 3D dependency leak is fixed below.
-  Model/video payload and scene initialization still need separate measurement; no visual
-  degradation or asset replacement approved by this optimization pass.
+  2026-10-02: fixed entry recovery, blocked fonts/audio/media, video uploads and unstable slow-frame
+  animation. Cached static shadows and batched knob ticks reduce idle draw calls by ~44%; lossless
+  audio/model packing reduces transfer sizes by 45.6%/13.7%. Loading now keeps one entry screen
+  until the room renders, fixing the intermediate blank/fallback flash. Cold shader/audio initialization,
+  video transfer and physical-device measurements remain future work; retain the authored visuals. [`Evidence`](plans/2026-08-23-bundle-splitting.md#2026-10-02-scene-entry-recovery-and-video-uploads).
 
 ## ✅ Shipped
 

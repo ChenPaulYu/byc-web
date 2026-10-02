@@ -31,6 +31,17 @@ npm run build
 npm run build:cvpdf
 ```
 
+The homepage samples use lossless FLAC copies to reduce downloads, with same-name WAV masters
+as playback fallbacks. After editing a configured WAV master, run `npm run samples:encode`
+(requires FFmpeg). The command verifies identical decoded audio; commit both files and choose
+the `.flac` filename in `public/mpc.config.json` or MPC Assets. Normal builds use the committed
+assets and do not require FFmpeg. New uploads keep the explicitly selected filename.
+
+Production builds also losslessly pack `dist/model.glb` with the existing loader's meshopt
+decoder. Every reconstructed buffer view is checked against the source before writing the
+packed file. `public/model.glb`, embedded image bytes and animation data remain unchanged;
+already-compressed models are left as supplied.
+
 ### Admin Dashboard
 
 The admin dashboard lets you manage all site content:

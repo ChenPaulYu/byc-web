@@ -1,5 +1,6 @@
 /**
- * Hosts the instrument after Power on: Canvas lifecycle, camera behavior, ceiling-light state and navigation overlay.
+ * Hosts the instrument after Power on: frame readiness, GPU failure recovery, camera behavior,
+ * ceiling-light state and navigation overlay. Optional media never gates the room's first frame.
  * Reads: the composed landing-scene modules (stage, MPC, overlays, shot.ts for the authored
  * camera frame, room.ts for the light palette, captions.ts for object introductions);
  * writes: navigation and focus state. The welcome gate lives in Home
@@ -12,7 +13,9 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Environment, Lightformer } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
-import { CanvasErrorBoundary, FocusAnchor, FocusCaption, LoadingOverlay, StaticFallback } from './landing/overlays';
+import { FocusAnchor, FocusCaption } from './landing/overlays';
+import { CanvasErrorBoundary, StaticFallback } from './landing/fallback';
+import { SceneLifecycle } from './landing/SceneLifecycle';
 import { Stage, DESK_TOP_Y, FLOOR_Y } from './landing/Stage';
 import { DeskGear } from './landing/DeskGear';
 import Mpc from './landing/Mpc';
@@ -25,10 +28,17 @@ import { CameraDirector, type FlightRequest } from './landing/CameraDirector';
 import { authoredShot, CAPTION_HALO, FOOTBALL_FOCUS_DISTANCE } from './landing/shot';
 import { CAPTIONS, type Caption, type CaptionSubject } from './landing/captions';
 
-const LandingScene: React.FC = () => {
+const LandingScene: React.FC<{ onReady: () => void }> = ({ onReady }) => {
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
-  const [screenReady, setScreenReady] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  const handleUnavailable = useCallback(() => { setUnavailable(true); onReady(); }, [onReady]);
+  const attachSceneHost = useCallback((host: HTMLDivElement | null) => {
+    if (!host) return;
+    // Listen outside R3F: context loss can precede renderer creation and child effects.
+    host.addEventListener('webglcontextlost', handleUnavailable, true);
+    return () => host.removeEventListener('webglcontextlost', handleUnavailable, true);
+  }, [handleUnavailable]);
   const game = useEchoGame();
   const gameActive = game.state.phase !== 'idle';
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -38,18 +48,6 @@ const LandingScene: React.FC = () => {
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
-
-  // The screen signals itself on mount now that it draws rather than loads, but the fallback
-  // stays: if it never mounts at all, the loading overlay must not sit there forever.
-  useEffect(() => {
-    if (screenReady) return;
-    const timeout = window.setTimeout(() => setScreenReady(true), 5000);
-    return () => window.clearTimeout(timeout);
-  }, [screenReady]);
-
-  // Stable identity: an inline arrow here is a new prop on every render, and the screen
-  // rebuilds its video element whenever it sees one.
-  const handleScreenReady = useCallback(() => setScreenReady(true), []);
 
   // Transient look/approach input shares a small handle with the existing flight director.
   const controlsRef = useRef<RoomControlHandle>(null);
@@ -147,26 +145,28 @@ const LandingScene: React.FC = () => {
     game.start();
   };
 
+  if (unavailable) return <StaticFallback />;
+
   return (
-    <CanvasErrorBoundary fallback={<StaticFallback />}>
+    <CanvasErrorBoundary fallback={<StaticFallback />} onError={onReady}>
     <div
+      ref={attachSceneHost}
       data-game-phase={game.state.phase}
       data-echo-cue={game.cue?.key ?? ''}
       className="w-full h-screen relative bg-[#f9fafb] overflow-hidden"
       onPointerDown={(e) => { didExploreRef.current = false; pointerDownAt.current = { x: e.clientX, y: e.clientY }; }}
     >
-      <LoadingOverlay extraReady={screenReady} />
       <Canvas
         frameloop="always"
         shadows={{ type: THREE.PCFShadowMap }}
         camera={{ position: opening.position, fov: opening.fov, near: opening.near, far: opening.far }}
         dpr={[1, 1.5]} // Limit pixel ratio for performance
-        performance={{ min: 0.5 }} // Allow frame rate to drop for performance
         onPointerLeave={() => { document.body.style.cursor = 'auto'; }}
         // Neutral, not ACESFilmic. ACES is built for cinematic HDR contrast and desaturates
         // light surfaces — on a near-white set that shows up as a grey, muddy wash.
         gl={{ toneMapping: THREE.NeutralToneMapping, toneMappingExposure: 1.06 }}
       >
+        <SceneLifecycle onReady={onReady} />
         <color attach="background" args={['#f9fafb']} />
 
         {/* Broad daylight lifts the room; a single directional shadow retains contact/depth. */}
@@ -212,7 +212,7 @@ const LandingScene: React.FC = () => {
           onCeilingToggle={event => { if (!wasADrag(event)) setCeilingOn(on => !on); }}
         />
         <DeskGear onDragChange={setIsDragging} onFocus={focusOn} />
-        <Mpc onDragChange={setIsDragging} onScreenReady={handleScreenReady} entered onFocus={focusOn} game={{ active: gameActive, phase: game.state.phase, cue: game.cue, onPad: game.onPad, onChallenge: event => { if (!wasADrag(event)) { if (gameActive) resetToOverview(); else startGame(); } } }} />
+        <Mpc onDragChange={setIsDragging} entered onFocus={focusOn} game={{ active: gameActive, phase: game.state.phase, cue: game.cue, onPad: game.onPad, onChallenge: event => { if (!wasADrag(event)) { if (gameActive) resetToOverview(); else startGame(); } } }} />
         {!gameActive && sketchMode && (
           <SketchLayer mode={sketchMode} reducedMotion={reducedMotion} />
         )}

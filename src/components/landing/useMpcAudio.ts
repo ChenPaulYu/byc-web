@@ -52,12 +52,12 @@ export function useMpcAudio(entered = false): MpcAudioState {
         // Fallback to hardcoded defaults
         setMpcConfig({
           bpm: 78,
-          loop: 'SLS_CSP_78_songstarter_soul_thief_Cmin.wav',
+          loop: 'SLS_CSP_78_songstarter_soul_thief_Cmin.flac',
           pads: {
-            z: 'SLS_CSP_kick_father.wav',
-            x: 'SLS_CSP_snare_acoustic_intro.wav',
-            c: 'SLS_CSP_hihat_grit_closed.wav',
-            v: 'SLS_CSP_hihat_grit_open.wav',
+            z: 'SLS_CSP_kick_father.flac',
+            x: 'SLS_CSP_snare_acoustic_intro.flac',
+            c: 'SLS_CSP_hihat_grit_closed.flac',
+            v: 'SLS_CSP_hihat_grit_open.flac',
           },
         });
       });

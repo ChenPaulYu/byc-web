@@ -29,6 +29,7 @@ import { useMpcAudio } from './useMpcAudio';
 import { MPC_FOCUS_DISTANCE } from './shot';
 import { requestFocus, pointerCursor, type FocusHandler } from './CameraDirector';
 import { useDisposable } from './useDisposable';
+import { CanvasErrorBoundary } from './fallback';
 
 /**
  * The BYC mark, drawn into a canvas.
@@ -69,13 +70,12 @@ const useLogoTexture = () =>
 
 export interface MpcProps {
   onDragChange: (dragging: boolean) => void;
-  onScreenReady?: () => void;
   entered?: boolean;
   onFocus?: FocusHandler;
   game?: { active: boolean; phase: EchoPhase; cue: PadCue | null; onPad: (key: string) => void; onChallenge: (event: { clientX: number; clientY: number }) => void };
 }
 
-const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus, game }) => {
+const Mpc: React.FC<MpcProps> = ({ onDragChange, entered, onFocus, game }) => {
   // --- CENTRALIZED KEYBOARD HANDLING ---
   const padTriggersRef = useRef<Map<string, () => void>>(new Map());
   const root = useRef<THREE.Group>(null);
@@ -185,8 +185,8 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
       <group position={[COL_SCREEN_X + positions.screenSectionX, 0, ROW_MAIN_Z + positions.screenSectionZ]}>
         {/* The screen plays a video rather than drawing the spectrum. A live readout was built
             and reverted: it deleted the asset and tied the machine's one saturated element to
-            what the visitor was doing, but the owner prefers this. The Suspense wrapper is back
-            with it, because a video element has to load and a canvas does not. */}
+            what the visitor was doing, but the owner prefers this. Media loads locally without
+            holding the room's loading overlay open. */}
         <group position={[0, 0, -0.8]}>
           <Suspense fallback={
             <RoundedBox args={[positions.screenWidth, positions.screenHeight, positions.screenDepth]} radius={0.08} position={[0, 0.08, 0]} receiveShadow>
@@ -201,7 +201,6 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
               rotationX={positions.videoRotationX}
               rotationY={positions.videoRotationY}
               rotationZ={positions.videoRotationZ}
-              onReady={onScreenReady}
             />
           </Suspense>
 
@@ -217,9 +216,11 @@ const Mpc: React.FC<MpcProps> = ({ onDragChange, onScreenReady, entered, onFocus
             scale={positions.avatarScale}
             space={game?.phase === 'success' || game?.phase === 'complete' ? Math.max(knobValues[2], 0.7) : knobValues[2]}
           >
-            <Suspense fallback={<AvatarFallback />}>
-              <AvatarModel />
-            </Suspense>
+            <CanvasErrorBoundary fallback={<AvatarFallback />}>
+              <Suspense fallback={<AvatarFallback />}>
+                <AvatarModel />
+              </Suspense>
+            </CanvasErrorBoundary>
           </AvatarStage>
           </group>
         </group>

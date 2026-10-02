@@ -106,13 +106,20 @@ class AudioEngine {
   // race just means the scene is silent for the whole visit.
   private bedWanted = false;
 
-  private ensureContext(): AudioContext {
+  private ensureContext(): AudioContext | null {
     if (this.ctx) return this.ctx;
-
-    const ctx = new AudioContext({ latencyHint: 'interactive' });
-    this.ctx = ctx;
-    this.buildGraph(ctx);
-    return ctx;
+    let ctx: AudioContext | null = null;
+    try {
+      ctx = new AudioContext({ latencyHint: 'interactive' });
+      this.buildGraph(ctx);
+      this.ctx = ctx;
+      return ctx;
+    } catch {
+      // Device/policy failures affect sound only. Never retain a half-built graph or let
+      // an unavailable audio device tear down the otherwise usable 3D room.
+      void ctx?.close().catch(() => {});
+      return null;
+    }
   }
 
   private buildGraph(ctx: AudioContext): void {
@@ -177,16 +184,19 @@ class AudioEngine {
 
   async resume(): Promise<void> {
     const ctx = this.ensureContext();
-    if (ctx.state !== 'running') await ctx.resume();
+    if (ctx && ctx.state !== 'running') await ctx.resume().catch(() => {});
   }
 
   async suspend(): Promise<void> {
     if (!this.ctx || this.ctx.state !== 'running') return;
-    await this.ctx.suspend();
+    await this.ctx.suspend().catch(() => {});
   }
 
   triggerPad(key: string): void {
     const ctx = this.ensureContext();
+    if (!ctx) return;
+    // A denied/interrupted initial resume can be retried by this later user gesture.
+    if (ctx.state !== 'running') void this.resume();
     const sample = this.padSamples.get(key);
 
     if (sample) {
@@ -205,6 +215,7 @@ class AudioEngine {
 
   setParam(index: number, value: number): void {
     const ctx = this.ensureContext();
+    if (!ctx) return;
     const v = Math.min(1, Math.max(0, value));
     const now = ctx.currentTime;
 
@@ -243,6 +254,7 @@ class AudioEngine {
   /** Channel fader. 0 is the pads, 1 is the bed. */
   setChannel(index: number, value: number): void {
     const ctx = this.ensureContext();
+    if (!ctx) return;
     const bus = index === 0 ? this.padBus : this.bedBus;
     bus?.gain.setTargetAtTime(Math.min(1, Math.max(0, value)), ctx.currentTime, 0.02);
   }
@@ -251,7 +263,8 @@ class AudioEngine {
     this.bedWanted = true;
     if (!this.bedBuffer || this.bedSource) return; // nothing loaded yet, or already running
     const ctx = this.ensureContext();
-    if (ctx.state === 'suspended') void ctx.resume();
+    if (!ctx) return;
+    if (ctx.state !== 'running') void this.resume();
 
     const source = ctx.createBufferSource();
     source.buffer = this.bedBuffer;
@@ -291,6 +304,7 @@ class AudioEngine {
    * anything yet — the config fetch that would supply `filename` still lives in the React hook. */
   async loadPadSample(key: string, filename: string): Promise<void> {
     const ctx = this.ensureContext();
+    if (!ctx) return;
     const buffer = await loadSample(ctx, filename);
     this.padSamples.set(key, buffer);
   }
@@ -298,6 +312,7 @@ class AudioEngine {
   /** Seam for a later step: loads the synced loop `startBed`/`stopBed` play. Not called yet. */
   async loadBed(filename: string): Promise<void> {
     const ctx = this.ensureContext();
+    if (!ctx) return;
     this.bedBuffer = await loadSample(ctx, filename);
     if (this.bedWanted) this.startBed();
   }

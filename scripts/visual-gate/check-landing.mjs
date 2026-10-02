@@ -29,14 +29,21 @@ const inspect = `(async () => {
   return { scale: mpc.scale.toArray(), canvasWidth: state.size.width, frame: state.gl.info.render.frame };
 })()`;
 function scene() {
-  browser('wait', '--fn', `(async () => Boolean(await ${inspect}))()`);
-  return evaluate(inspect);
+  // Readiness and the asserted value must come from the same sample. A resize can invalidate
+  // the canvas between a separate wait and eval, and CLI versions differ on async predicates.
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    const result = evaluate(inspect);
+    if (result) return result;
+    browser('wait', '100');
+  }
+  assert.fail(`Scene did not render: ${evaluate('document.body.innerText')}`);
 }
 
 try {
   browser('open', 'http://localhost:3000');
   browser('click', 'button[aria-label="Enter the interactive scene"]');
-  browser('wait', '--fn', `(async () => Boolean(await ${inspect}))()`);
+  scene();
   for (const [width, height] of [[1440, 900], [390, 844], [320, 568], [844, 390]]) {
     browser('set', 'viewport', String(width), String(height));
     const result = scene();
