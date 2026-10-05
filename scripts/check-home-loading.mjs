@@ -8,7 +8,7 @@ import { launchBrowser } from './browser.mjs';
 const url = process.env.HOME_URL ?? 'http://127.0.0.1:4300';
 const browser = await launchBrowser();
 
-async function check(name, setup, verify, expectedReports = []) {
+async function check(name, setup, verify, expectedReports = [], enter = true) {
   if (process.env.CASE && !name.includes(process.env.CASE)) return;
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -18,7 +18,7 @@ async function check(name, setup, verify, expectedReports = []) {
   try {
     await setup(page);
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: 'Enter the interactive scene' }).click();
+    if (enter) await page.getByRole('button', { name: 'Enter the interactive scene' }).click();
     await verify(page);
     assert.deepEqual(errors, expectedReports, `${name}: unexpected browser error reports`);
     console.log(`PASS ${name}`);
@@ -28,7 +28,7 @@ async function check(name, setup, verify, expectedReports = []) {
 }
 
 const navigation = async page => {
-  await page.getByRole('button', { name: 'About', exact: true }).click();
+  await page.getByRole('navigation').getByText('About', { exact: true }).click();
   await page.waitForURL('**/about', { waitUntil: 'domcontentloaded' });
 };
 
@@ -46,6 +46,31 @@ const watchAudioDecodes = (page, rejectFlac = false) => page.addInitScript(rejec
 }, rejectFlac);
 
 try {
+  for (const enter of [false, true]) {
+    for (const width of [1280, 320]) {
+      for (const destination of ['About', 'Projects', 'Blog', 'CV']) {
+        await check(`navigation to ${destination} ${enter ? 'during loading' : 'before entry'} at ${width}px`,
+          async page => {
+            await page.setViewportSize({ width, height: 800 });
+            // Keep the studio pending so navigation cannot accidentally wait for a ready scene.
+            await page.route('**/LandingScene-*.js', () => {});
+          }, async page => {
+            assert.equal(await page.locator('[data-scene-loading]').count(), enter ? 1 : 0);
+            const link = page.getByRole('link', { name: destination, exact: true });
+            await link.focus();
+            await page.keyboard.press('Enter');
+            await page.waitForURL(`**/${destination.toLowerCase()}`, { waitUntil: 'domcontentloaded' });
+            assert.equal(await page.locator('canvas').count(), 0);
+            if (!enter) {
+              assert.equal(await page.evaluate(() => performance.getEntriesByType('resource')
+                .some(resource => /LandingScene-.*\.js/.test(resource.name))), false);
+            }
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+          }, [], enter);
+      }
+    }
+  }
+
   let releaseScene;
   await check('entry stays in place until the downloaded room renders', async page => {
     const pending = new Promise(resolve => { releaseScene = resolve; });
@@ -65,7 +90,7 @@ try {
         sameScreen: window.originalEntry.isConnected,
         opacity: getComputedStyle(window.originalEntry).opacity,
       })), { sameScreen: true, opacity: '1' });
-      await page.getByRole('button', { name: 'About', exact: true }).waitFor();
+      await page.getByRole('link', { name: 'About', exact: true }).waitFor();
       await page.setViewportSize({ width: 320, height: 568 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       assert.equal(await page.evaluate(() => getComputedStyle(window.originalEntry).transitionProperty), 'none');

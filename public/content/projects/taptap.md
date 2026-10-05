@@ -7,6 +7,7 @@ role: "Interactive Engineer"
 tags: ["music"]
 cover: "https://picsum.photos/600/403?grayscale"
 pinned: false
+draft: true
 importance: 2
 links:
   - label: "Demo"

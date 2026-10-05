@@ -1,5 +1,5 @@
 /**
- * Coordinates public content loading, localization fallback, collection ordering, and search.
+ * Coordinates public content loading, project publication checks, localization, ordering, and search.
  * Reads: the content registry and Markdown files through the focused content boundary modules.
  */
 
@@ -45,15 +45,25 @@ export const loadAboutContent = async (): Promise<string> => {
   }
 };
 
-// Load single project by slug
-export const loadProject = async (slug: string): Promise<ProjectContent> => {
+// A disabled or draft project is unavailable to every public project consumer.
+const loadPublishedProject = async (slug: string): Promise<ProjectContent | null> => {
+  const config = await loadConfig();
+  if (!config.projects.some(project => project.slug === slug && project.enabled)) return null;
   const { metadata, content } = await loadProjectMarkdown(slug);
+  if (metadata.draft) return null;
   return {
     slug,
     metadata,
     content,
     excerpt: extractExcerpt(content)
   };
+};
+
+// Load single published project by slug
+export const loadProject = async (slug: string): Promise<ProjectContent> => {
+  const project = await loadPublishedProject(slug);
+  if (!project) throw new Error('Project not found');
+  return project;
 };
 
 // Load single blog post by slug
@@ -85,7 +95,7 @@ export const loadAllProjects = async (): Promise<ProjectContent[]> => {
     .map(p => p.slug);
 
   const projects = await Promise.all(
-    enabledSlugs.map(slug => loadProject(slug).catch(err => {
+    enabledSlugs.map(slug => loadPublishedProject(slug).catch(err => {
       console.error(`Failed to load project ${slug}:`, err);
       return null;
     }))
@@ -174,7 +184,12 @@ export const loadAllNews = async (): Promise<NewsContent[]> => {
 export const hasChineseVersion = async (type: 'blog' | 'projects', slug: string): Promise<boolean> => {
   try {
     const response = await fetch(`/content/${type}/${slug}.zh.md`);
-    return isRealFile(response);
+    if (!await isRealFile(response)) return false;
+    if (type === 'projects') {
+      const { data } = matter(await response.text());
+      return !data.draft;
+    }
+    return true;
   } catch {
     return false;
   }
@@ -195,14 +210,16 @@ export const loadBlogPostZh = async (slug: string): Promise<BlogContent> => {
 
 // Load Chinese version of a project
 export const loadProjectZh = async (slug: string): Promise<ProjectContent> => {
+  const published = await loadProject(slug);
   try {
     const response = await fetch(`/content/projects/${slug}.zh.md`);
     if (!await isRealFile(response)) throw new Error('No Chinese version');
     const raw = await response.text();
     const { data, content } = matter(raw);
+    if (data.draft) return published;
     return { slug, metadata: data as ProjectMetadata, content, excerpt: extractExcerpt(content) };
   } catch {
-    return loadProject(slug); // Fallback to English
+    return published; // Fallback to the published English version
   }
 };
 

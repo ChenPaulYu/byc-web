@@ -7,6 +7,7 @@ role: "AI Researcher"
 tags: ["music"]
 cover: "https://picsum.photos/600/401?grayscale"
 pinned: false
+draft: true
 importance: 4
 links:
   - label: "Paper"

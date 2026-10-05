@@ -4,7 +4,7 @@
  *
  * Lives outside the Canvas on purpose: importing this file must not pull three.js. Home shows
  * this first, then keeps it in place while the instrument loads behind it. Only a rendered
- * room (or usable error fallback) starts the fade. Loading navigation remains available.
+ * room (or usable error fallback) starts the fade. Navigation is available before and during entry.
  */
 
 import React from 'react';
@@ -40,6 +40,6 @@ export const WelcomeScreen: React.FC<{ onEnter: () => void; onIntent?: () => voi
       </svg>
       <span role={loading ? 'status' : undefined} className="text-sm font-medium tracking-wide uppercase">{loading ? 'Loading studio…' : 'Power on'}</span>
     </button>
-    {loading && <div className="absolute bottom-10 inset-x-6"><SceneNavigation /></div>}
+    <div className="absolute bottom-10 inset-x-6"><SceneNavigation /></div>
   </div>
 );

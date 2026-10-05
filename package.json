@@ -12,7 +12,7 @@
     "check:scene": "node scripts/check-scene-rendering.mjs",
     "samples:encode": "node scripts/encode-samples.mjs",
     "build:admin": "vite build --config admin/vite.config.ts",
-    "test": "node --import tsx --test admin/src/lib/*.test.ts admin/src/components/*.test.tsx src/components/landing/*.test.ts",
+    "test": "node --import tsx --test admin/src/lib/*.test.ts admin/src/components/*.test.tsx src/components/landing/*.test.ts src/utils/*.test.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p server/tsconfig.json",
     "cv:pdf": "node scripts/render-cv-pdf.mjs",
     "build:cvpdf": "npm run build && npm run cv:pdf",

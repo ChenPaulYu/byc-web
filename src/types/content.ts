@@ -15,6 +15,7 @@ export interface ProjectMetadata {
   tags: string[];
   cover: string;
   pinned?: boolean;
+  draft?: boolean;
   importance?: number;
   links?: Array<{
     label: string;

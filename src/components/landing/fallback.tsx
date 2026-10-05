@@ -1,6 +1,6 @@
 /** Lightweight scene recovery and navigation, available even when the 3D bundle fails. */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Error boundary for 3D canvas failures (e.g., WebGL not supported)
 export class CanvasErrorBoundary extends React.Component<
@@ -24,14 +24,13 @@ export class CanvasErrorBoundary extends React.Component<
 }
 
 export const SceneNavigation = () => {
-  const navigate = useNavigate();
   return (
-    <nav className="flex flex-wrap gap-4 justify-center">
+    <nav aria-label="Site navigation" onClick={event => event.stopPropagation()} className="flex flex-wrap gap-4 justify-center">
       {['About', 'Projects', 'Blog', 'CV'].map(page => (
-        <button key={page} onClick={() => navigate(`/${page.toLowerCase()}`)}
-          className="text-lg text-neutral-800 hover:text-black transition-colors">
+        <Link key={page} to={`/${page.toLowerCase()}`}
+          className="text-lg text-neutral-800 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors touch-manipulation">
           {page}
-        </button>
+        </Link>
       ))}
     </nav>
   );
