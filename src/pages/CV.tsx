@@ -15,6 +15,11 @@ const CV: React.FC = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    document.documentElement.classList.add('cv-smooth-scroll');
+    return () => document.documentElement.classList.remove('cv-smooth-scroll');
+  }, []);
+
+  useEffect(() => {
     let active = true;
     hasChineseCv().then(value => { if (active) setHasZh(value); }).catch(() => {});
     return () => { active = false; };

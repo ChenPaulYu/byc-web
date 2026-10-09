@@ -44,7 +44,7 @@
 
 ## ✅ Shipped
 
-- **CV integration (2026-10-10)** — approved academic-paper layout with white canvas, announcement-blue accents, LinkedIn, original resource icons and full content; Publications precedes the aligned Interactive Art index. Admin fields and four-page PDF updated. Agent-browser desktop/mobile/print checks, 66 tests, typecheck, both builds and payload gate pass; fixed the public/admin Vite cache collision. [`CV editing guide`](../content-guide.md#updating-the-cv).
+- **CV integration (2026-10-10)** — approved academic-paper layout with white canvas, announcement-blue accents, LinkedIn, original resource icons and full content; Publications precedes the aligned Interactive Art index. Admin fields and three-page PDF updated; musical interfaces added to the tagline. Citation previews support hover, keyboard and touch, with smooth anchor scrolling and quiet site-wide route entry. Agent-browser desktop/mobile/print checks, 67 tests, typecheck, both builds and payload gate pass; fixed the public/admin Vite cache collision. [`CV editing guide`](../content-guide.md#updating-the-cv).
 
 - **Wall light-switch (2026-09-11, local branch)** — the existing door-side rocker turns the ceiling light off/on; direct lamp clicks disabled per user clarification. Window daylight and desk lamp remain, no tutorial or camera flight. Reuses mounted room resources and existing lights. Latest verification in [`Evidence`](plans/2026-09-11-immersive-studio.md#wall-and-ceiling-finishing).
 

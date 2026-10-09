@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from './NavBar';
 import { GitHubIcon, ScholarIcon, MailIcon, TwitterIcon } from './SocialIcons';
@@ -12,12 +12,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const isHome = location.pathname === '/';
 
+  useLayoutEffect(() => {
+    if (!window.location.hash) window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [location.key, location.pathname]);
+
   return (
       <div className="min-h-screen bg-white text-neutral-900 flex flex-col">
       {!isHome && <NavBar />}
 
       <main className={`flex-grow ${!isHome ? 'pt-24 pb-16 print:pt-0 print:pb-0' : ''}`}>
-        <div key={location.pathname} className="page-transition">
+        <div>
           {children}
         </div>
       </main>

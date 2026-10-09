@@ -105,13 +105,14 @@ async function main() {
     await page.pdf({
       path: outPublicPath,
       format: 'Letter',
+      preferCSSPageSize: true,
       printBackground: true,
       displayHeaderFooter: false,
       margin: {
-        top: '0.5in',
-        right: '0.5in',
-        bottom: '0.5in',
-        left: '0.5in'
+        top: '10mm',
+        right: '12mm',
+        bottom: '10mm',
+        left: '12mm'
       }
     });
 

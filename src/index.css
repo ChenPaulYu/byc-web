@@ -9,27 +9,8 @@
   100% { width: 95%; }
 }
 
-@keyframes progressDone {
-  0% { width: 95%; }
-  100% { width: 100%; }
-}
-
-@keyframes progressFade {
-  0% { opacity: 1; }
-  60% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
 .animate-progress {
   animation: progress 2s ease-out forwards;
-}
-
-.animate-progress-done {
-  animation: progressDone 200ms ease-out forwards;
-}
-
-.animate-progress-fade {
-  animation: progressFade 400ms ease-out forwards;
 }
 
 body {
@@ -44,7 +25,7 @@ body {
 @keyframes pageIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -53,7 +34,7 @@ body {
 }
 
 .page-transition {
-  animation: pageIn 240ms ease-out;
+  animation: pageIn 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media print {
@@ -124,6 +105,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-progress { animation: none; width: 100%; }
   .page-transition,
   .focus-pin,
   .focus-leader,

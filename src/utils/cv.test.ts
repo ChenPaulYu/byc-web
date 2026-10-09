@@ -5,14 +5,15 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { CvConfig } from '../types/cv';
 import { CvDocument } from '../components/cv/CvDocument';
-import { CvInline, CvReferences } from '../components/cv/CvInline';
-import { cvHref, publicationLinks } from './cv';
+import { CvInline } from '../components/cv/CvInline';
+import { CvReferences } from '../components/cv/CvReference';
+import { cvHref, publicationLinks, visibleCvReferences } from './cv';
 
 const config = JSON.parse(readFileSync('public/cv.config.json', 'utf8')) as CvConfig;
 const render = (data: CvConfig) => renderToStaticMarkup(React.createElement(CvDocument, { config: data }));
 
 test('CV inline copy formats legacy emphasis and escapes arbitrary HTML', () => {
-  const html = renderToStaticMarkup(React.createElement(CvReferences.Provider, { value: new Set(['C1']) },
+  const html = renderToStaticMarkup(React.createElement(CvReferences.Provider, { value: visibleCvReferences(config) },
     React.createElement(CvInline, { text: '<strong>*Bo-Yu Chen*</strong> <img src=x onerror=alert(1)> [[C1]] [[A9]] {{Award}}' })));
   assert.match(html, /<strong>Bo-Yu Chen<\/strong>/);
   assert.doesNotMatch(html, /<img/);
@@ -59,4 +60,15 @@ test('resource URLs only allow web links and local absolute paths', () => {
   for (const bad of ['javascript:alert(1)', 'data:text/html,test', '//example.com', 'bad']) assert.equal(cvHref(bad), undefined);
   assert.equal(cvHref('https://example.com'), 'https://example.com');
   assert.equal(cvHref('/papers/test.pdf'), '/papers/test.pdf');
+});
+
+
+test('citation previews use visible source metadata and original resource links', () => {
+  const entries = visibleCvReferences(config);
+  const paper = config.publications.find(item => item.id === 'C2')!;
+  assert.equal(entries.get('C2')?.title, paper.title);
+  assert.deepEqual(entries.get('C2')?.links, publicationLinks(paper));
+  assert.doesNotMatch(entries.get('C2')!.detail, /\*|<strong>/);
+  assert.equal(entries.get('A1')?.kind, 'art');
+  assert.equal(visibleCvReferences({ ...config, visibility: { publications: false, art: false } }).size, 0);
 });

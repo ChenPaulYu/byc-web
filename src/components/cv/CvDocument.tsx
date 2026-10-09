@@ -3,7 +3,8 @@ import React from 'react';
 import type { CvConfig, Experience } from '../../types/cv';
 import { cvHref, publicationLinks, visibleCvReferences } from '../../utils/cv';
 import { GitHubIcon, LinkedInIcon, MailIcon, ScholarIcon } from '../SocialIcons';
-import { CvInline, CvReferences } from './CvInline';
+import { CvInline } from './CvInline';
+import { CvReferenceProvider } from './CvReference';
 import { CvLinks } from './CvLinks';
 
 function Section({ title, children, keepTogether = false }: { title: string; children: React.ReactNode; keepTogether?: boolean }) {
@@ -34,7 +35,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
     { label: 'Google Scholar', url: header.scholar, Icon: ScholarIcon },
     { label: 'LinkedIn', url: header.linkedin, Icon: LinkedInIcon },
   ];
-  return <CvReferences.Provider value={visibleCvReferences(config)}>
+  return <CvReferenceProvider entries={visibleCvReferences(config)}>
     <article className="cv-sheet" data-cv-ready="true" aria-label="Curriculum vitae">
       <header className="cv-header">
         <div className="cv-heading-row">
@@ -102,5 +103,5 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
         {section.items.map((item, i) => <div className="cv-compact-entry" key={i}><div><CvInline text={item.text} /></div>{item.detail && <span className="cv-date"><CvInline text={item.detail} /></span>}</div>)}
       </Section>)}
     </article>
-  </CvReferences.Provider>;
+  </CvReferenceProvider>;
 }

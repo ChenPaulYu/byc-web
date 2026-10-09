@@ -1,5 +1,6 @@
 /* Approved academic-paper layout. Keep all screen rules local to the CV route. */
-.cv-page { --cv-accent: #2563eb; --cv-soft: #eff6ff; max-width: 816px; margin: 0 auto; padding: 0 16px 32px; color: #525252; font-size: 14px; line-height: 1.65; }
+.cv-page, .cv-reference-popover { --cv-accent: #2563eb; --cv-soft: #eff6ff; }
+.cv-page { max-width: 816px; margin: 0 auto; padding: 0 16px 32px; color: #525252; font-size: 14px; line-height: 1.65; }
 .cv-sheet { padding: 38px 48px 48px; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; }
 .cv-page h1, .cv-page h2, .cv-page h3, .cv-page p { margin: 0; }
 .cv-page h1, .cv-page h2 { font-family: 'Space Grotesk', sans-serif; color: #171717; }
@@ -82,20 +83,52 @@
   .cv-icon-link svg { width: 15px; height: 15px; }
   .cv-contacts { gap: 8px 12px; }
 }
+html.cv-smooth-scroll { scroll-behavior: smooth; }
+.cv-ref, .cv-icon-link { transition: color 160ms ease, background-color 160ms ease; }
+.cv-reference-popover { position: fixed; z-index: 60; width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 84px); overflow-y: auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 8px 28px #17171714, 0 2px 6px #17171708; color: #525252; font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.6; opacity: 0; transform: translateY(4px); transition: opacity 160ms ease, transform 160ms ease; }
+.cv-reference-popover[data-open="true"] { opacity: 1; transform: translateY(0); }
+@starting-style { .cv-reference-popover[data-open="true"] { opacity: 0; transform: translateY(4px); } }
+.cv-reference-popover p { margin: 0; }
+.cv-reference-popover h3 { margin: 9px 0 8px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.45; font-weight: 600; color: #171717; }
+.cv-preview-label { padding-right: 18px; font-size: 10px; color: #737373; }
+.cv-preview-label span { padding: 0 4px; color: #a3a3a3; }
+.cv-preview-detail { font-size: 12px; }
+.cv-reference-popover .cv-preview-venue { margin-top: 8px; font-size: 11px; color: #737373; }
+.cv-preview-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 14px; }
+.cv-preview-footer > a { color: var(--cv-accent); font-size: 11px; text-decoration: none; }
+.cv-preview-footer > a:hover { text-decoration: underline; }
+.cv-preview-close { position: absolute; right: 9px; top: 9px; width: 28px; height: 28px; font-size: 18px; color: #737373; border-radius: 4px; }
+.cv-preview-close:hover { background: #fafafa; color: #171717; }
+.cv-reference-popover :focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html.cv-smooth-scroll { scroll-behavior: auto; }
+  .cv-reference-popover, .cv-ref, .cv-icon-link { transition: none; transform: none; }
+}
+@page cv { size: Letter; margin: 10mm 12mm; }
 @media print {
-  .cv-page { max-width: none; padding: 0; color: #404040; font-size: 12px; line-height: 1.5; }
+  html.cv-smooth-scroll { scroll-behavior: auto; }
+  .cv-page { page: cv; max-width: none; padding: 0; color: #404040; font-size: 12px; line-height: 1.5; }
   .cv-sheet { padding: 0; border: 0; border-radius: 0; }
-  .cv-actions, .cv-download { display: none; }
-  .cv-header { padding-bottom: 14px; }
-  .cv-section { margin-top: 18px; }
-  .cv-section h2 { margin-bottom: 10px; padding-bottom: 5px; break-after: avoid; }
-  .cv-page h3 { font-size: 13px; }
-  .cv-interests, .cv-bullets { font-size: 12px; line-height: 1.5; }
-  .cv-entry + .cv-entry { margin-top: 14px; }
-  .cv-bullets { margin-top: 5px; }
-  .cv-reference-entry + .cv-reference-entry { margin-top: 12px; }
-  .cv-art-description, .cv-authors { line-height: 1.5; }
-  .cv-icon-link { height: 20px; }
+  .cv-actions, .cv-download, .cv-reference-popover { display: none; }
+  .cv-header { padding-bottom: 10px; }
+  .cv-page h1 { font-size: 32px; }
+  .cv-tagline { margin-top: 6px !important; font-size: 12px; }
+  .cv-contacts { margin-top: 7px; }
+  .cv-section { margin-top: 12px; }
+  .cv-section h2 { margin-bottom: 7px; padding-bottom: 4px; font-size: 12px; break-after: avoid; }
+  .cv-page h3 { font-size: 13px; line-height: 1.35; }
+  .cv-interests, .cv-bullets { font-size: 12px; }
+  .cv-interests { line-height: 1.5; }
+  .cv-entry-sub { line-height: 1.4; margin-top: 1px; }
+  .cv-entry + .cv-entry { margin-top: 9px; }
+  .cv-bullets { margin-top: 4px; line-height: 1.4; }
+  .cv-bullets li + li { margin-top: 2px; }
+  .cv-reference-entry + .cv-reference-entry { margin-top: 8px; }
+  .cv-compact-entry { line-height: 1.4; }
+  .cv-compact-entry + .cv-compact-entry { margin-top: 5px; }
+  .cv-art-description, .cv-authors, .cv-venue { line-height: 1.4; margin-top: 2px !important; }
+  .cv-publication-meta { margin-top: 2px; }
+  .cv-icon-link { height: 18px; }
   .cv-entry, .cv-reference-entry, .cv-compact-entry, .cv-section-keep { break-inside: avoid; }
   .cv-reference-entry:target { background: none; outline: none; }
   .cv-page * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
