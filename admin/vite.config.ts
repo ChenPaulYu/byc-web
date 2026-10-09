@@ -4,6 +4,8 @@ import path from 'path';
 
 export default defineConfig({
   root: path.resolve(__dirname),
+  // The public and admin servers run together and need separate dependency caches.
+  cacheDir: path.resolve(__dirname, '../node_modules/.vite-admin'),
   base: '/admin/',
   server: {
     port: 3001,

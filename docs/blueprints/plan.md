@@ -44,6 +44,8 @@
 
 ## ✅ Shipped
 
+- **CV integration (2026-10-10)** — approved academic-paper layout with white canvas, announcement-blue accents, LinkedIn, original resource icons and full content; Publications precedes the aligned Interactive Art index. Admin fields and four-page PDF updated. Agent-browser desktop/mobile/print checks, 66 tests, typecheck, both builds and payload gate pass; fixed the public/admin Vite cache collision. [`CV editing guide`](../content-guide.md#updating-the-cv).
+
 - **Wall light-switch (2026-09-11, local branch)** — the existing door-side rocker turns the ceiling light off/on; direct lamp clicks disabled per user clarification. Window daylight and desk lamp remain, no tutorial or camera flight. Reuses mounted room resources and existing lights. Latest verification in [`Evidence`](plans/2026-09-11-immersive-studio.md#wall-and-ceiling-finishing).
 
 - **Taiwan cloth flag + Builder (2026-09-11, local branch)** — reference-inspired pinned fabric above the left speaker, compact central research notes and clear separation from the right shelves; replaces the desk flag and sticker iterations. Click-only “Taiwan No. 1!” / “I’m from Taiwan.” caption retained. Creator wording updated throughout live self-descriptions. Latest verification evidence lives in the linked plan. [`Evidence`](plans/2026-09-11-immersive-studio.md#personal-taiwan-flag-and-builder-wording).

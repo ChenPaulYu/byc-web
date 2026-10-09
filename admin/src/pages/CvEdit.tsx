@@ -1,28 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getCvConfig, updateCvConfig, hasZhCv, getZhCvConfig, saveZhCvConfig, getGitHubHistoryUrl } from '../api';
 
-interface Education { school: string; degree: string; duration: string; location: string; }
-interface Experience { company: string; role: string; duration: string; location: string; description: string[]; }
-interface Publication { title: string; authors: string; venue: string; year: string; acceptanceRate?: string; }
-interface Thesis { title: string; authors: string; institution: string; year: string; }
-interface Award { title: string; venue: string; year: string; detail?: string; }
-interface ReviewerEntry { venue: string; years: string; }
-interface CustomSectionItem { text: string; detail?: string; }
-interface CustomSection { id: string; title: string; visible: boolean; items: CustomSectionItem[]; }
-
-interface CvConfig {
-  header: { name: string; tagline: string };
-  education: Education[];
-  workExperience: Experience[];
-  researchExperience: Experience[];
-  teachingExperience: Experience[];
-  publications: Publication[];
-  theses: Thesis[];
-  awards: Award[];
-  reviewer: ReviewerEntry[];
-  visibility: Record<string, boolean>;
-  customSections: CustomSection[];
-}
+import type { CvConfig, Experience } from '../../../src/types/cv';
+import { CvTextField, CvBulletFields, CvLinkFields } from '../components/CvFields';
 
 const SectionHeader: React.FC<{ title: string; onAdd?: () => void; visible?: boolean; onToggle?: () => void }> = ({ title, onAdd, visible, onToggle }) => (
   <div className="flex items-center justify-between mb-3 mt-8 first:mt-0">
@@ -163,11 +143,18 @@ const CvEdit: React.FC = () => {
           <label className={labelClass}>Name</label>
           <input type="text" value={activeConfig.header.name} onChange={(e) => setActiveConfig({ ...activeConfig, header: { ...activeConfig.header, name: e.target.value } })} className={inputClass} />
         </div>
-        <div className="col-span-2">
+        <div className="md:col-span-2">
           <label className={labelClass}>Tagline</label>
           <input type="text" value={activeConfig.header.tagline} onChange={(e) => setActiveConfig({ ...activeConfig, header: { ...activeConfig.header, tagline: e.target.value } })} className={inputClass} />
         </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {(['nativeName', 'location', 'email', 'github', 'scholar', 'linkedin'] as const).map(key => <CvTextField key={key} label={{ nativeName: 'Native name', location: 'Location', email: 'Email', github: 'GitHub URL', scholar: 'Google Scholar URL', linkedin: 'LinkedIn URL' }[key]} value={activeConfig.header[key]} onChange={value => setActiveConfig({ ...activeConfig, header: { ...activeConfig.header, [key]: value } })} />)}
+      </div>
+      <p className="text-xs text-neutral-500 mb-4">{'Inline formatting: **bold**, *italic*, [[C1]] / [[A1]] references, and {{badge text}}. Reference IDs must be unique. HTML is displayed as text, except legacy emphasis tags.'}</p>
+      <SectionHeader title="Research Interests" visible={activeConfig.visibility?.researchInterests} onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...activeConfig.visibility, researchInterests: activeConfig.visibility?.researchInterests === false } })} />
+      <CvTextField label="Research interests" value={activeConfig.researchInterests} onChange={value => setActiveConfig({ ...activeConfig, researchInterests: value })} />
 
       {/* Education */}
       <SectionHeader
@@ -189,11 +176,12 @@ const CvEdit: React.FC = () => {
         >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, education: removeItem(activeConfig.education, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="col-span-2"><label className={labelClass}>School</label><input type="text" value={edu.school} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'school', e.target.value) })} className={inputClass} /></div>
+            <div className="md:col-span-2"><label className={labelClass}>School</label><input type="text" value={edu.school} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'school', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Degree</label><input type="text" value={edu.degree} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'degree', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Duration</label><input type="text" value={edu.duration} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'duration', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Location</label><input type="text" value={edu.location} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'location', e.target.value) })} className={inputClass} /></div>
           </div>
+          <CvBulletFields value={edu.description} onChange={value => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'description', value) })} />
         </div>
       ))}
 
@@ -202,12 +190,14 @@ const CvEdit: React.FC = () => {
         { key: 'workExperience' as const, title: 'Work Experience' },
         { key: 'researchExperience' as const, title: 'Research Experience' },
         { key: 'teachingExperience' as const, title: 'Teaching Experience' },
+        { key: 'openSource' as const, title: 'Open-Source Software & Toolkits' },
+        { key: 'extracurricular' as const, title: 'Extracurricular Activities' },
       ]).map(({ key, title }) => (
         <React.Fragment key={key}>
           <SectionHeader
             title={title}
             onAdd={() => {
-              setActiveConfig({ ...activeConfig, [key]: [...activeConfig[key], { company: '', role: '', duration: '', location: '', description: [''] }] });
+              setActiveConfig({ ...activeConfig, [key]: [...(activeConfig[key] ?? []), { company: '', role: '', duration: '', location: '', description: [''] }] });
               setLastAddedSection(key);
               setTimeout(() => { setLastAddedSection(null); }, 700);
               setTimeout(() => { document.getElementById(`${key}-last`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
@@ -215,24 +205,24 @@ const CvEdit: React.FC = () => {
             visible={activeConfig.visibility?.[key]}
             onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...(activeConfig.visibility || {}), [key]: !(activeConfig.visibility?.[key] !== false) } })}
           />
-          {activeConfig[key].map((exp: Experience, i: number) => (
+          {(activeConfig[key] ?? []).map((exp: Experience, i: number) => (
             <div
               key={i}
-              id={i === activeConfig[key].length - 1 ? `${key}-last` : undefined}
-              className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === key && i === activeConfig[key].length - 1 ? ' animate-item-added' : ''}`}
+              id={i === (activeConfig[key] ?? []).length - 1 ? `${key}-last` : undefined}
+              className={`border border-neutral-200 rounded-lg p-4 mb-3${lastAddedSection === key && i === (activeConfig[key] ?? []).length - 1 ? ' animate-item-added' : ''}`}
             >
-              <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, [key]: removeItem(activeConfig[key], i) })} /></div>
+              <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, [key]: removeItem((activeConfig[key] ?? []), i) })} /></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div><label className={labelClass}>Company / Lab</label><input type="text" value={exp.company} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField(activeConfig[key], i, 'company', e.target.value) })} className={inputClass} /></div>
-                <div><label className={labelClass}>Role</label><input type="text" value={exp.role} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField(activeConfig[key], i, 'role', e.target.value) })} className={inputClass} /></div>
-                <div><label className={labelClass}>Duration</label><input type="text" value={exp.duration} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField(activeConfig[key], i, 'duration', e.target.value) })} className={inputClass} /></div>
-                <div><label className={labelClass}>Location</label><input type="text" value={exp.location} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField(activeConfig[key], i, 'location', e.target.value) })} className={inputClass} /></div>
+                <div><label className={labelClass}>Company / Lab</label><input type="text" value={exp.company} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField((activeConfig[key] ?? []), i, 'company', e.target.value) })} className={inputClass} /></div>
+                <div><label className={labelClass}>Role</label><input type="text" value={exp.role} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField((activeConfig[key] ?? []), i, 'role', e.target.value) })} className={inputClass} /></div>
+                <div><label className={labelClass}>Duration</label><input type="text" value={exp.duration} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField((activeConfig[key] ?? []), i, 'duration', e.target.value) })} className={inputClass} /></div>
+                <div><label className={labelClass}>Location</label><input type="text" value={exp.location} onChange={(e) => setActiveConfig({ ...activeConfig, [key]: updateField((activeConfig[key] ?? []), i, 'location', e.target.value) })} className={inputClass} /></div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className={labelClass}>Description bullets</label>
                   <button type="button" onClick={() => {
-                    const updated = [...activeConfig[key]];
+                    const updated = [...(activeConfig[key] ?? [])];
                     updated[i] = { ...updated[i], description: [...updated[i].description, ''] };
                     setActiveConfig({ ...activeConfig, [key]: updated });
                   }} className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors">+ Add bullet</button>
@@ -240,20 +230,21 @@ const CvEdit: React.FC = () => {
                 {exp.description.map((desc: string, j: number) => (
                   <div key={j} className="flex gap-2 mb-2">
                     <input type="text" value={desc} onChange={(e) => {
-                      const updated = [...activeConfig[key]];
+                      const updated = [...(activeConfig[key] ?? [])];
                       const newDesc = [...updated[i].description];
                       newDesc[j] = e.target.value;
                       updated[i] = { ...updated[i], description: newDesc };
                       setActiveConfig({ ...activeConfig, [key]: updated });
                     }} className={inputClass} placeholder="Bullet point..." />
                     <button type="button" onClick={() => {
-                      const updated = [...activeConfig[key]];
+                      const updated = [...(activeConfig[key] ?? [])];
                       updated[i] = { ...updated[i], description: updated[i].description.filter((_: string, k: number) => k !== j) };
                       setActiveConfig({ ...activeConfig, [key]: updated });
                     }} className="text-neutral-400 hover:text-red-500 px-2 transition-colors">×</button>
                   </div>
                 ))}
               </div>
+              <CvLinkFields value={exp.links} onChange={value => setActiveConfig({ ...activeConfig, [key]: updateField((activeConfig[key] ?? []), i, 'links', value) })} />
             </div>
           ))}
         </React.Fragment>
@@ -279,14 +270,30 @@ const CvEdit: React.FC = () => {
         >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, publications: removeItem(activeConfig.publications, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={pub.title} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'title', e.target.value) })} className={inputClass} /></div>
-            <div className="col-span-2"><label className={labelClass}>Authors (HTML ok)</label><input type="text" value={pub.authors} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'authors', e.target.value) })} className={inputClass} /></div>
+            <div className="md:col-span-2"><label className={labelClass}>Title</label><input type="text" value={pub.title} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'title', e.target.value) })} className={inputClass} /></div>
+            <div className="md:col-span-2"><label className={labelClass}>Authors (inline formatting)</label><input type="text" value={pub.authors} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'authors', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Venue</label><input type="text" value={pub.venue} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'venue', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Year</label><input type="text" value={pub.year} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'year', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Acceptance Rate</label><input type="text" value={pub.acceptanceRate || ''} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'acceptanceRate', e.target.value || undefined) })} className={inputClass} placeholder="e.g. 25%" /></div>
+            <CvTextField label="Reference ID (e.g. C1 or W1)" value={pub.id} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'id', value) })} />
+            <CvTextField label="Award badge" value={pub.award} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'award', value) })} />
+            <CvTextField label="Legacy paper URL (used if no Paper link is set)" value={pub.pdf} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'pdf', value) })} />
           </div>
+          <CvLinkFields value={pub.links} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'links', value) })} />
         </div>
       ))}
+
+      {/* Interactive art */}
+      <SectionHeader title="Interactive Art & Installations" visible={activeConfig.visibility?.art}
+        onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...activeConfig.visibility, art: activeConfig.visibility?.art === false } })}
+        onAdd={() => setActiveConfig({ ...activeConfig, art: [...(activeConfig.art ?? []), { id: '', title: '', description: '', venue: '', year: '' }] })} />
+      {(activeConfig.art ?? []).map((item, i) => <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, art: removeItem(activeConfig.art ?? [], i) })} /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {(['id', 'title', 'description', 'venue', 'year'] as const).map(key => <CvTextField key={key} label={{ id: 'Reference ID (e.g. A1)', title: 'Title', description: 'Description / collaborators', venue: 'Exhibition / venue', year: 'Year' }[key]} value={item[key]} onChange={value => setActiveConfig({ ...activeConfig, art: updateField(activeConfig.art ?? [], i, key, value) })} />)}
+        </div>
+        <CvLinkFields value={item.links} onChange={value => setActiveConfig({ ...activeConfig, art: updateField(activeConfig.art ?? [], i, 'links', value) })} />
+      </div>)}
 
       {/* Theses */}
       <SectionHeader
@@ -308,8 +315,8 @@ const CvEdit: React.FC = () => {
         >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, theses: removeItem(activeConfig.theses, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="col-span-2"><label className={labelClass}>Title</label><input type="text" value={thesis.title} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'title', e.target.value) })} className={inputClass} /></div>
-            <div className="col-span-2"><label className={labelClass}>Authors (HTML ok)</label><input type="text" value={thesis.authors} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'authors', e.target.value) })} className={inputClass} /></div>
+            <div className="md:col-span-2"><label className={labelClass}>Title</label><input type="text" value={thesis.title} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'title', e.target.value) })} className={inputClass} /></div>
+            <div className="md:col-span-2"><label className={labelClass}>Authors (inline formatting)</label><input type="text" value={thesis.authors} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'authors', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Institution</label><input type="text" value={thesis.institution} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'institution', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Year</label><input type="text" value={thesis.year} onChange={(e) => setActiveConfig({ ...activeConfig, theses: updateField(activeConfig.theses, i, 'year', e.target.value) })} className={inputClass} /></div>
           </div>
@@ -428,7 +435,7 @@ const CvEdit: React.FC = () => {
               <button type="button" onClick={() => {
                 const updated = [...activeConfig.customSections];
                 updated[si] = { ...updated[si], items: updated[si].items.filter((_, k) => k !== ii) };
-                setConfig({ ...config, customSections: updated });
+                setActiveConfig({ ...activeConfig, customSections: updated });
               }} className="text-neutral-400 hover:text-red-500 px-2 transition-colors">×</button>
             </div>
           ))}

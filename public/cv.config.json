@@ -1,20 +1,31 @@
 {
   "header": {
     "name": "Bo-Yu Chen",
-    "tagline": "Researcher and builder at the intersection of MIR, DSP, Instrument Making, and HCI."
+    "tagline": "Researcher and builder working across music AI, creative tools, and human–computer interaction.",
+    "nativeName": "陳柏昱",
+    "location": "Taipei, Taiwan",
+    "email": "bernie40916@gmail.com",
+    "github": "https://github.com/ChenPaulYu",
+    "scholar": "https://scholar.google.com/citations?user=ydsKndkAAAAJ&hl=en",
+    "linkedin": "https://www.linkedin.com/in/bo-yu-chen-bb074989/"
   },
   "education": [
     {
       "school": "National Taiwan University (NTU)",
       "degree": "M.S. in Networking and Multimedia (Dept. of CSIE)",
       "duration": "Sep 2021 – Aug 2025",
-      "location": "Taipei, Taiwan"
+      "location": "Taipei, Taiwan",
+      "description": [
+        "**Master's Thesis:** *FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems* [[C1]] (Advisor: Prof. Lung-Pan Cheng)",
+        "**Thesis Honors:** Winner of **TAICHI 2026 Master's Thesis Honorable Mention Award** {{Top 16.6%}}"
+      ]
     },
     {
       "school": "National Taiwan University of Science and Technology (NTUST)",
       "degree": "B.S. in Electrical Engineering",
       "duration": "Sep 2013 – Jun 2018",
-      "location": "Taipei, Taiwan"
+      "location": "Taipei, Taiwan",
+      "description": []
     }
   ],
   "workExperience": [
@@ -22,57 +33,60 @@
       "company": "Rhythm Culture Corporation",
       "role": "Technical Lead",
       "duration": "Jul 2023 – Present",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Coordinated planning and cross-functional development of TMC-CL1, a web-based music sampler for high school classrooms.",
-        "Built agent-based Music AI systems spanning DJ, Producer, and Tutor roles for interactive creation and feedback workflows.",
-        "Led projects funded by Taipei Music Center, TAICCA, and Taipei Government.",
-        "Recognized at NeurIPS Creative AI Track 2024 and ISMIR LLM4Music Workshop 2025."
+        "**Architecting Rytho, a local-first creative workspace (\"notes with ears\") empowering Human-AI co-creation**, serving as the central hub coordinating autonomous agent abilities within the **Rytho ecosystem**.",
+        "**Led R&D on LLM-driven music agents**, developing conversational feedback agents for music production and reasoning systems for chord analysis. [[W1]] [[W2]]",
+        "**Managed engineering teams for government R&D projects** (TAICCA, Taipei City) and **TMC-CL1**, a web music interface commissioned by Taipei Music Center."
+      ],
+      "links": [
+        {
+          "kind": "website",
+          "url": "https://rytho.ai/",
+          "label": "Website (rytho.ai)"
+        }
       ]
     },
     {
       "company": "Zone Sound Creative Corporation",
       "role": "Interactive Engineer",
       "duration": "Mar 2019 – Aug 2019",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Shipped \"Taptap,\" a browser-based performance interface using a cappella samples; exhibited at Vocal Asia 2019 (Japan).",
-        "Produced \"FusionTaiwanBeat,\" an audio-visual system featuring Taiwanese electronic music with DJ Sonica Calico & VJ Celso Urro; exhibited at MIDEM 2019 (France).",
-        "Developed \"Duplex Transmission,\" a real-time audience-performer interaction system; performed at Songshan Culture Park (Taiwan) with Po-Hao Chi."
+        "**Architected interactive web audio interfaces and networked performance systems**, developing a vocal sampler for Vocal Asia (Japan) [[A2]] and a p5.js/Node.js WebSocket engine bridging mobile audiences to Max/MSP stage synthesis [[A4]].",
+        "**Engineered generative audio-visual systems** in collaboration with electronic music artists, delivering responsive sound-visual synchronization pipelines for MIDEM (France). [[A3]]"
       ]
     }
   ],
   "researchExperience": [
     {
-      "company": "Computational Physicality Lab, NTU",
-      "role": "Research Assistant",
+      "company": "Computational Physicality Lab, National Taiwan University",
+      "role": "Graduate Research Assistant (Advisor: Prof. Lung-Pan Cheng)",
       "duration": "Sep 2021 – Aug 2025",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Developed FlueBricks, a modular toolkit for designing customizable flute-like instruments.",
-        "Utilized digital fabrication (Fusion 360, 3D printing) for rapid prototyping."
+        "**Designed FlueBricks**, a modular physical-computing toolkit enabling acoustic replication and customizable design of flute-like instruments as Master's thesis research. [[C1]]",
+        "**Engineered parametric CAD assemblies in Fusion 360** for digital fabrication, and conducted user evaluations across musician skill levels to validate expressive playability."
       ]
     },
     {
       "company": "Creative AI Lab, Sony Group Corporation",
-      "role": "Research Intern",
+      "role": "Research Intern (Advisors: Dr. Yuki Mitsufuji, Dr. Marco A. Martínez Ramírez, Wei-Hsiang Liao)",
       "duration": "Nov 2020 – Sep 2021",
       "location": "Tokyo, Japan (Remote)",
       "description": [
-        "Developed DJTransGAN, the first AI model for generating smooth DJ-like transitions.",
-        "Open-sourced the project; 100+ GitHub stars."
+        "**Developed DJTransGAN**, the first generative model for automated cross-track DJ transitions using DDSP and GANs. [[C2]]",
+        "**Open-sourced the full pipeline**, gathering **120+ GitHub stars** and broad community interest."
       ]
     },
     {
       "company": "Music and AI Lab, Academia Sinica",
-      "role": "Research Assistant",
+      "role": "Research Assistant (Advisor: Prof. Yi-Hsuan Yang)",
       "duration": "Jul 2019 – Sep 2023",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Led research in intelligent music production, loop-based retrieval and generation.",
-        "Published 5+ papers in top music technology conferences (ISMIR).",
-        "Mentored 5+ junior researchers and developed DeepMIR course materials.",
-        "Collaborated with TikTok, Sony, and MTG at UPF on joint publications."
+        "**Pioneered loop-based music AI research** spanning compatibility assessment, generation, and benchmarking. [[C3]] [[C4]] [[C5]]",
+        "**Mentored 5+ junior researchers**, co-authoring 4 papers and establishing reproducible research codebases."
       ]
     }
   ],
@@ -81,71 +95,161 @@
       "company": "BLND Creative Coding School",
       "role": "Instructor",
       "duration": "Aug 2020 – Jul 2023",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Taught creative coding, AI art, and interactive device design with Arduino.",
-        "Led courses on Stable Diffusion workflows and GAN-based ML image generation from data collection to training."
+        "Taught generative AI art (GANs, Stable Diffusion workflows) and physical computing with Arduino to creative practitioners."
       ]
     },
     {
       "company": "OrangeApple Children Programming School",
       "role": "Instructor",
       "duration": "Jul 2015 – Sep 2019",
-      "location": "Taiwan",
+      "location": "Taipei, Taiwan",
       "description": [
-        "Taught web development and algorithms in JavaScript and C++ for elementary to senior high students.",
-        "Covered advanced topics (sorting, recursion, dynamic programming, intro AI) and coached students for the APCS exam."
+        "Taught algorithms and C++/JS to K-12 students; coached high school students for the APCS examination."
       ]
     }
   ],
   "publications": [
     {
+      "id": "C1",
       "title": "FlueBricks: A Construction Kit of Flute-like Instrument for Acoustic Reasoning",
-      "authors": "<strong>*Bo-Yu Chen*</strong>, Chiao-Wei Huang, Lung-Pan Cheng",
-      "venue": "CHI 2026",
+      "authors": "**Bo-Yu Chen**, Chiao-Wei Huang, Lung-Pan Cheng",
+      "venue": "ACM Conference on Human Factors in Computing Systems (**CHI 2026**)",
       "year": "2026",
-      "acceptanceRate": "25%",
-      "pdf": "https://arxiv.org/abs/2604.03636"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2604.03636",
+          "label": "Paper (arXiv:2604.03636)"
+        },
+        {
+          "kind": "demo",
+          "url": "https://boyuchen.dev",
+          "label": "Project Website / Demo"
+        }
+      ],
+      "acceptanceRate": "~25%",
+      "award": "TAICHI 2025 · Best Paper"
     },
     {
+      "id": "W1",
+      "title": "Enhancing Automatic Chord Recognition through LLM Chain-of-Thought Reasoning",
+      "authors": "Chih-Cheng Chang, **Bo-Yu Chen**, Lu-Rong Chen, Li Su",
+      "venue": "ISMIR 2025 Workshop on Large Language Models for Music (**LLM4Music**)",
+      "year": "2025",
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2509.18700",
+          "label": "Paper (arXiv:2509.18700)"
+        }
+      ]
+    },
+    {
+      "id": "W2",
       "title": "AI TrackMate: Finally, Someone Who Will Give Your Music More Than Just \"Sounds Great!\"",
-      "authors": "Yi-Lin Jiang, Chia-Ho Hsiung, Yen-Tung Yeh, Lu-Rong Chen, <strong>*Bo-Yu Chen*</strong>",
-      "venue": "NeurIPS Creative AI Track",
+      "authors": "Yi-Lin Jiang, Chia-Ho Hsiung, Yen-Tung Yeh, Lu-Rong Chen, **Bo-Yu Chen**",
+      "venue": "Conference on Neural Information Processing Systems (**NeurIPS 2024**) – Creative AI Track",
       "year": "2024",
-      "acceptanceRate": "31%",
-      "pdf": "https://arxiv.org/abs/2412.06617"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2412.06617",
+          "label": "Paper (arXiv:2412.06617)"
+        },
+        {
+          "kind": "video",
+          "url": "https://x.com/Chen_Paul_u/status/1866502383942898073",
+          "label": "Demo Video"
+        }
+      ],
+      "acceptanceRate": "31%"
     },
     {
+      "id": "C2",
       "title": "Automatic DJ Transitions with Differentiable Audio Effects and Generative Adversarial Networks",
-      "authors": "<strong>*Bo-Yu Chen*</strong>, Wei-Han Hsu, Wei-Hsiang Liao, Marco A. Martínez Ramírez, Yuki Mitsufuji, Yi-Hsuan Yang",
-      "venue": "ICASSP",
+      "authors": "**Bo-Yu Chen**, Wei-Han Hsu, Wei-Hsiang Liao, Marco A. Martínez Ramírez, Yuki Mitsufuji, Yi-Hsuan Yang",
+      "venue": "IEEE International Conference on Acoustics, Speech, and Signal Processing (**ICASSP 2022**)",
       "year": "2022",
-      "acceptanceRate": "47%",
-      "pdf": "https://arxiv.org/abs/2110.06525"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2110.06525",
+          "label": "Paper (arXiv:2110.06525)"
+        },
+        {
+          "kind": "code",
+          "url": "https://github.com/ChenPaulYu/DJtransGAN",
+          "label": "GitHub Code (120+ Stars)"
+        },
+        {
+          "kind": "video",
+          "url": "https://x.com/ChenPaulYu/status/1565464984779247617",
+          "label": "Demo Video"
+        }
+      ],
+      "acceptanceRate": "47%"
     },
     {
+      "id": "C3",
       "title": "Exploiting Pre-trained Feature Networks for Generative Adversarial Networks in Audio-Domain Loop Generation",
-      "authors": "Yen-Tung Yeh, <strong>*Bo-Yu Chen*</strong>, Yi-Hsuan Yang",
-      "venue": "ISMIR",
+      "authors": "Yen-Tung Yeh, **Bo-Yu Chen**, Yi-Hsuan Yang",
+      "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2022**)",
       "year": "2022",
-      "acceptanceRate": "43%",
-      "pdf": "https://arxiv.org/abs/2209.01751"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2209.01751",
+          "label": "Paper (arXiv:2209.01751)"
+        },
+        {
+          "kind": "video",
+          "url": "https://x.com/_akhaliq/status/1567329585003380737",
+          "label": "Demo Video"
+        }
+      ],
+      "acceptanceRate": "43%"
     },
     {
+      "id": "C4",
       "title": "A Benchmarking Initiative for Audio-Domain Music Generation Using the Freesound Loop Dataset",
-      "authors": "Tun-Min Hung, <strong>*Bo-Yu Chen*</strong>, Yen-Tung Yeh, Yi-Hsuan Yang",
-      "venue": "ISMIR",
+      "authors": "Tun-Min Hung, **Bo-Yu Chen**, Yen-Tung Yeh, Yi-Hsuan Yang",
+      "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2021**)",
       "year": "2021",
-      "acceptanceRate": "34%",
-      "pdf": "https://arxiv.org/abs/2108.01576"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2108.01576",
+          "label": "Paper (arXiv:2108.01576)"
+        },
+        {
+          "kind": "code",
+          "url": "https://github.com/MTG/freesound-loop-dataset",
+          "label": "Dataset & Code"
+        }
+      ],
+      "acceptanceRate": "34%"
     },
     {
+      "id": "C5",
       "title": "Neural Loop Combiner: Neural Network Models for Assessing the Compatibility of Loops",
-      "authors": "<strong>*Bo-Yu Chen*</strong>, Jordan Smith, Yi-Hsuan Yang",
-      "venue": "ISMIR",
+      "authors": "**Bo-Yu Chen**, Jordan Smith, Yi-Hsuan Yang",
+      "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2020**)",
       "year": "2020",
-      "acceptanceRate": "38%",
-      "pdf": "https://arxiv.org/abs/2008.02011"
+      "links": [
+        {
+          "kind": "paper",
+          "url": "https://arxiv.org/abs/2008.02011",
+          "label": "Paper (arXiv:2008.02011)"
+        },
+        {
+          "kind": "code",
+          "url": "https://github.com/mir-aidj/neural-loop-combiner",
+          "label": "GitHub Code"
+        }
+      ],
+      "acceptanceRate": "38%"
     }
   ],
   "theses": [
@@ -158,33 +262,39 @@
   ],
   "awards": [
     {
-      "title": "Master's Thesis Honorable Mention",
-      "venue": "TAICHI Thesis Award",
-      "year": "2026",
-      "detail": "FlueBricks · Top 16.6%"
+      "title": "Master's Thesis Honorable Mention Award",
+      "venue": "TAICHI Thesis Award for *FlueBricks* (Top 16.6%, published as [[C1]])",
+      "year": "2026"
     },
     {
       "title": "Best Paper Award 🏆",
-      "venue": "TAICHI",
-      "year": "2025",
-      "detail": "FlueBricks"
+      "venue": "Taiwan Computer-Human Interaction Society (TAICHI) for *FlueBricks* [[C1]]",
+      "year": "2025"
     },
     {
       "title": "Overseas Visit Delegate",
-      "venue": "Epoch Foundation YEF Program",
-      "year": "2017",
-      "detail": "Top 9% (16/175)"
+      "venue": "Epoch Foundation Young Entrepreneurs of the Future (Top 9%, 16/175)",
+      "year": "2017"
     },
     {
       "title": "3rd Prize",
-      "venue": "MOEA GetFresh Creativity Competition",
+      "venue": "Ministry of Economic Affairs (MOEA) GetFresh Creativity Competition",
       "year": "2017"
     }
   ],
   "reviewer": [
-    { "venue": "ISMIR", "years": "2020–2026" },
-    { "venue": "ICASSP", "years": "2025" },
-    { "venue": "NeurIPS Creative AI Track", "years": "2025" }
+    {
+      "venue": "International Society for Music Information Retrieval Conference (**ISMIR**)",
+      "years": "2020 – 2026"
+    },
+    {
+      "venue": "IEEE International Conference on Acoustics, Speech, and Signal Processing (**ICASSP**)",
+      "years": "2025"
+    },
+    {
+      "venue": "Conference on Neural Information Processing Systems (**NeurIPS**) – Creative AI Track",
+      "years": "2025"
+    }
   ],
   "visibility": {
     "education": true,
@@ -192,9 +302,171 @@
     "researchExperience": true,
     "teachingExperience": true,
     "publications": true,
-    "theses": true,
+    "theses": false,
     "awards": true,
-    "reviewer": true
+    "reviewer": true,
+    "researchInterests": true,
+    "openSource": true,
+    "art": true,
+    "extracurricular": true
   },
-  "customSections": []
+  "customSections": [],
+  "researchInterests": "Human-Computer Interaction (HCI) · Music Information Retrieval (MIR) · AI Agents · Creative Support Tools · Musical Interfaces",
+  "openSource": [
+    {
+      "company": "OpenMIRLab",
+      "role": "Founder & Lead Maintainer",
+      "duration": "Nov 2025 – Present",
+      "location": "Open-Source",
+      "description": [
+        "**Packaged reproducible inference suites for 30+ SOTA MIR models** (source separation, transcription, chord estimation, beat tracking), resolving upstream dependency decay across PyTorch and TensorFlow.",
+        "**Standardized unified inference APIs and checkpoint registries**, stripping heavy training dependencies into lightweight, pip-installable packages with verified model outputs."
+      ],
+      "links": [
+        {
+          "kind": "code",
+          "url": "https://github.com/openmirlab",
+          "label": "GitHub (github.com/openmirlab)"
+        }
+      ]
+    }
+  ],
+  "extracurricular": [
+    {
+      "company": "Musical Theater: Rose of the Endless Night",
+      "role": "Director, Music Theater Course Final Public Performance (NTUST)",
+      "duration": "Feb 2015 – Jun 2015",
+      "location": "Taipei, Taiwan",
+      "description": [
+        "Authored a stage adaptation of a Taiwanese musical and directed 60+ cast and crew members for a live stage production with 400+ audience."
+      ],
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=Dw3ULvya21E",
+          "label": "Performance Video (Part 1)"
+        },
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=4nOkl6zueAU",
+          "label": "Performance Video (Part 2)"
+        }
+      ]
+    },
+    {
+      "company": "NTUST Men's Football Team",
+      "role": "Vice Captain, Position: Defensive Midfielder / Right-Back",
+      "duration": "Jul 2016 – Jul 2017",
+      "location": "Taipei, Taiwan",
+      "description": [
+        "Coordinated squad training and match operations across 30 collegiate athletes and coaching staff.",
+        "Led team to **4th Place** in the National Inter-University Football Tournament and **5th Place** in the National Futsal Tournament."
+      ]
+    }
+  ],
+  "art": [
+    {
+      "id": "A1",
+      "title": "Iridescent Vision",
+      "description": "Developed a web-based interactive music video and light installation exploring human civilization and imagined future technology, with DJ Sonia Calico and visual artist Celso Urroz.",
+      "venue": "FINAL Club (Taipei)",
+      "year": "2019",
+      "links": [
+        {
+          "kind": "demo",
+          "url": "https://chenpaulyu.github.io/iridescent-vision/",
+          "label": "Interactive Demo"
+        },
+        {
+          "kind": "code",
+          "url": "https://github.com/ChenPaulYu/iridescent-vision",
+          "label": "GitHub Code"
+        }
+      ]
+    },
+    {
+      "id": "A2",
+      "title": "Taptap",
+      "description": "Developed a web-based musical interface that lets visitors play music with a cappella samples, in collaboration with O-KAI SINGERS.",
+      "venue": "Vocal Asia Festival (Kagawa, Japan)",
+      "year": "2019",
+      "links": [
+        {
+          "kind": "demo",
+          "url": "https://chenpaulyu.github.io/taptap/",
+          "label": "Live Demo"
+        }
+      ]
+    },
+    {
+      "id": "A3",
+      "title": "FusionTaiwanBeat",
+      "description": "Built a web-based interactive audiovisual system showcasing Taiwanese electronic music, with DJ Sonia Calico and visual artist Celso Urroz.",
+      "venue": "MIDEM (Cannes, France)",
+      "year": "2019",
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://zonesound.github.io/TaiwanBeats2019/exhibition.html",
+          "label": "Video Recording"
+        }
+      ]
+    },
+    {
+      "id": "A4",
+      "title": "Duplex Transmission",
+      "description": "Built a web-based audience–performer interaction system using p5.js, Tone.js, Node.js (WebSockets), and Max/MSP, with new media artist Po-Hao Chi.",
+      "venue": "Songshan Cultural Park (Taipei)",
+      "year": "2019",
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=VBUa4RqjUTc",
+          "label": "Live Video"
+        }
+      ]
+    },
+    {
+      "id": "A5",
+      "title": "Mimo No.Tent",
+      "description": "Created a virtual planetarium that brings a starry sky inside a tent, with designers Yi-Yun Liao and Jing-Ting Huang.",
+      "venue": "TaiwanTech Design Grad Show (Taipei, Taiwan)",
+      "year": "2019",
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=bJ2N1Noypws",
+          "label": "Exhibition Video"
+        }
+      ]
+    },
+    {
+      "id": "A6",
+      "title": "YuYu",
+      "description": "Developed an AR service for delivering customized messages through Chinese pastries, with designer Ya-Cin Siao.",
+      "venue": "TaiwanTech Design Grad Show (Taipei, Taiwan)",
+      "year": "2018",
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=T4oUaYOX1A0",
+          "label": "Project Video"
+        }
+      ]
+    },
+    {
+      "id": "A7",
+      "title": "Message Container",
+      "description": "Designed a breath-driven immersive installation providing haptic, sound, and visual feedback, with new media artist Wen-Fei Zhang.",
+      "venue": "TaiwanTech Design Grad Show & Venue (Taipei, Taiwan)",
+      "year": "2017",
+      "links": [
+        {
+          "kind": "video",
+          "url": "https://www.youtube.com/watch?v=yKbr_vRhlzw",
+          "label": "Installation Video"
+        }
+      ]
+    }
+  ]
 }

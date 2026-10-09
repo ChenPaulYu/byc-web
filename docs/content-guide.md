@@ -73,6 +73,18 @@ public/
 
 Edit `public/content/about.md` directly. No config changes needed.
 
+## Updating the CV
+
+Edit the CV in the admin dashboard or in `public/cv.config.json`. The public page and generated PDF share this data. Header contacts include LinkedIn; optional sections include research interests, open-source work, interactive art and extracurricular activities. Education descriptions hold thesis and advisor details.
+
+- Inline copy supports `**bold**`, `*italic*`, `[[C1]]` references and `{{badge text}}`. Arbitrary HTML is displayed as text; legacy `<strong>` and `<em>` emphasis remains supported.
+- Publications and art use unique stable `id` values such as `C1`, `W1` and `A1`. Keep IDs when reordering entries so citations continue to point to the same work. References to hidden sections render without a link.
+- Resource `links` contain `kind` (`paper`, `code`, `demo`, `video` or `website`), `url` and an optional accessible `label`. Use HTTPS or a local absolute path such as `/papers/example.pdf`. The legacy publication `pdf` field is still supported.
+- Art entries separate `title`, `description` (including collaborators), `venue` and `year`; the page aligns these fields automatically.
+- Existing language files and section visibility switches remain supported. Optional additions may be omitted from older translations.
+
+After changing content or the CV layout, run `npm run build:cvpdf` to rebuild the site and regenerate `public/cv.pdf` and `dist/cv.pdf`. The PDF renderer selects a free local port and waits for the CV data and fonts. `npm run cv:pdf` alone requires a current build. Check `/cv` on desktop/mobile and inspect the generated PDF before publishing.
+
 ## Content Ordering
 
 - **Projects:** pinned → importance (0–10) → alphabetical
