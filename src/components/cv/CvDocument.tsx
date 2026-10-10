@@ -1,7 +1,7 @@
 /** CV content shared by the screen and print views; data stays in cv.config.json. */
 import React from 'react';
 import type { CvConfig, Experience } from '../../types/cv';
-import { cvHref, publicationLinks, visibleCvReferences } from '../../utils/cv';
+import { artPresentation, cvHref, publicationLinks, visibleCvReferences } from '../../utils/cv';
 import { GitHubIcon, LinkedInIcon, MailIcon, ScholarIcon } from '../SocialIcons';
 import { CvInline } from './CvInline';
 import { CvReferenceProvider } from './CvReference';
@@ -91,7 +91,8 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
               <div className="cv-linked-title"><h3>{item.title}</h3><CvLinks links={item.links} title={item.title} description={item.description} /></div>
               <span className="cv-date">{item.year}</span>
             </div>
-            <p className="cv-art-description"><CvInline text={item.venue ? item.description.replace(/\.$/, '') : item.description} />{item.venue && <span className="cv-venue">{item.description && ' · '}<CvInline text={item.venue} /></span>}</p>
+            <p className="cv-art-description"><CvInline text={item.description} /></p>
+            {artPresentation(item) && <p className="cv-art-meta cv-venue"><CvInline text={artPresentation(item)} /></p>}
           </div>
         </div>)}
       </Section>}

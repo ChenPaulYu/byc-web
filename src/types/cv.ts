@@ -7,7 +7,7 @@ export interface Publication { id?: string; title: string; authors: string; venu
 export interface Thesis { title: string; authors: string; institution: string; year: string; }
 export interface Award { title: string; venue: string; year: string; detail?: string; }
 export interface ReviewerEntry { venue: string; years: string; }
-export interface ArtEntry { id: string; title: string; description: string; venue: string; year: string; links?: CvLink[]; }
+export interface ArtEntry { id: string; title: string; description: string; collaborators?: string; venue: string; year: string; links?: CvLink[]; }
 export interface CustomSectionItem { text: string; detail?: string; }
 export interface CustomSection { id: string; title: string; visible: boolean; items: CustomSectionItem[]; }
 export interface CvConfig {

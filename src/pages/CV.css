@@ -59,6 +59,7 @@
 .cv-linked-title { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .cv-linked-title .cv-links { flex-shrink: 0; }
 .cv-art-entry + .cv-art-entry { margin-top: 12px; }
+.cv-art-meta { font-style: italic; }
 .cv-art-description { font-size: 12px; margin-top: 3px !important; }
 .cv-download { text-align: center; font-size: 12px; margin-top: 24px; color: #737373; }
 .cv-download a:hover { color: var(--cv-accent); }

@@ -1,5 +1,5 @@
 /** Lightweight CV compatibility helpers; shared by the page and regression checks. */
-import type { CvConfig, CvLink, Publication } from '../types/cv';
+import type { ArtEntry, CvConfig, CvLink, Publication } from '../types/cv';
 
 export function cvHref(value?: string): string | undefined {
   if (!value) return undefined;
@@ -31,13 +31,17 @@ export function cvPreviewText(text: string): string {
   return normalizeCvText(text).replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
 }
 
+export function artPresentation(item: ArtEntry): string {
+  return [item.collaborators ? `With ${item.collaborators}` : '', item.venue ? `Presented at ${item.venue}` : ''].filter(Boolean).join(' · ');
+}
+
 export function visibleCvReferences(config: CvConfig): Map<string, CvReferencePreview> {
   const references = new Map<string, CvReferencePreview>();
   if (config.visibility?.publications !== false) for (const item of config.publications ?? []) {
     if (item.id) references.set(item.id, { id: item.id, kind: 'publication', title: item.title, detail: cvPreviewText(item.authors), venue: cvPreviewText(item.venue), year: item.year, links: publicationLinks(item) });
   }
   if (config.visibility?.art !== false) for (const item of config.art ?? []) {
-    references.set(item.id, { id: item.id, kind: 'art', title: item.title, detail: cvPreviewText(item.description), venue: cvPreviewText(item.venue ?? ''), year: item.year, links: item.links ?? [] });
+    references.set(item.id, { id: item.id, kind: 'art', title: item.title, detail: cvPreviewText(item.description), venue: cvPreviewText(artPresentation(item)), year: item.year, links: item.links ?? [] });
   }
   return references;
 }

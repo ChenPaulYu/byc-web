@@ -290,7 +290,7 @@ const CvEdit: React.FC = () => {
       {(activeConfig.art ?? []).map((item, i) => <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
         <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, art: removeItem(activeConfig.art ?? [], i) })} /></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {(['id', 'title', 'description', 'venue', 'year'] as const).map(key => <CvTextField key={key} label={{ id: 'Reference ID (e.g. A1)', title: 'Title', description: 'Description / collaborators', venue: 'Exhibition / venue', year: 'Year' }[key]} value={item[key]} onChange={value => setActiveConfig({ ...activeConfig, art: updateField(activeConfig.art ?? [], i, key, value) })} />)}
+          {(['id', 'title', 'description', 'collaborators', 'venue', 'year'] as const).map(key => <CvTextField key={key} label={{ id: 'Reference ID (e.g. A1)', title: 'Title', description: 'Short introduction', collaborators: 'Collaborators (names / roles)', venue: 'Presentation / venue (city, country)', year: 'Year' }[key]} value={item[key] ?? ''} onChange={value => setActiveConfig({ ...activeConfig, art: updateField(activeConfig.art ?? [], i, key, value) })} />)}
         </div>
         <CvLinkFields value={item.links} onChange={value => setActiveConfig({ ...activeConfig, art: updateField(activeConfig.art ?? [], i, 'links', value) })} />
       </div>)}

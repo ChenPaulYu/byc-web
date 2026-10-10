@@ -54,7 +54,7 @@
       "location": "Taipei, Taiwan",
       "description": [
         "**Architected interactive web audio interfaces and networked performance systems**, developing a vocal sampler for Vocal Asia (Japan) [[A2]] and a p5.js/Node.js WebSocket engine bridging mobile audiences to Max/MSP stage synthesis [[A4]].",
-        "**Engineered interactive audio-visual systems** in collaboration with electronic music artists, delivering responsive sound-visual synchronization pipelines for MIDEM (France). [[A3]]"
+        "**Developed a web demo showcasing Taiwanese electronic music** in collaboration with electronic music artists for MIDEM (Cannes, France). [[A3]]"
       ]
     }
   ],
@@ -136,7 +136,7 @@
       "id": "W1",
       "title": "Enhancing Automatic Chord Recognition through LLM Chain-of-Thought Reasoning",
       "authors": "Chih-Cheng Chang, **Bo-Yu Chen**, Lu-Rong Chen, Li Su",
-      "venue": "Large Language Models for Music & Audio (LLM4MA) — **ISMIR 2025 Workshop**",
+      "venue": "Large Language Models for Music & Audio (**ISMIR 2025 Workshop**)",
       "year": "2025",
       "links": [
         {
@@ -355,7 +355,7 @@
     },
     {
       "company": "NTUST Men's Football Team",
-      "role": "Vice Captain, Position: Defensive Midfielder / Right-Back",
+      "role": "Vice Captain, Position: Defensive Midfielder",
       "duration": "Jul 2016 – Jul 2017",
       "location": "Taipei, Taiwan",
       "description": [
@@ -368,8 +368,8 @@
     {
       "id": "A1",
       "title": "Iridescent Vision",
-      "description": "Developed a web-based interactive music video and light installation exploring human civilization and imagined future technology, with DJ Sonia Calico and visual artist Celso Urroz.",
-      "venue": "FINAL Club (Taipei)",
+      "description": "A web-based interactive music video and light installation exploring human civilization and imagined future technology.",
+      "venue": "FINAL Club, Taipei, Taiwan",
       "year": "2019",
       "links": [
         {
@@ -377,13 +377,14 @@
           "url": "https://chenpaulyu.github.io/iridescent-vision/",
           "label": "Interactive Demo"
         }
-      ]
+      ],
+      "collaborators": "DJ Sonia Calico and visual artist Celso Urroz"
     },
     {
       "id": "A2",
       "title": "Taptap",
-      "description": "Developed a web-based musical interface that lets visitors play music with a cappella samples, in collaboration with O-KAI SINGERS.",
-      "venue": "Vocal Asia Festival (Kagawa, Japan)",
+      "description": "A web-based interface that lets visitors play music with a cappella samples.",
+      "venue": "Vocal Asia Festival, Kagawa, Japan",
       "year": "2019",
       "links": [
         {
@@ -391,27 +392,29 @@
           "url": "https://chenpaulyu.github.io/taptap/",
           "label": "Live Demo"
         }
-      ]
+      ],
+      "collaborators": "O-KAI SINGERS"
     },
     {
       "id": "A3",
       "title": "FusionTaiwanBeat",
-      "description": "Built a web-based interactive audiovisual system showcasing Taiwanese electronic music, with DJ Sonia Calico and visual artist Celso Urroz.",
-      "venue": "MIDEM (Cannes, France)",
+      "description": "A web demo showcasing Taiwanese electronic music.",
+      "venue": "MIDEM, Cannes, France",
       "year": "2019",
       "links": [
         {
-          "kind": "video",
+          "kind": "demo",
           "url": "https://zonesound.github.io/TaiwanBeats2019/exhibition.html",
-          "label": "Video Recording"
+          "label": "Web Demo"
         }
-      ]
+      ],
+      "collaborators": "DJ Sonia Calico and visual artist Celso Urroz"
     },
     {
       "id": "A4",
       "title": "Duplex Transmission",
-      "description": "Built a web-based audience–performer interaction system using p5.js, Tone.js, Node.js (WebSockets), and Max/MSP, with new media artist Po-Hao Chi.",
-      "venue": "Songshan Cultural Park (Taipei)",
+      "description": "A web-based system that connects audiences and performers during live performance.",
+      "venue": "Songshan Cultural Park, Taipei, Taiwan",
       "year": "2019",
       "links": [
         {
@@ -419,13 +422,14 @@
           "url": "https://www.youtube.com/watch?v=VBUa4RqjUTc",
           "label": "Live Video"
         }
-      ]
+      ],
+      "collaborators": "new media artist Po-Hao Chi"
     },
     {
       "id": "A5",
       "title": "Mimo No.Tent",
-      "description": "Created a virtual planetarium that brings a starry sky inside a tent, with designers Yi-Yun Liao and Jing-Ting Huang.",
-      "venue": "TaiwanTech Design Grad Show (Taipei, Taiwan)",
+      "description": "A virtual planetarium that brings a starry sky inside a tent.",
+      "venue": "TaiwanTech Design Grad Show, Taipei, Taiwan",
       "year": "2019",
       "links": [
         {
@@ -433,13 +437,14 @@
           "url": "https://www.youtube.com/watch?v=bJ2N1Noypws",
           "label": "Exhibition Video"
         }
-      ]
+      ],
+      "collaborators": "designers Yi-Yun Liao and Jing-Ting Huang"
     },
     {
       "id": "A6",
       "title": "YuYu",
-      "description": "Developed an AR service for delivering customized messages through Chinese pastries, with designer Ya-Cin Siao.",
-      "venue": "TaiwanTech Design Grad Show (Taipei, Taiwan)",
+      "description": "An AR service that delivers customized messages through Chinese pastries.",
+      "venue": "TaiwanTech Design Grad Show, Taipei, Taiwan",
       "year": "2018",
       "links": [
         {
@@ -447,13 +452,14 @@
           "url": "https://www.youtube.com/watch?v=T4oUaYOX1A0",
           "label": "Project Video"
         }
-      ]
+      ],
+      "collaborators": "designer Ya-Cin Siao"
     },
     {
       "id": "A7",
       "title": "Message Container",
-      "description": "Designed a breath-driven immersive installation providing haptic, sound, and visual feedback, with new media artist Wen-Fei Zhang.",
-      "venue": "TaiwanTech Design Grad Show & Venue (Taipei, Taiwan)",
+      "description": "A breath-driven installation that responds with haptic, sound, and visual feedback.",
+      "venue": "TaiwanTech Design Grad Show & Venue, Taipei, Taiwan",
       "year": "2017",
       "links": [
         {
@@ -461,7 +467,8 @@
           "url": "https://www.youtube.com/watch?v=yKbr_vRhlzw",
           "label": "Installation Video"
         }
-      ]
+      ],
+      "collaborators": "new media artist Wen-Fei Zhang"
     }
   ]
 }

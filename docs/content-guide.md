@@ -80,7 +80,7 @@ Edit the CV in the admin dashboard or in `public/cv.config.json`. The public pag
 - Inline copy supports `**bold**`, `*italic*`, `[[C1]]` references and `{{badge text}}`. Arbitrary HTML is displayed as text; legacy `<strong>` and `<em>` emphasis remains supported.
 - Publications and art use unique stable `id` values such as `C1`, `W1` and `A1`. Keep IDs when reordering entries so citations continue to point to the same work. References to hidden sections render without a link.
 - Resource `links` contain `kind` (`paper`, `code`, `demo`, `video` or `website`), `url` and an optional accessible `label`. Use HTTPS or a local absolute path such as `/papers/example.pdf`. The legacy publication `pdf` field is still supported.
-- Art entries separate `title`, `description` (including collaborators), `venue` and `year`; the page aligns these fields automatically.
+- Art entries separate `title`, `description` (a short introduction), optional `collaborators`, `venue` and `year`. Below the title/year, the page shows the introduction followed by an italic metadata line: “With … · Presented at …”. Write collaborator names/roles and venue/city/country without those prefixes; the renderer adds them. Older entries without `collaborators` remain supported.
 - Existing language files and section visibility switches remain supported. Optional additions may be omitted from older translations.
 
 Open-Source Software & Toolkits follows Work Experience and precedes Publications.
