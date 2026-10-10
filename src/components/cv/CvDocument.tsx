@@ -8,8 +8,8 @@ import { CvInline } from './CvInline';
 import { CvReferenceProvider } from './CvReference';
 import { CvLinks } from './CvLinks';
 
-function Section({ title, children, keepTogether = false }: { title: string; children: React.ReactNode; keepTogether?: boolean }) {
-  return <section className={`cv-section${keepTogether ? ' cv-section-keep' : ''}`}><h2>{title}</h2>{children}</section>;
+function Section({ title, children, note, keepTogether = false }: { title: string; children: React.ReactNode; note?: string; keepTogether?: boolean }) {
+  return <section className={`cv-section${keepTogether ? ' cv-section-keep' : ''}`}><h2>{title}</h2>{note && <p className="cv-section-note cv-venue">{note}</p>}{children}</section>;
 }
 
 function Bullets({ items }: { items?: string[] }) {
@@ -59,13 +59,10 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
           <Bullets items={item.description} />
         </div>)}
       </Section>}
-      {visible('awards') && config.awards.length > 0 && <Section title="Honors & Awards">
-        {config.awards.map((item, i) => <div className="cv-compact-entry" key={i}><div><strong><CvInline text={item.title} /></strong> · <CvInline text={item.venue} />{item.detail && <> <span className="cv-badge"><CvInline text={item.detail} /></span></>}</div><span className="cv-date">{item.year}</span></div>)}
-      </Section>}
       {visible('researchExperience') && <Experiences title="Research Experience" items={config.researchExperience} />}
       {visible('workExperience') && <Experiences title="Work Experience" items={config.workExperience} />}
-      {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
-      {visible('publications') && config.publications.length > 0 && <Section title="Publications">
+      {visible('teachingExperience') && <Experiences title="Teaching Experience" items={config.teachingExperience} />}
+      {visible('publications') && config.publications.length > 0 && <Section title="Publications" note="C = Conference papers · W = Workshop papers">
         {config.publications.map((item, i) => {
           const hasBadges = Boolean(item.acceptanceRate || item.award);
           const links = <CvLinks links={publicationLinks(item)} title={item.title} description={item.venue} />;
@@ -84,7 +81,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
           </div>;
         })}
       </Section>}
-      {visible('art') && !!config.art?.length && <Section title="Interactive Art & Installations" keepTogether>
+      {visible('art') && !!config.art?.length && <Section title="Interactive Art & Installations" note="(Works created in collaboration with artists, musicians, and designers)">
         {config.art.map(item => <div className="cv-reference-entry cv-art-entry" id={`cv-ref-${item.id}`} key={item.id}>
           <span className="cv-reference-label">{item.id}</span>
           <div className="cv-reference-body">
@@ -97,10 +94,13 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
           </div>
         </div>)}
       </Section>}
+      {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
+      {visible('awards') && config.awards.length > 0 && <Section title="Honors & Awards">
+        {config.awards.map((item, i) => <div className="cv-compact-entry" key={i}><div><strong><CvInline text={item.title} /></strong> · <CvInline text={item.venue} />{item.detail && <> <span className="cv-badge"><CvInline text={item.detail} /></span></>}</div><span className="cv-date">{item.year}</span></div>)}
+      </Section>}
       {visible('reviewer') && config.reviewer.length > 0 && <Section title="Academic Service & Reviewing" keepTogether>
         {config.reviewer.map((item, i) => <div className="cv-compact-entry" key={i}><div><CvInline text={item.venue} /></div><span className="cv-date">{item.years}</span></div>)}
       </Section>}
-      {visible('teachingExperience') && <Experiences title="Teaching Experience" items={config.teachingExperience} />}
       {visible('extracurricular') && <Experiences title="Extracurricular Activities" items={config.extracurricular} />}
       {visible('theses') && !!config.theses?.length && <Section title="Thesis">
         {config.theses.map((item, i) => <div className="cv-entry" key={i}><h3>{item.title}</h3><p className="cv-authors"><CvInline text={item.authors} /></p><p className="cv-venue">{item.institution}, {item.year}</p></div>)}

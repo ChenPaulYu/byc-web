@@ -85,7 +85,7 @@ Edit the CV in the admin dashboard or in `public/cv.config.json`. The public pag
 
 Advisor profiles live in optional `people` records: a stable `id`, `name`, optional inline `label`, `url`, `relationship`, and `affiliation`. Use `[[person:profile-id]]` to link an advisor name with a hover/focus/touch card. Describe the relationship and institution at the time of collaboration, rather than current employment. The PDF keeps clickable names without the preview overlay. Inline Markdown resource links render as ordinary text followed by the original resource icon, with hover/focus/touch previews; GitHub destinations use the code icon and other destinations use the website icon. The icon remains clickable in the PDF.
 
-Open-Source Software & Toolkits follows Work Experience and precedes Publications.
+Teaching Experience follows Work Experience. Publications precedes Interactive Art & Installations, followed by Open-Source Software & Toolkits, Honors & Awards, and Academic Service & Reviewing. Publications explains the conference/workshop reference prefixes; Interactive Art & Installations introduces the collaboration context before individual work credits.
 
 Citation links show a preview on hover or keyboard focus, using the matching visible publication/art record and its existing resource links. On touch screens, tap once to preview, then use “View in CV” to jump. Resource icons (YouTube/video, website, demo, code and paper) show contextual cards with the entry title, description and destination URL; desktop clicks open the original link directly, while touch users can preview first and choose “Open in new tab”. Escape closes the preview. CV anchor scrolling and route entry fades respect reduced-motion preferences.
 

@@ -30,6 +30,7 @@
 .cv-print-button svg { width: 14px; height: 14px; }
 .cv-section { margin-top: 28px; }
 .cv-section h2 { font-size: 13px; line-height: 1.5; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5; padding-bottom: 7px; margin-bottom: 14px; }
+.cv-section-note { margin-bottom: 12px !important; }
 .cv-interests { font-size: 13px; }
 .cv-entry + .cv-entry { margin-top: 19px; }
 .cv-entry-heading, .cv-entry-sub, .cv-art-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
@@ -125,6 +126,7 @@ html.cv-smooth-scroll { scroll-behavior: smooth; }
   .cv-contacts { margin-top: 7px; }
   .cv-section { margin-top: 8px; }
   .cv-section h2 { margin-bottom: 6px; padding-bottom: 4px; font-size: 12px; break-after: avoid; }
+  .cv-section-note { margin-bottom: 6px !important; break-after: avoid; }
   .cv-page h3 { font-size: 13px; line-height: 1.35; }
   .cv-interests, .cv-bullets { font-size: 12px; }
   .cv-interests { line-height: 1.5; }
