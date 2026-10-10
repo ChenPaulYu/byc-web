@@ -1,4 +1,4 @@
-/** Citation and award previews retain reading origins and offer dismissible, print-safe returns. */
+/** Citation and award previews retain reading origins with a dismissible, print-safe reading companion. */
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cvAwardTarget, type CvReferencePreview } from '../../utils/cv';
@@ -107,18 +107,27 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
     {children}
     {!dismissed && (trail.length > 0 || current) && createPortal(<nav className="cv-reading-actions" aria-label="CV reading navigation"><div className="cv-reading-card">
       <span className="sr-only" aria-live="polite">{current ? current.kind === 'award' ? 'Viewing award' : `Viewing ${current.id}` : 'Viewing reference'}</span>
-      {trail.length > 0 ? <button type="button" className="cv-reading-return" onClick={back} disabled={returning}>
-        <ReturnArrow />Back to reading
-      </button> : <a className="cv-reading-return" href={window.location.pathname + window.location.search}>
-        <ReturnArrow />Back to CV
+      {trail.length > 0 ? <button type="button" className="cv-reading-return" onClick={back} disabled={returning} aria-label="Back to reading">
+        <ReadingCompanion /><span className="cv-companion-hint" aria-hidden="true">↶ Back to reading</span>
+      </button> : <a className="cv-reading-return" href={window.location.pathname + window.location.search} aria-label="Back to CV">
+        <ReadingCompanion /><span className="cv-companion-hint" aria-hidden="true">↶ Back to CV</span>
       </a>}
       <button type="button" className="cv-reading-dismiss" onClick={dismiss} disabled={returning} aria-label="Dismiss reading navigation" title="Continue reading here"><span aria-hidden="true">×</span></button>
     </div></nav>, document.body)}
   </CvPreviewProvider></ReadingNavigation.Provider></CvReferences.Provider>;
 }
 
-function ReturnArrow() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7" /></svg>;
+/** Code-native companion keeps idle motion in CSS and the navigation hit area stationary. */
+function ReadingCompanion() {
+  return <svg className="cv-companion" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <g className="cv-companion-hover"><g className="cv-companion-body">
+      <path className="cv-companion-outline" d="M14 46C10 39 11 29 16 23L14 14Q13 8 18 12L25 18Q32 15 39 18L46 12Q51 8 50 15L48 24C53 31 53 41 49 47L49 52Q49 56 44 54L38 51Q32 53 26 51L20 54Q15 56 15 51Z" strokeWidth="1.5" strokeLinejoin="round" />
+      <path className="cv-companion-ears" d="M18 16L21 20M46 16L43 20" fill="none" strokeWidth="1.7" strokeLinecap="round" />
+      <g className="cv-companion-eyes"><ellipse cx="24" cy="31" rx="2" ry="2.7" /><ellipse cx="40" cy="31" rx="2" ry="2.7" /></g>
+      <path className="cv-companion-smile" d="M29 36Q32 38.5 35 36" fill="none" strokeWidth="1.4" strokeLinecap="round" />
+      <path className="cv-companion-arrow" d="M27 43H38M27 43L30 40M27 43L30 46" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </g></g>
+  </svg>;
 }
 
 export function CvReference({ id }: { id: string }) {

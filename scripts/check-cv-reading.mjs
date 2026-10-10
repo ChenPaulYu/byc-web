@@ -1,4 +1,4 @@
-/** Browser regression for CV reading returns, including reload and native history.
+/** Browser regression for CV reading companion returns, idle/reduced motion, reload and native history.
  * CV_URL selects a dev/preview/deployed CV. CHROME_PATH selects an installed browser.
  */
 import assert from 'node:assert/strict';
@@ -37,7 +37,7 @@ const visibleBack = async (page, button = page.getByRole('button', {name:'Back t
 };
 try {
   for (const width of [1545, 320]) {
-    const context = await browser.newContext({viewport:{width,height:1180},hasTouch:width===320,isMobile:width===320});
+    const context = await browser.newContext({viewport:{width,height:1180},hasTouch:width===320,isMobile:width===320,reducedMotion:'no-preference'});
     const page = await context.newPage();
     page.setDefaultTimeout(30_000);
     page.on('pageerror', error => console.error(error.message));
@@ -47,6 +47,25 @@ try {
       const overview = page.getByRole('link', {name:'Back to CV',exact:true});
       await overview.waitFor();
       await visibleBack(page, overview);
+      await page.mouse.move(0, 0);
+      const body = page.locator('.cv-companion-body');
+      const motion = await body.evaluate(element => getComputedStyle(element).transform);
+      await page.waitForFunction(previous => {
+        const body = document.querySelector('.cv-companion-body');
+        return getComputedStyle(body).transform !== previous;
+      }, motion);
+      const hitArea = await overview.boundingBox();
+      await page.emulateMedia({reducedMotion:'reduce'});
+      for (const selector of ['.cv-companion-body', '.cv-companion-eyes']) {
+        assert.equal(await page.locator(selector).evaluate(element => getComputedStyle(element).animationName), 'none',
+          'Reduced motion must stop the companion breathing and blinking');
+      }
+      assert.deepEqual(await overview.boundingBox(), hitArea, 'Idle motion must not move the clickable hit area');
+      await overview.focus();
+      await page.waitForFunction(() => getComputedStyle(document.querySelector('.cv-companion-hint')).opacity === '1');
+      const hint = await page.locator('.cv-companion-hint').boundingBox();
+      assert(hint && hint.x >= 0 && hint.x + hint.width <= width, 'The return hint must fit even on narrow screens');
+      await page.emulateMedia({reducedMotion:'no-preference'});
       await overview.click();
       await page.locator('.cv-interests').waitFor();
       await page.waitForFunction(() => location.hash === '' && scrollY === 0);
