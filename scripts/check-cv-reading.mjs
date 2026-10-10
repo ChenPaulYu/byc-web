@@ -23,8 +23,16 @@ const visibleBack = async (page, button = page.getByRole('button', {name:'Back t
     'Back must be inside the viewport without scrolling to find it');
   const touch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
   assert(box.height >= (touch ? 44 : 32), 'The compact return control must remain readable and usable on touch screens');
-  const navigation = await page.locator('.cv-reading-actions').boundingBox();
+  const navigation = await page.locator('.cv-reading-card').boundingBox();
   assert(navigation.width < Math.min(280, size.width), 'Return navigation must stay compact instead of spanning the viewport');
+  if (size.width >= 1200) {
+    const sheet = await page.locator('.cv-sheet').boundingBox();
+    assert(navigation.x >= sheet.x + sheet.width + 8, 'Desktop controls must stay outside the CV column');
+  } else {
+    const dock = page.locator('.cv-reading-actions');
+    assert.equal(await dock.evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(255, 255, 255)',
+      'Narrow screens must separate controls from the reading area');
+  }
   return box;
 };
 try {
@@ -86,6 +94,27 @@ try {
       throw error;
     });
     console.log(`PASS ${width}px: award reload, exact reading position/focus, native Forward and return`);
+    // Dismissal keeps the destination and native history, rather than acting as another Back.
+    await source.click();
+    await page.waitForFunction(() => location.hash === '#cv-award-taichi-thesis-2026');
+    await settle(page);
+    const destination = await page.evaluate(() => ({url:location.href,y:scrollY}));
+    await page.getByRole('button',{name:'Dismiss reading navigation',exact:true}).click();
+    assert.equal(await page.locator('.cv-reading-actions').count(), 0);
+    assert.deepEqual(await page.evaluate(() => ({url:location.href,y:scrollY})), destination,
+      'Dismissal must not navigate or move the current reading position');
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('.cv-interests').waitFor();
+    assert.equal(await page.locator('.cv-reading-actions').count(), 0, 'The current history entry must remain dismissed after reload');
+    const another = page.locator('a.cv-ref[href="#cv-ref-C1"]').first();
+    await another.evaluate(element => element.scrollIntoView({behavior:'instant',block:'center'}));
+    await another.click();
+    await page.waitForFunction(() => location.hash === '#cv-ref-C1');
+    await visibleBack(page);
+    await page.goBack({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(() => location.hash === '#cv-award-taichi-thesis-2026');
+    assert.equal(await page.locator('.cv-reading-actions').count(), 0, 'Browser Back must retain the dismissed state');
+    console.log(`PASS ${width}px: dismiss in place, persist across reload, reopen on new jump and retain native history`);
     await context.close();
   }
 } finally { await browser.close(); }

@@ -1,4 +1,4 @@
-/** Citation and award previews retain reading origins and offer a visible return for direct links. */
+/** Citation and award previews retain reading origins and offer dismissible, print-safe returns. */
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cvAwardTarget, type CvReferencePreview } from '../../utils/cv';
@@ -14,13 +14,16 @@ const sourceLinks = (href: string) => [...document.querySelectorAll<HTMLAnchorEl
   .filter(link => link.getAttribute('href') === href);
 const savedTrail = (): ReadingPoint[] => typeof window !== 'undefined' && Array.isArray(window.history.state?.cvReading)
   ? window.history.state.cvReading : [];
-const saveTrail = (points: ReadingPoint[]) => window.history.replaceState({
+const savedDismissal = () => typeof window !== 'undefined' && window.history.state?.cvReadingDismissed === true;
+const saveTrail = (points: ReadingPoint[], dismissed = savedDismissal()) => window.history.replaceState({
   ...window.history.state,
   cvReading: points.map(({ origin: _origin, ...point }) => point),
+  cvReadingDismissed: dismissed,
 }, '');
 
 export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMap<string, CvReferencePreview>; children: React.ReactNode }) {
   const [trail, setTrail] = useState<ReadingPoint[]>(savedTrail);
+  const [dismissed, setDismissed] = useState(savedDismissal);
   const [hash, setHash] = useState(() => typeof window === 'undefined' ? '' : window.location.hash);
   const current = [...entries.values()].find(entry => referenceHref(entry) === hash);
   const pending = useRef<ReadingPoint[] | null>(null);
@@ -31,10 +34,14 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
       setHash(window.location.hash);
       // Native hash navigation creates its history entry after the link's click handler.
       if (pending.current) {
-        saveTrail(pending.current);
+        saveTrail(pending.current, false);
+        setDismissed(false);
         setTrail(pending.current);
         pending.current = null;
-      } else setTrail(savedTrail());
+      } else {
+        setDismissed(savedDismissal());
+        setTrail(savedTrail());
+      }
     };
     window.addEventListener('popstate', syncHistory);
     window.addEventListener('hashchange', syncHistory);
@@ -52,9 +59,20 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
       index: sourceLinks(href).indexOf(origin.element), origin,
     }];
     saveTrail(trail);
-    if (window.location.hash === href) saveTrail(next);
+    if (window.location.hash === href) saveTrail(next, false);
     else pending.current = next;
+    setDismissed(false);
     setTrail(next);
+  };
+  const dismiss = () => {
+    saveTrail(trail, true);
+    setDismissed(true);
+    const entry = document.getElementById(hash.slice(1));
+    const heading = entry?.querySelector<HTMLElement>('h3') ?? entry;
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
   };
   const back = () => {
     const point = trail[trail.length - 1];
@@ -87,14 +105,15 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
   };
   return <CvReferences.Provider value={entries}><ReadingNavigation.Provider value={remember}><CvPreviewProvider>
     {children}
-    {(trail.length > 0 || current) && createPortal(<nav className="cv-reading-actions" aria-label="CV reading navigation">
+    {!dismissed && (trail.length > 0 || current) && createPortal(<nav className="cv-reading-actions" aria-label="CV reading navigation"><div className="cv-reading-card">
       <span className="sr-only" aria-live="polite">{current ? current.kind === 'award' ? 'Viewing award' : `Viewing ${current.id}` : 'Viewing reference'}</span>
       {trail.length > 0 ? <button type="button" className="cv-reading-return" onClick={back} disabled={returning}>
         <ReturnArrow />Back to reading
       </button> : <a className="cv-reading-return" href={window.location.pathname + window.location.search}>
         <ReturnArrow />Back to CV
       </a>}
-    </nav>, document.body)}
+      <button type="button" className="cv-reading-dismiss" onClick={dismiss} disabled={returning} aria-label="Dismiss reading navigation" title="Continue reading here"><span aria-hidden="true">×</span></button>
+    </div></nav>, document.body)}
   </CvPreviewProvider></ReadingNavigation.Provider></CvReferences.Provider>;
 }
 
