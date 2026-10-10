@@ -24,6 +24,9 @@ const visibleBack = async (page, button = page.getByRole('button', {name:'Back t
   const touch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
   assert(box.height >= (touch ? 44 : 32), 'The compact return control must remain readable and usable on touch screens');
   const navigation = await page.locator('.cv-reading-card').boundingBox();
+  const layoutWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  assert(Math.abs(layoutWidth - navigation.x - navigation.width - 16) < 1,
+    'The companion must stay at the viewport right edge on desktop and mobile');
   assert(navigation.width < Math.min(280, size.width), 'Return navigation must stay compact instead of spanning the viewport');
   if (size.width >= 1200) {
     const sheet = await page.locator('.cv-sheet').boundingBox();

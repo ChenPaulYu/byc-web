@@ -28,9 +28,9 @@
 .cv-print-button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e5e5e5; padding: 7px 9px; border-radius: 4px; font-size: 10px; color: #525252; white-space: nowrap; }
 .cv-print-button:hover { background: #fafafa; color: #171717; }
 .cv-print-button svg { width: 14px; height: 14px; }
-.cv-reading-actions { position: fixed; left: calc(50% + var(--cv-column-width) / 2 + var(--cv-return-offset)); bottom: var(--cv-return-offset); z-index: 50; font-family: 'Inter', sans-serif; }
+.cv-reading-actions { position: fixed; right: var(--cv-return-offset); bottom: var(--cv-return-offset); z-index: 50; font-family: 'Inter', sans-serif; }
 .cv-reference-popover { border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: var(--cv-floating-shadow); }
-.cv-reading-card { position: relative; width: calc(var(--cv-companion-size) + var(--cv-dismiss-size)); height: var(--cv-companion-height); display: flex; align-items: flex-end; }
+.cv-reading-card { position: relative; width: calc(var(--cv-companion-size) + var(--cv-dismiss-size)); height: var(--cv-companion-height); display: flex; align-items: flex-end; justify-content: flex-end; }
 .cv-reading-return { position: relative; display: flex; align-items: center; justify-content: center; width: var(--cv-companion-size); height: var(--cv-companion-size); padding: 4px; border: 0; border-radius: 12px; background: transparent; text-decoration: none; }
 .cv-reading-return:disabled { opacity: 0.6; cursor: wait; }
 .cv-companion { width: 48px; height: 48px; overflow: visible; }
@@ -44,10 +44,10 @@
 .cv-reading-return:hover .cv-companion-hover, .cv-reading-return:focus-visible .cv-companion-hover { transform: translateY(-2px) rotate(-4deg); }
 .cv-reading-return:is(:hover, :focus-visible, :disabled) .cv-companion-body { animation-play-state: paused; }
 .cv-reading-return:active .cv-companion-hover { transform: scale(0.96); }
-.cv-companion-hint { position: absolute; left: 0; bottom: calc(var(--cv-companion-height) + 4px); width: max-content; padding: 5px 8px; border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; color: #525252; font-size: 11px; white-space: nowrap; opacity: 0; transform: translateY(3px); pointer-events: none; transition: opacity 160ms ease, transform 160ms ease; }
+.cv-companion-hint { position: absolute; right: 0; bottom: calc(var(--cv-companion-height) + 4px); width: max-content; padding: 5px 8px; border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; color: #525252; font-size: 11px; white-space: nowrap; opacity: 0; transform: translateY(3px); pointer-events: none; transition: opacity 160ms ease, transform 160ms ease; }
 .cv-reading-return:hover .cv-companion-hint, .cv-reading-return:focus-visible .cv-companion-hint { opacity: 1; transform: none; }
 .cv-reading-dismiss, .cv-preview-close { border-radius: 4px; color: #737373; font-size: 18px; }
-.cv-reading-dismiss { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center; width: var(--cv-dismiss-size); height: var(--cv-dismiss-size); border-radius: 50%; }
+.cv-reading-dismiss { position: absolute; top: 0; left: 0; display: inline-flex; align-items: center; justify-content: center; width: var(--cv-dismiss-size); height: var(--cv-dismiss-size); border-radius: 50%; }
 .cv-reading-dismiss:hover, .cv-preview-close:hover { color: #171717; background: #fafafa; }
 @keyframes cv-companion-breathe { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-1px) scaleY(1.025); } }
 @keyframes cv-companion-blink { 0%, 90%, 94%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.1); } }
@@ -104,8 +104,8 @@
 }
 @media screen and (max-width: 1199px) {
   body:has(.cv-reading-actions) { padding-bottom: var(--cv-reading-dock-height); }
-  .cv-companion-hint { left: calc(100% + 4px); bottom: 0; }
-  .cv-reading-actions { left: 0; right: 0; bottom: 0; height: var(--cv-reading-dock-height); display: flex; align-items: center; justify-content: center; padding: 0 16px; border-top: 1px solid #e5e5e5; background: #fff; }
+  .cv-companion-hint { right: calc(100% + 4px); bottom: 0; }
+  .cv-reading-actions { left: 0; right: 0; bottom: 0; height: var(--cv-reading-dock-height); display: flex; align-items: center; justify-content: flex-end; padding: 0 var(--cv-return-offset); border-top: 1px solid #e5e5e5; background: #fff; }
 }
 @media screen and (max-width: 680px) {
   .cv-sheet { padding: 28px; }
