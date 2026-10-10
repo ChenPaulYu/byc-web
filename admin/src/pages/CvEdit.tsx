@@ -152,9 +152,18 @@ const CvEdit: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {(['nativeName', 'location', 'email', 'github', 'scholar', 'linkedin'] as const).map(key => <CvTextField key={key} label={{ nativeName: 'Native name', location: 'Location', email: 'Email', github: 'GitHub URL', scholar: 'Google Scholar URL', linkedin: 'LinkedIn URL' }[key]} value={activeConfig.header[key]} onChange={value => setActiveConfig({ ...activeConfig, header: { ...activeConfig.header, [key]: value } })} />)}
       </div>
-      <p className="text-xs text-neutral-500 mb-4">{'Inline formatting: **bold**, *italic*, [[C1]] / [[A1]] references, and {{badge text}}. Reference IDs must be unique. HTML is displayed as text, except legacy emphasis tags.'}</p>
+      <p className="text-xs text-neutral-500 mb-4">{'Inline formatting: **bold**, *italic*, [[C1]] / [[A1]] references, [[person:profile-id]] person cards, [label](https://example.com) links, and {{badge text}}. Reference IDs must be unique. HTML is displayed as text, except legacy emphasis tags.'}</p>
       <SectionHeader title="Research Interests" visible={activeConfig.visibility?.researchInterests} onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...activeConfig.visibility, researchInterests: activeConfig.visibility?.researchInterests === false } })} />
       <CvTextField label="Research interests" value={activeConfig.researchInterests} onChange={value => setActiveConfig({ ...activeConfig, researchInterests: value })} />
+
+      <SectionHeader title="Advisor profiles" onAdd={() => setActiveConfig({ ...activeConfig, people: [...(activeConfig.people ?? []), { id: '', name: '', label: '', url: '', relationship: '', affiliation: '' }] })} />
+      <p className="text-xs text-neutral-500 mb-3">Use [[person:profile-id]] in inline text. Describe the relationship and affiliation at the time of collaboration.</p>
+      {(activeConfig.people ?? []).map((person, i) => <div key={i} className="border border-neutral-200 rounded-lg p-4 mb-3">
+        <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, people: removeItem(activeConfig.people ?? [], i) })} /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {(['id', 'name', 'label', 'url', 'relationship', 'affiliation'] as const).map(key => <CvTextField key={key} label={{ id: 'Profile ID', name: 'Name', label: 'Inline name (optional title)', url: 'Website URL', relationship: 'Relationship during collaboration', affiliation: 'Affiliation during collaboration' }[key]} value={person[key] ?? ''} onChange={value => setActiveConfig({ ...activeConfig, people: updateField(activeConfig.people ?? [], i, key, value) })} />)}
+        </div>
+      </div>)}
 
       {/* Education */}
       <SectionHeader

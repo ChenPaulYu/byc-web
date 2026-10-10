@@ -83,6 +83,8 @@ Edit the CV in the admin dashboard or in `public/cv.config.json`. The public pag
 - Art entries separate `title`, `description` (a short introduction), optional `collaborators`, `venue` and `year`. Below the title/year, the page shows the introduction followed by an italic metadata line: “With … · Presented at …”. Write collaborator names/roles and venue/city/country without those prefixes; the renderer adds them. Older entries without `collaborators` remain supported.
 - Existing language files and section visibility switches remain supported. Optional additions may be omitted from older translations.
 
+Advisor profiles live in optional `people` records: a stable `id`, `name`, optional inline `label`, `url`, `relationship`, and `affiliation`. Use `[[person:profile-id]]` to link an advisor name with a hover/focus/touch card. Describe the relationship and institution at the time of collaboration, rather than current employment. The PDF keeps clickable names without the preview overlay. Generic Markdown links remain supported.
+
 Open-Source Software & Toolkits follows Work Experience and precedes Publications.
 
 Citation links show a preview on hover or keyboard focus, using the matching visible publication/art record and its existing resource links. On touch screens, tap once to preview, then use “View in CV” to jump. Resource icons (YouTube/video, website, demo, code and paper) show contextual cards with the entry title, description and destination URL; desktop clicks open the original link directly, while touch users can preview first and choose “Open in new tab”. Escape closes the preview. CV anchor scrolling and route entry fades respect reduced-motion preferences.

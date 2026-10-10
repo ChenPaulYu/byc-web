@@ -18,11 +18,12 @@ interface PreviewLinkProps {
   detail?: string;
   meta?: string;
   external?: boolean;
+  actionLabel?: string;
   resources?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function CvPreviewLink({ href, label, className, title, eyebrow, detail, meta, external = false, resources, children }: PreviewLinkProps) {
+export function CvPreviewLink({ href, label, className, title, eyebrow, detail, meta, external = false, actionLabel, resources, children }: PreviewLinkProps) {
   const popupId = useId();
   const activePreview = useContext(ActivePreview);
   const anchor = useRef<HTMLAnchorElement>(null);
@@ -131,7 +132,7 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
       {detail && <p className="cv-preview-detail">{detail}</p>}
       {meta && <p className="cv-preview-venue">{meta}</p>}
       <div className="cv-preview-footer">
-        <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} onClick={hide}>{external ? 'Open in new tab' : 'View in CV'} <span aria-hidden="true">↗</span></a>
+        <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} onClick={hide}>{actionLabel ?? (external ? 'Open in new tab' : 'View in CV')} <span aria-hidden="true">↗</span></a>
         {resources}
       </div>
       <button className="cv-preview-close" aria-label="Close reference preview" onClick={dismiss}>×</button>

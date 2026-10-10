@@ -5,6 +5,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { CvConfig } from '../types/cv';
 import { CvDocument } from '../components/cv/CvDocument';
+import { CvPeopleProvider } from '../components/cv/CvPerson';
 import { CvInline } from '../components/cv/CvInline';
 import { CvReferences } from '../components/cv/CvReference';
 import { cvHref, publicationLinks, visibleCvReferences, cvPreviewText } from './cv';
@@ -85,4 +86,21 @@ test('inline person links preserve emphasis, reject unsafe URLs and stay readabl
   assert.equal(cvPreviewText('[**Professor**](https://example.com/person)'), 'Professor');
   assert.equal((render(config).match(/href="https:\/\/www\.lungpancheng\.tw\/"/g) ?? []).length, 2);
   assert.equal((render(config).match(/href="https:\/\/affige\.github\.io\/index\.html"/g) ?? []).length, 1);
+});
+
+
+test('advisor profile references share URLs, preserve plain-link compatibility and reject unsafe destinations', () => {
+  const person = { id: 'advisor', name: 'Example Professor', label: 'Prof. Example', url: 'https://example.com/advisor', relationship: 'Thesis Advisor', affiliation: 'Lab · University' };
+  const inline = (url: string) => renderToStaticMarkup(React.createElement(CvPeopleProvider, { people: [{ ...person, url }], children: React.createElement(CvInline, { text: 'Advisor: [[person:advisor]]; [[person:missing]]' }) }));
+  const html = inline(person.url);
+  assert.match(html, /class="cv-person-link"/);
+  assert.match(html, /aria-haspopup="dialog"/);
+  assert.match(html, /href="https:\/\/example.com\/advisor"/);
+  assert.match(html, /Prof\. Example/);
+  assert.doesNotMatch(html, /\[\[person:/);
+  assert.doesNotMatch(inline('javascript:alert(1)'), /<a /);
+  const people = config.people!.map((item, i) => i === 0 ? { ...item, url: 'https://example.com/updated-advisor' } : item);
+  const updated = render({ ...config, people });
+  assert.equal((updated.match(/href="https:\/\/example.com\/updated-advisor"/g) ?? []).length, 2);
+  assert.doesNotMatch(updated, /href="https:\/\/www\.lungpancheng\.tw\/"/);
 });

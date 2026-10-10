@@ -16,7 +16,7 @@
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
-        "**Master's Thesis:** *FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems* [[C1]] (Advisor: [Prof. Lung-Pan Cheng](https://www.lungpancheng.tw/))",
+        "**Master's Thesis:** *FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems* [[C1]] (Advisor: [[person:lung-pan-cheng]])",
         "**Thesis Honors:** Winner of **TAICHI 2026 Master's Thesis Honorable Mention Award** {{Top 16.6%}}"
       ]
     },
@@ -35,9 +35,9 @@
       "duration": "Jul 2023 – Present",
       "location": "Taipei, Taiwan",
       "description": [
-        "**Architecting Rytho, a local-first creative workspace (\"notes with ears\") empowering Human-AI co-creation**, serving as the central hub coordinating autonomous agent abilities within the **Rytho ecosystem**.",
+        "**Architecting Rytho**, a local-first creative workspace that enables AI agents to listen to, understand, search for, and create music alongside people.",
         "**Led R&D on LLM-driven music agents**, developing conversational feedback agents for music production and reasoning systems for chord analysis. [[W1]] [[W2]]",
-        "**Managed engineering teams for government R&D projects** (TAICCA, Taipei City) and **TMC-CL1**, a web music interface commissioned by Taipei Music Center."
+        "**Managed engineering teams for government R&D projects** (TAICCA, Taipei City) and **[TMC-CL1](https://tmccl1.tmccloud.taipei/)**, a web music interface commissioned by Taipei Music Center."
       ],
       "links": [
         {
@@ -61,7 +61,7 @@
   "researchExperience": [
     {
       "company": "Computational Physicality Lab, National Taiwan University",
-      "role": "Graduate Research Assistant (Advisor: [Prof. Lung-Pan Cheng](https://www.lungpancheng.tw/))",
+      "role": "Graduate Research Assistant (Advisor: [[person:lung-pan-cheng]])",
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
@@ -71,22 +71,22 @@
     },
     {
       "company": "Creative AI Lab, Sony Group Corporation",
-      "role": "Research Intern (Advisors: [Dr. Yuki Mitsufuji](https://www.yukimitsufuji.com/), [Dr. Marco A. Martínez Ramírez](https://ai.sony/people/marco-mart%C3%ADnez), [Wei-Hsiang Liao](https://ai.sony/people/weihsiang-liao))",
+      "role": "Research Intern (Advisors: [[person:yuki-mitsufuji]], [[person:marco-martinez]], [[person:wei-hsiang-liao]])",
       "duration": "Nov 2020 – Sep 2021",
       "location": "Tokyo, Japan (Remote)",
       "description": [
         "**Developed DJTransGAN**, the first generative model for automated cross-track DJ transitions using DDSP and GANs. [[C2]]",
-        "**Open-sourced the full pipeline**, gathering **120+ GitHub stars** and broad community interest."
+        "**Open-sourced [DJtransGAN](https://github.com/ChenPaulYu/DJtransGAN) and its [data-generation pipeline](https://github.com/ChenPaulYu/DJtransGAN-dg-pipeline)**, gathering **120+ GitHub stars** and broad community interest."
       ]
     },
     {
       "company": "Music and AI Lab, Academia Sinica",
-      "role": "Research Assistant (Advisor: [Prof. Yi-Hsuan Yang](https://affige.github.io/index.html))",
+      "role": "Research Assistant (Advisor: [[person:yi-hsuan-yang]])",
       "duration": "Jul 2019 – Sep 2023",
       "location": "Taipei, Taiwan",
       "description": [
         "**Pioneered loop-based music AI research** spanning compatibility assessment, generation, and benchmarking. [[C3]] [[C4]] [[C5]]",
-        "**Mentored 5+ junior researchers**, co-authoring 4 papers and establishing reproducible research codebases."
+        "**Mentored 5+ junior researchers** and **co-authored 5 papers** on music AI."
       ]
     }
   ],
@@ -273,7 +273,7 @@
   "awards": [
     {
       "title": "Master's Thesis Honorable Mention Award",
-      "venue": "TAICHI Thesis Award for *FlueBricks* (Top 16.6%, published as [[C1]])",
+      "venue": "TAICHI Thesis Award for *FlueBricks* (published as [[C1]]) {{Top 16.6%}}",
       "year": "2026"
     },
     {
@@ -283,7 +283,7 @@
     },
     {
       "title": "Overseas Visit Delegate",
-      "venue": "Epoch Foundation Young Entrepreneurs of the Future (Top 9%, 16/175)",
+      "venue": "Epoch Foundation Young Entrepreneurs of the Future {{Top 9% · 16/175}}",
       "year": "2017"
     },
     {
@@ -329,7 +329,7 @@
       "duration": "Nov 2025 – Present",
       "location": "Open-Source",
       "description": [
-        "**Packaged reproducible inference suites for 30+ SOTA MIR models** (source separation, transcription, chord estimation, beat tracking), resolving upstream dependency decay across PyTorch and TensorFlow.",
+        "**Building OpenMIRLab to make music AI research easier to use and build on**, bringing 30+ MIR models into a consistent, easy-to-install toolkit.",
         "**Standardized unified inference APIs and checkpoint registries**, stripping heavy training dependencies into lightweight, pip-installable packages with verified model outputs."
       ],
       "links": [
@@ -479,6 +479,48 @@
         }
       ],
       "collaborators": "new media artist Wen-Fei Zhang"
+    }
+  ],
+  "people": [
+    {
+      "id": "lung-pan-cheng",
+      "name": "Lung-Pan Cheng",
+      "label": "Prof. Lung-Pan Cheng",
+      "url": "https://www.lungpancheng.tw/",
+      "relationship": "Thesis Advisor",
+      "affiliation": "Computational Physicality Lab · National Taiwan University"
+    },
+    {
+      "id": "yi-hsuan-yang",
+      "name": "Yi-Hsuan Yang",
+      "label": "Prof. Yi-Hsuan Yang",
+      "url": "https://affige.github.io/index.html",
+      "relationship": "Research Advisor",
+      "affiliation": "Music and AI Lab · Academia Sinica"
+    },
+    {
+      "id": "yuki-mitsufuji",
+      "name": "Yuki Mitsufuji",
+      "label": "Dr. Yuki Mitsufuji",
+      "url": "https://www.yukimitsufuji.com/",
+      "relationship": "Research Internship Advisor",
+      "affiliation": "Creative AI Lab · Sony Group Corporation"
+    },
+    {
+      "id": "marco-martinez",
+      "name": "Marco A. Martínez Ramírez",
+      "label": "Dr. Marco A. Martínez Ramírez",
+      "url": "https://ai.sony/people/marco-mart%C3%ADnez",
+      "relationship": "Research Internship Advisor",
+      "affiliation": "Creative AI Lab · Sony Group Corporation"
+    },
+    {
+      "id": "wei-hsiang-liao",
+      "name": "Wei-Hsiang Liao",
+      "label": "Wei-Hsiang Liao",
+      "url": "https://ai.sony/people/weihsiang-liao",
+      "relationship": "Research Internship Advisor",
+      "affiliation": "Creative AI Lab · Sony Group Corporation"
     }
   ]
 }

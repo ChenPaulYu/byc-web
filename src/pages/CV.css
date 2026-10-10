@@ -9,6 +9,8 @@
 .cv-page strong { color: #262626; font-weight: 600; }
 .cv-page a { text-decoration: none; }
 .cv-page a.cv-inline-link { color: var(--cv-accent); text-decoration: underline; text-underline-offset: 2px; }
+.cv-page a.cv-person-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; transition: color 160ms ease, text-decoration-color 160ms ease; }
+.cv-page a.cv-person-link:hover, .cv-page a.cv-person-link:focus-visible { color: var(--cv-accent); text-decoration-color: currentColor; }
 .cv-page a:hover { color: #1d4ed8; }
 .cv-page a:focus-visible, .cv-page button:focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
 .cv-header { padding-bottom: 22px; border-bottom: 2px solid #262626; }
@@ -105,7 +107,7 @@ html.cv-smooth-scroll { scroll-behavior: smooth; }
 .cv-reference-popover :focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
 @media (prefers-reduced-motion: reduce) {
   html.cv-smooth-scroll { scroll-behavior: auto; }
-  .cv-reference-popover, .cv-ref, .cv-icon-link { transition: none; transform: none; }
+  .cv-reference-popover, .cv-ref, .cv-icon-link, .cv-page a.cv-person-link { transition: none; transform: none; }
 }
 @page cv { size: Letter; margin: 8mm 12mm; }
 @media print {
@@ -113,12 +115,13 @@ html.cv-smooth-scroll { scroll-behavior: smooth; }
   .cv-page { page: cv; max-width: none; padding: 0; color: #404040; font-size: 12px; line-height: 1.5; }
   .cv-sheet { padding: 0; border: 0; border-radius: 0; }
   .cv-actions, .cv-download, .cv-reference-popover { display: none; }
+  .cv-page a.cv-person-link { text-decoration: none; }
   .cv-header { padding-bottom: 10px; }
   .cv-page h1 { font-size: 32px; }
   .cv-tagline { margin-top: 6px !important; font-size: 12px; }
   .cv-contacts { margin-top: 7px; }
-  .cv-section { margin-top: 9px; }
-  .cv-section h2 { margin-bottom: 7px; padding-bottom: 4px; font-size: 12px; break-after: avoid; }
+  .cv-section { margin-top: 8px; }
+  .cv-section h2 { margin-bottom: 6px; padding-bottom: 4px; font-size: 12px; break-after: avoid; }
   .cv-page h3 { font-size: 13px; line-height: 1.35; }
   .cv-interests, .cv-bullets { font-size: 12px; }
   .cv-interests { line-height: 1.5; }
