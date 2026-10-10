@@ -50,7 +50,7 @@ const CV: React.FC = () => {
   }, [lang]);
 
   useEffect(() => {
-    if (config && window.location.hash.startsWith('#cv-ref-')) {
+    if (config && (window.location.hash.startsWith('#cv-ref-') || window.location.hash.startsWith('#cv-award-'))) {
       document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
     }
   }, [config]);

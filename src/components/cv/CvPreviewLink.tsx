@@ -3,6 +3,13 @@ import React, { createContext, useContext, useEffect, useId, useLayoutEffect, us
 import { createPortal } from 'react-dom';
 
 const ActivePreview = createContext<{ id: string | null; select: (id: string) => void } | null>(null);
+const readingFocus = new WeakSet<HTMLAnchorElement>();
+
+export function restoreCvReadingFocus(element: HTMLAnchorElement) {
+  if (document.activeElement === element) return;
+  readingFocus.add(element);
+  element.focus({ preventScroll: true });
+}
 
 export function CvPreviewProvider({ children }: { children: React.ReactNode }) {
   const [id, select] = useState<string | null>(null);
@@ -47,10 +54,7 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
   const rememberNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (external || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !anchor.current) return;
     onNavigate?.({ element: anchor.current, restoreFocus: () => {
-      if (anchor.current && document.activeElement !== anchor.current) {
-        suppressFocus.current = true;
-        anchor.current.focus({ preventScroll: true });
-      }
+      if (anchor.current) restoreCvReadingFocus(anchor.current);
     } });
   };
   const leave = () => {
@@ -117,7 +121,10 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
       aria-haspopup="dialog" aria-expanded={open} aria-controls={mounted ? popupId : undefined}
       onPointerEnter={event => { if (event.pointerType !== 'touch') show(); }} onPointerLeave={leave}
       onPointerDown={event => { touch.current = event.pointerType === 'touch'; }}
-      onFocus={() => { if (suppressFocus.current) suppressFocus.current = false; else if (!touch.current) show(); }}
+      onFocus={event => {
+        if (readingFocus.delete(event.currentTarget)) return;
+        if (suppressFocus.current) suppressFocus.current = false; else if (!touch.current) show();
+      }}
       onBlur={leave}
       onClick={event => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

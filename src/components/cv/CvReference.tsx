@@ -1,41 +1,68 @@
-/** Citation and award previews share stable anchors and a reversible reading navigation trail. */
+/** Citation and award previews keep reading origins in browser history, including across reloads. */
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { cvAwardTarget, type CvReferencePreview } from '../../utils/cv';
 import { CvLinks } from './CvLinks';
-import { CvPreviewLink, CvPreviewProvider, type CvNavigationOrigin } from './CvPreviewLink';
+import { CvPreviewLink, CvPreviewProvider, restoreCvReadingFocus, type CvNavigationOrigin } from './CvPreviewLink';
 
 export const CvReferences = createContext<ReadonlyMap<string, CvReferencePreview>>(new Map());
 const ReadingNavigation = createContext<((origin: CvNavigationOrigin) => void) | undefined>(undefined);
-interface ReadingPoint { url: string; left: number; top: number; anchorTop: number; origin: CvNavigationOrigin; }
+interface ReadingPoint { url: string; left: number; top: number; anchorTop: number; href: string; index: number; origin?: CvNavigationOrigin; }
 const readingUrl = () => window.location.pathname + window.location.search + window.location.hash;
+const sourceLinks = (href: string) => [...document.querySelectorAll<HTMLAnchorElement>('a.cv-ref, a.cv-award-ref')]
+  .filter(link => link.getAttribute('href') === href);
+const savedTrail = (): ReadingPoint[] => typeof window !== 'undefined' && Array.isArray(window.history.state?.cvReading)
+  ? window.history.state.cvReading : [];
+const saveTrail = (points: ReadingPoint[]) => window.history.replaceState({
+  ...window.history.state,
+  cvReading: points.map(({ origin: _origin, ...point }) => point),
+}, '');
 
 export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMap<string, CvReferencePreview>; children: React.ReactNode }) {
-  const [trail, setTrail] = useState<ReadingPoint[]>([]);
+  const [trail, setTrail] = useState<ReadingPoint[]>(savedTrail);
+  const pending = useRef<ReadingPoint[] | null>(null);
   const [returning, setReturning] = useState(false);
   const cancelReturn = useRef<(() => void) | undefined>(undefined);
   useEffect(() => {
-    const syncBrowserBack = () => setTrail(points => {
-      let index = points.length - 1;
-      while (index >= 0 && points[index].url !== readingUrl()) index--;
-      return index < 0 ? points : points.slice(0, index);
-    });
-    window.addEventListener('popstate', syncBrowserBack);
-    return () => { window.removeEventListener('popstate', syncBrowserBack); cancelReturn.current?.(); };
+    const syncHistory = () => {
+      // Native hash navigation creates its history entry after the link's click handler.
+      if (pending.current) {
+        saveTrail(pending.current);
+        setTrail(pending.current);
+        pending.current = null;
+      } else setTrail(savedTrail());
+    };
+    window.addEventListener('popstate', syncHistory);
+    window.addEventListener('hashchange', syncHistory);
+    return () => {
+      window.removeEventListener('popstate', syncHistory);
+      window.removeEventListener('hashchange', syncHistory);
+      cancelReturn.current?.();
+    };
   }, []);
-  const remember = (origin: CvNavigationOrigin) => setTrail(points => [...points, {
-    url: readingUrl(), left: window.scrollX, top: window.scrollY, anchorTop: origin.element.getBoundingClientRect().top, origin,
-  }]);
+  const remember = (origin: CvNavigationOrigin) => {
+    const href = origin.element.getAttribute('href')!;
+    const next = [...trail, {
+      url: readingUrl(), left: window.scrollX, top: window.scrollY,
+      anchorTop: origin.element.getBoundingClientRect().top, href,
+      index: sourceLinks(href).indexOf(origin.element), origin,
+    }];
+    saveTrail(trail);
+    if (window.location.hash === href) saveTrail(next);
+    else pending.current = next;
+    setTrail(next);
+  };
   const back = () => {
     const point = trail[trail.length - 1];
     if (!point || returning) return;
     setTrail(points => points.slice(0, -1));
     const restore = () => {
-      const top = point.origin.element.isConnected
-        ? point.origin.element.getBoundingClientRect().top + window.scrollY - point.anchorTop : point.top;
-      point.origin.restoreFocus();
+      const element = point.origin?.element.isConnected ? point.origin.element : sourceLinks(point.href)[point.index];
+      const top = element ? element.getBoundingClientRect().top + window.scrollY - point.anchorTop : point.top;
+      if (point.origin?.element === element) point.origin.restoreFocus();
+      else if (element) restoreCvReadingFocus(element);
       window.scrollTo({ left: point.left, top, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     };
-    if (readingUrl() === point.url) { restore(); return; }
+    if (readingUrl() === point.url) { saveTrail(trail.slice(0, -1)); restore(); return; }
     setReturning(true);
     const scrollRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';

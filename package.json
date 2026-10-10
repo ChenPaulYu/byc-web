@@ -9,6 +9,7 @@
     "build:main": "vite build && node scripts/pack-model.mjs",
     "check:payload": "node scripts/check-initial-payload.mjs",
     "check:home": "node scripts/check-home-loading.mjs",
+    "check:cv": "node scripts/check-cv-reading.mjs",
     "check:scene": "node scripts/check-scene-rendering.mjs",
     "samples:encode": "node scripts/encode-samples.mjs",
     "build:admin": "vite build --config admin/vite.config.ts",
