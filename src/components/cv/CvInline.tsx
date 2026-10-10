@@ -1,11 +1,11 @@
-/** Restricted CV inline copy: emphasis, resource icons, advisor profiles, badges and stable citations. */
+/** Restricted CV inline copy: emphasis, resource icons, advisor profiles, linked awards and stable citations. */
 import React from 'react';
 import { CvLinks } from './CvLinks';
 import { CvPerson } from './CvPerson';
 import { CvReference } from './CvReference';
 import { CV_INLINE_LINK_PATTERN, cvHref, cvPreviewText, normalizeCvText } from '../../utils/cv';
 
-const inlineParts = new RegExp(String.raw`(${CV_INLINE_LINK_PATTERN}|\*\*[^*]+\*\*|\*[^*]+\*|\[\[person:[\w-]+\]\]|\[\[[\w-]+\]\]|\{\{[^{}]+\}\})`, 'g');
+const inlineParts = new RegExp(String.raw`(${CV_INLINE_LINK_PATTERN}|\*\*[^*]+\*\*|\*[^*]+\*|\[\[person:[\w-]+\]\]|\[\[award:[\w-]+\]\](?:[ \t]+\[\[award:[\w-]+\]\])*|\[\[[\w-]+\]\]|\{\{[^{}]+\}\})`, 'g');
 const inlineLink = new RegExp(`^${CV_INLINE_LINK_PATTERN}$`);
 
 export function CvInline({ text }: { text: string }) {
@@ -25,6 +25,7 @@ export function CvInline({ text }: { text: string }) {
     if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}><CvInline text={part.slice(2, -2)} /></strong>;
     if (part.startsWith('*') && part.endsWith('*')) return <em key={i}><CvInline text={part.slice(1, -1)} /></em>;
     if (part.startsWith('[[person:') && part.endsWith(']]')) return <CvPerson key={i} id={part.slice(9, -2)} />;
+    if (part.startsWith('[[award:')) return <span key={i} className="cv-award-group">{[...part.matchAll(/\[\[award:([\w-]+)\]\]/g)].map((match, j) => <CvReference key={j} id={`award:${match[1]}`} />)}</span>;
     if (part.startsWith('[[') && part.endsWith(']]')) {
       const id = part.slice(2, -2);
       return <CvReference key={i} id={id} />;

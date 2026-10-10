@@ -16,8 +16,8 @@
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
-        "**Master's Thesis:** *FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems* [[C1]] (Advisor: [[person:lung-pan-cheng]])",
-        "**Thesis Honors:** Winner of **TAICHI 2026 Master's Thesis Honorable Mention Award** {{Top 16.6%}}"
+        "**Master's Thesis:** *FlueBricks* [[C1]] (Advisor: [[person:lung-pan-cheng]])",
+        "[[award:taichi-best-paper-2025]] [[award:taichi-thesis-2026]]"
       ]
     },
     {
@@ -65,7 +65,7 @@
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
-        "**Designed FlueBricks**, a modular physical-computing toolkit enabling acoustic replication and customizable design of flute-like instruments as Master's thesis research. [[C1]]",
+        "**Designed FlueBricks**, a modular physical-computing toolkit enabling acoustic replication and customizable design of flute-like instruments as Master's thesis research. [[C1]] [[award:taichi-best-paper-2025]] [[award:taichi-thesis-2026]]",
         "**Engineered parametric CAD assemblies in Fusion 360** for digital fabrication, and conducted user evaluations across musician skill levels to validate expressive playability."
       ]
     },
@@ -272,11 +272,15 @@
   ],
   "awards": [
     {
+      "id": "taichi-thesis-2026",
+      "label": "TAICHI 2026 Thesis Honorable Mention",
       "title": "Master's Thesis Honorable Mention Award",
       "venue": "TAICHI Thesis Award for *FlueBricks* (published as [[C1]]) {{Top 16.6%}}",
       "year": "2026"
     },
     {
+      "id": "taichi-best-paper-2025",
+      "label": "TAICHI 2025 Best Paper",
       "title": "Best Paper Award 🏆",
       "venue": "Taiwan Computer-Human Interaction Society (TAICHI) for *FlueBricks* [[C1]]",
       "year": "2025"

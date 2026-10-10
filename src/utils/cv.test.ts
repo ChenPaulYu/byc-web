@@ -71,7 +71,25 @@ test('citation previews use visible source metadata and original resource links'
   assert.deepEqual(entries.get('C2')?.links, publicationLinks(paper));
   assert.doesNotMatch(entries.get('C2')!.detail, /\*|<strong>/);
   assert.equal(entries.get('A1')?.kind, 'art');
-  assert.equal(visibleCvReferences({ ...config, visibility: { publications: false, art: false } }).size, 0);
+  assert.equal(visibleCvReferences({ ...config, visibility: { publications: false, art: false, awards: false } }).size, 0);
+});
+
+test('award badges resolve visible records, share labels and omit hidden or removed awards', () => {
+  const html = render(config);
+  for (const award of config.awards.filter(item => item.id)) {
+    assert.match(html, new RegExp(`id="cv-award-${award.id}"`));
+    assert.equal((html.match(new RegExp(`href="#cv-award-${award.id}"`, 'g')) ?? []).length, 2);
+    const preview = visibleCvReferences(config).get(`award:${award.id}`)!;
+    assert.equal(preview.kind, 'award');
+    assert.equal(preview.label, award.label);
+    assert.doesNotMatch(preview.venue, /\[\[|\*|\{\{/);
+  }
+  const hidden = render({ ...config, visibility: { ...config.visibility, awards: false } });
+  assert.doesNotMatch(hidden, /href="#cv-award-|\[\[award:/);
+  const removed = render({ ...config, awards: [] });
+  assert.doesNotMatch(removed, /href="#cv-award-|\[\[award:/);
+  const updated = render({ ...config, awards: config.awards.map(item => item.id === 'taichi-thesis-2026' ? { ...item, label: 'Updated thesis honor' } : item) });
+  assert.equal((updated.match(/Updated thesis honor/g) ?? []).length, 2);
 });
 
 

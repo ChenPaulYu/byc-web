@@ -1,7 +1,7 @@
 /** CV content shared by the screen and print views; data stays in cv.config.json. */
 import React from 'react';
 import type { CvConfig, Experience } from '../../types/cv';
-import { artPresentation, cvHref, publicationLinks, visibleCvReferences } from '../../utils/cv';
+import { artPresentation, cvAwardTarget, cvHref, publicationLinks, visibleCvReferences } from '../../utils/cv';
 import { GitHubIcon, LinkedInIcon, MailIcon, ScholarIcon } from '../SocialIcons';
 import { CvPeopleProvider } from './CvPerson';
 import { CvInline } from './CvInline';
@@ -96,7 +96,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
       </Section>}
       {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
       {visible('awards') && config.awards.length > 0 && <Section title="Honors & Awards">
-        {config.awards.map((item, i) => <div className="cv-compact-entry" key={i}><div><strong><CvInline text={item.title} /></strong> · <CvInline text={item.venue} />{item.detail && <> <span className="cv-badge"><CvInline text={item.detail} /></span></>}</div><span className="cv-date">{item.year}</span></div>)}
+        {config.awards.map((item, i) => <div className="cv-compact-entry cv-award-entry" id={cvAwardTarget(item.id)} key={i}><div><strong><CvInline text={item.title} /></strong> · <CvInline text={item.venue} />{item.detail && <> <span className="cv-badge"><CvInline text={item.detail} /></span></>}</div><span className="cv-date">{item.year}</span></div>)}
       </Section>}
       {visible('reviewer') && config.reviewer.length > 0 && <Section title="Academic Service & Reviewing" keepTogether>
         {config.reviewer.map((item, i) => <div className="cv-compact-entry" key={i}><div><CvInline text={item.venue} /></div><span className="cv-date">{item.years}</span></div>)}

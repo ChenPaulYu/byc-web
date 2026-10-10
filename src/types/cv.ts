@@ -6,7 +6,7 @@ export interface Education { school: string; degree: string; duration: string; l
 export interface Experience { company: string; role: string; duration: string; location: string; description: string[]; links?: CvLink[]; }
 export interface Publication { id?: string; title: string; authors: string; venue: string; year: string; acceptanceRate?: string; pdf?: string; award?: string; links?: CvLink[]; }
 export interface Thesis { title: string; authors: string; institution: string; year: string; }
-export interface Award { title: string; venue: string; year: string; detail?: string; }
+export interface Award { id?: string; label?: string; title: string; venue: string; year: string; detail?: string; }
 export interface ReviewerEntry { venue: string; years: string; }
 export interface ArtEntry { id: string; title: string; description: string; collaborators?: string; venue: string; year: string; links?: CvLink[]; }
 export interface CustomSectionItem { text: string; detail?: string; }

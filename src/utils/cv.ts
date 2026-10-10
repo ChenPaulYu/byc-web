@@ -22,7 +22,8 @@ export function publicationLinks(publication: Publication): CvLink[] {
 
 export interface CvReferencePreview {
   id: string;
-  kind: 'publication' | 'art';
+  kind: 'publication' | 'art' | 'award';
+  label?: string;
   title: string;
   detail: string;
   venue: string;
@@ -33,7 +34,12 @@ export interface CvReferencePreview {
 export function cvPreviewText(text: string): string {
   return normalizeCvText(text)
     .replace(new RegExp(CV_INLINE_LINK_PATTERN, 'g'), token => token.slice(1, token.indexOf('](')))
+    .replace(/\[\[([\w-]+)\]\]/g, '[$1]')
     .replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
+}
+
+export function cvAwardTarget(id?: string): string | undefined {
+  return id ? `cv-award-${id}` : undefined;
 }
 
 export function artPresentation(item: ArtEntry): string {
@@ -47,6 +53,9 @@ export function visibleCvReferences(config: CvConfig): Map<string, CvReferencePr
   }
   if (config.visibility?.art !== false) for (const item of config.art ?? []) {
     references.set(item.id, { id: item.id, kind: 'art', title: item.title, detail: cvPreviewText(item.description), venue: cvPreviewText(artPresentation(item)), year: item.year, links: item.links ?? [] });
+  }
+  if (config.visibility?.awards !== false) for (const item of config.awards ?? []) {
+    if (item.id) references.set(`award:${item.id}`, { id: item.id, kind: 'award', label: item.label, title: cvPreviewText(item.title), detail: cvPreviewText(item.detail ?? ''), venue: cvPreviewText(item.venue), year: item.year, links: [] });
   }
   return references;
 }

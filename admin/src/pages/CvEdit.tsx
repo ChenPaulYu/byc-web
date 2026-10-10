@@ -152,7 +152,7 @@ const CvEdit: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {(['nativeName', 'location', 'email', 'github', 'scholar', 'linkedin'] as const).map(key => <CvTextField key={key} label={{ nativeName: 'Native name', location: 'Location', email: 'Email', github: 'GitHub URL', scholar: 'Google Scholar URL', linkedin: 'LinkedIn URL' }[key]} value={activeConfig.header[key]} onChange={value => setActiveConfig({ ...activeConfig, header: { ...activeConfig.header, [key]: value } })} />)}
       </div>
-      <p className="text-xs text-neutral-500 mb-4">{'Inline formatting: **bold**, *italic*, [[C1]] / [[A1]] references, [[person:profile-id]] person cards, [label](https://example.com) links, and {{badge text}}. Reference IDs must be unique. HTML is displayed as text, except legacy emphasis tags.'}</p>
+      <p className="text-xs text-neutral-500 mb-4">{'Inline formatting: **bold**, *italic*, [[C1]] / [[A1]] references, [[award:award-id]] linked award badges, [[person:profile-id]] person cards, [label](https://example.com) links, and {{badge text}}. Reference IDs must be unique. HTML is displayed as text, except legacy emphasis tags.'}</p>
       <SectionHeader title="Research Interests" visible={activeConfig.visibility?.researchInterests} onToggle={() => setActiveConfig({ ...activeConfig, visibility: { ...activeConfig.visibility, researchInterests: activeConfig.visibility?.researchInterests === false } })} />
       <CvTextField label="Research interests" value={activeConfig.researchInterests} onChange={value => setActiveConfig({ ...activeConfig, researchInterests: value })} />
 
@@ -352,6 +352,8 @@ const CvEdit: React.FC = () => {
         >
           <div className="flex justify-between mb-3"><span className="text-xs text-neutral-400">#{i + 1}</span><RemoveBtn onClick={() => setActiveConfig({ ...activeConfig, awards: removeItem(activeConfig.awards, i) })} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CvTextField label="Award reference ID (optional)" value={award.id} onChange={value => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'id', value || undefined) })} />
+            <CvTextField label="Inline award label (optional)" value={award.label} onChange={value => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'label', value || undefined) })} />
             <div><label className={labelClass}>Title</label><input type="text" value={award.title} onChange={(e) => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'title', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Venue</label><input type="text" value={award.venue} onChange={(e) => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'venue', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Year</label><input type="text" value={award.year} onChange={(e) => setActiveConfig({ ...activeConfig, awards: updateField(activeConfig.awards, i, 'year', e.target.value) })} className={inputClass} /></div>
