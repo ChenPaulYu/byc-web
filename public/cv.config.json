@@ -204,6 +204,11 @@
           "label": "Paper (arXiv:2209.01751)"
         },
         {
+          "kind": "code",
+          "url": "https://github.com/ytsrt66589/pjloop-gan",
+          "label": "GitHub Code (pjloop-gan)"
+        },
+        {
           "kind": "video",
           "url": "https://x.com/_akhaliq/status/1567329585003380737",
           "label": "Demo Video"
@@ -225,8 +230,13 @@
         },
         {
           "kind": "code",
-          "url": "https://github.com/MTG/freesound-loop-dataset",
-          "label": "Dataset & Code"
+          "url": "https://github.com/allenhung1025/LoopTest",
+          "label": "GitHub Code (LoopTest)"
+        },
+        {
+          "kind": "demo",
+          "url": "https://loopgen.github.io/",
+          "label": "Audio Demo (LoopGen)"
         }
       ],
       "acceptanceRate": "34%"
