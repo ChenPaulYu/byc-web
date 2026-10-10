@@ -1,6 +1,9 @@
 /** Lightweight CV compatibility helpers; shared by the page and regression checks. */
 import type { ArtEntry, CvConfig, CvLink, Publication } from '../types/cv';
 
+// Restricted Markdown links share one grammar between rendering and plain-text previews.
+export const CV_INLINE_LINK_PATTERN = String.raw`\[[^\]\n]+\]\([^\s)]+\)`;
+
 export function cvHref(value?: string): string | undefined {
   if (!value) return undefined;
   if (/^\/(?!\/)/.test(value)) return value;
@@ -28,7 +31,9 @@ export interface CvReferencePreview {
 }
 
 export function cvPreviewText(text: string): string {
-  return normalizeCvText(text).replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
+  return normalizeCvText(text)
+    .replace(new RegExp(CV_INLINE_LINK_PATTERN, 'g'), token => token.slice(1, token.indexOf('](')))
+    .replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
 }
 
 export function artPresentation(item: ArtEntry): string {

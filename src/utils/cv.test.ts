@@ -7,7 +7,7 @@ import type { CvConfig } from '../types/cv';
 import { CvDocument } from '../components/cv/CvDocument';
 import { CvInline } from '../components/cv/CvInline';
 import { CvReferences } from '../components/cv/CvReference';
-import { cvHref, publicationLinks, visibleCvReferences } from './cv';
+import { cvHref, publicationLinks, visibleCvReferences, cvPreviewText } from './cv';
 
 const config = JSON.parse(readFileSync('public/cv.config.json', 'utf8')) as CvConfig;
 const render = (data: CvConfig) => renderToStaticMarkup(React.createElement(CvDocument, { config: data }));
@@ -71,4 +71,18 @@ test('citation previews use visible source metadata and original resource links'
   assert.doesNotMatch(entries.get('C2')!.detail, /\*|<strong>/);
   assert.equal(entries.get('A1')?.kind, 'art');
   assert.equal(visibleCvReferences({ ...config, visibility: { publications: false, art: false } }).size, 0);
+});
+
+
+test('inline person links preserve emphasis, reject unsafe URLs and stay readable in previews', () => {
+  const text = '[**Professor**](https://example.com/person) [Unsafe](javascript:alert) [Data](data:text/html,test) [[C1]]';
+  const html = renderToStaticMarkup(React.createElement(CvReferences.Provider, { value: visibleCvReferences(config) }, React.createElement(CvInline, { text })));
+  assert.match(html, /href="https:\/\/example.com\/person"[^>]*><strong>Professor<\/strong><\/a>/);
+  assert.match(html, /rel="noopener noreferrer"/);
+  assert.doesNotMatch(html, /href="(?:javascript:|data:)/);
+  assert.match(html, /Unsafe/);
+  assert.match(html, /href="#cv-ref-C1"/);
+  assert.equal(cvPreviewText('[**Professor**](https://example.com/person)'), 'Professor');
+  assert.equal((render(config).match(/href="https:\/\/www\.lungpancheng\.tw\/"/g) ?? []).length, 2);
+  assert.equal((render(config).match(/href="https:\/\/affige\.github\.io\/index\.html"/g) ?? []).length, 1);
 });

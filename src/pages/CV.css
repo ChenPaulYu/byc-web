@@ -8,6 +8,7 @@
 .cv-page h3 { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; line-height: 1.5; color: #171717; }
 .cv-page strong { color: #262626; font-weight: 600; }
 .cv-page a { text-decoration: none; }
+.cv-page a.cv-inline-link { color: var(--cv-accent); text-decoration: underline; text-underline-offset: 2px; }
 .cv-page a:hover { color: #1d4ed8; }
 .cv-page a:focus-visible, .cv-page button:focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
 .cv-header { padding-bottom: 22px; border-bottom: 2px solid #262626; }

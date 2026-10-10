@@ -77,7 +77,7 @@ Edit `public/content/about.md` directly. No config changes needed.
 
 Edit the CV in the admin dashboard or in `public/cv.config.json`. The public page and generated PDF share this data. Header contacts include LinkedIn; optional sections include research interests, open-source work, interactive art and extracurricular activities. Education descriptions hold thesis and advisor details.
 
-- Inline copy supports `**bold**`, `*italic*`, `[[C1]]` references and `{{badge text}}`. Arbitrary HTML is displayed as text; legacy `<strong>` and `<em>` emphasis remains supported.
+- Inline copy supports `**bold**`, `*italic*`, `[label](https://example.com)` text links, `[[C1]]` references and `{{badge text}}`. Arbitrary HTML is displayed as text; legacy `<strong>` and `<em>` emphasis remains supported.
 - Publications and art use unique stable `id` values such as `C1`, `W1` and `A1`. Keep IDs when reordering entries so citations continue to point to the same work. References to hidden sections render without a link.
 - Resource `links` contain `kind` (`paper`, `code`, `demo`, `video` or `website`), `url` and an optional accessible `label`. Use HTTPS or a local absolute path such as `/papers/example.pdf`. The legacy publication `pdf` field is still supported.
 - Art entries separate `title`, `description` (a short introduction), optional `collaborators`, `venue` and `year`. Below the title/year, the page shows the introduction followed by an italic metadata line: “With … · Presented at …”. Write collaborator names/roles and venue/city/country without those prefixes; the renderer adds them. Older entries without `collaborators` remain supported.
