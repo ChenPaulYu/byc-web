@@ -1,5 +1,6 @@
 /** Citation and award previews keep reading origins in browser history, including across reloads. */
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cvAwardTarget, type CvReferencePreview } from '../../utils/cv';
 import { CvLinks } from './CvLinks';
 import { CvPreviewLink, CvPreviewProvider, restoreCvReadingFocus, type CvNavigationOrigin } from './CvPreviewLink';
@@ -82,9 +83,9 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
   };
   return <CvReferences.Provider value={entries}><ReadingNavigation.Provider value={remember}><CvPreviewProvider>
     {children}
-    {trail.length > 0 && <div className="cv-reading-actions"><button type="button" className="cv-reading-return" onClick={back} disabled={returning}>
+    {trail.length > 0 && createPortal(<div className="cv-reading-actions"><button type="button" className="cv-reading-return" onClick={back} disabled={returning}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M19 12H5m7-7-7 7 7 7" /></svg>Back to reading
-    </button></div>}
+    </button></div>, document.body)}
   </CvPreviewProvider></ReadingNavigation.Provider></CvReferences.Provider>;
 }
 

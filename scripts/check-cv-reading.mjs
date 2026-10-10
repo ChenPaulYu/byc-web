@@ -40,6 +40,8 @@ try {
     await source.click();
     await page.waitForFunction(() => location.hash === '#cv-award-taichi-thesis-2026');
     await settle(page);
+    // Page-entry motion creates a containing block for fixed descendants, even at translateY(0).
+    await page.locator('.page-transition').evaluate(element => { element.style.transform = 'translateY(0)'; });
     await visibleBack(page);
     await page.reload({waitUntil:'domcontentloaded'});
     await page.locator('#cv-award-taichi-thesis-2026').waitFor();
@@ -47,6 +49,9 @@ try {
     const target = await page.locator('#cv-award-taichi-thesis-2026').boundingBox();
     assert(target && target.y >= 0 && target.y < 1180, 'Reload must retain the referenced award in view');
     const box = await visibleBack(page);
+    await page.emulateMedia({media:'print'});
+    assert.equal(await page.locator('.cv-reading-actions').evaluate(element => getComputedStyle(element).display), 'none');
+    await page.emulateMedia({media:'screen'});
     await page.emulateMedia({reducedMotion:'reduce'});
     // A physical click avoids Playwright scrolling an off-screen return control into view.
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
@@ -66,8 +71,6 @@ try {
       console.error({width,origin,current:await page.evaluate(() => ({y:scrollY,hash:location.hash,trail:history.state?.cvReading}))});
       throw error;
     });
-    await page.emulateMedia({media:'print'});
-    assert.equal(await page.locator('.cv-reading-actions').count(), 0);
     console.log(`PASS ${width}px: award reload, exact reading position/focus, native Forward and return`);
     await context.close();
   }
