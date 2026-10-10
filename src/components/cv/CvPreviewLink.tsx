@@ -1,4 +1,4 @@
-/** Shared CV hover/focus/touch preview; one active card, native links and print-safe portals. */
+/** Shared CV preview; native navigation reports its reading origin, with print-safe portals. */
 import React, { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -7,6 +7,11 @@ const ActivePreview = createContext<{ id: string | null; select: (id: string) =>
 export function CvPreviewProvider({ children }: { children: React.ReactNode }) {
   const [id, select] = useState<string | null>(null);
   return <ActivePreview.Provider value={{ id, select }}>{children}</ActivePreview.Provider>;
+}
+
+export interface CvNavigationOrigin {
+  element: HTMLAnchorElement;
+  restoreFocus: () => void;
 }
 
 interface PreviewLinkProps {
@@ -20,10 +25,11 @@ interface PreviewLinkProps {
   external?: boolean;
   actionLabel?: string;
   resources?: React.ReactNode;
+  onNavigate?: (origin: CvNavigationOrigin) => void;
   children: React.ReactNode;
 }
 
-export function CvPreviewLink({ href, label, className, title, eyebrow, detail, meta, external = false, actionLabel, resources, children }: PreviewLinkProps) {
+export function CvPreviewLink({ href, label, className, title, eyebrow, detail, meta, external = false, actionLabel, resources, onNavigate, children }: PreviewLinkProps) {
   const popupId = useId();
   const activePreview = useContext(ActivePreview);
   const anchor = useRef<HTMLAnchorElement>(null);
@@ -38,6 +44,15 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
   const cancelClose = () => clearTimeout(closeTimer.current);
   const show = () => { cancelClose(); activePreview?.select(popupId); setMounted(true); setOpen(true); };
   const hide = () => { cancelClose(); setOpen(false); };
+  const rememberNavigation = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (external || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || !anchor.current) return;
+    onNavigate?.({ element: anchor.current, restoreFocus: () => {
+      if (anchor.current && document.activeElement !== anchor.current) {
+        suppressFocus.current = true;
+        anchor.current.focus({ preventScroll: true });
+      }
+    } });
+  };
   const leave = () => {
     cancelClose();
     closeTimer.current = setTimeout(() => {
@@ -106,7 +121,7 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
       onBlur={leave}
       onClick={event => {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        if (touch.current && !open) { event.preventDefault(); show(); } else hide();
+        if (touch.current && !open) { event.preventDefault(); show(); } else { rememberNavigation(event); hide(); }
         touch.current = false;
       }}
       onKeyDown={event => {
@@ -132,7 +147,7 @@ export function CvPreviewLink({ href, label, className, title, eyebrow, detail, 
       {detail && <p className="cv-preview-detail">{detail}</p>}
       {meta && <p className="cv-preview-venue">{meta}</p>}
       <div className="cv-preview-footer">
-        <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} onClick={hide}>{actionLabel ?? (external ? 'Open in new tab' : 'View in CV')} <span aria-hidden="true">↗</span></a>
+        <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} onClick={event => { rememberNavigation(event); hide(); }}>{actionLabel ?? (external ? 'Open in new tab' : 'View in CV')} <span aria-hidden="true">↗</span></a>
         {resources}
       </div>
       <button className="cv-preview-close" aria-label="Close reference preview" onClick={dismiss}>×</button>

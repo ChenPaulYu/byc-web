@@ -1,3 +1,4 @@
+/** Public page shell; route changes reset scroll while in-page history preserves reading positions. */
 import React, { useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from './NavBar';
@@ -14,7 +15,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   useLayoutEffect(() => {
     if (!window.location.hash) window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [location.key, location.pathname]);
+  }, [location.pathname]);
 
   return (
       <div className="min-h-screen bg-white text-neutral-900 flex flex-col">
