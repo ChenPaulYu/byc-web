@@ -1,5 +1,5 @@
 /* Approved academic-paper layout. Keep all screen rules local to the CV route. */
-.cv-page, .cv-reference-popover { --cv-accent: #2563eb; --cv-soft: #eff6ff; }
+.cv-page, .cv-reference-popover, .cv-reading-actions { --cv-accent: #2563eb; --cv-soft: #eff6ff; }
 .cv-page { max-width: 816px; margin: 0 auto; padding: 0 16px 32px; color: #525252; font-size: 14px; line-height: 1.65; }
 .cv-sheet { padding: 38px 48px 48px; background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; }
 .cv-page h1, .cv-page h2, .cv-page h3, .cv-page p { margin: 0; }
@@ -15,7 +15,7 @@
 .cv-page a.cv-person-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; transition: color 160ms ease, text-decoration-color 160ms ease; }
 .cv-page a.cv-person-link:hover, .cv-page a.cv-person-link:focus-visible { color: var(--cv-accent); text-decoration-color: currentColor; }
 .cv-page a:hover { color: #1d4ed8; }
-.cv-page a:focus-visible, .cv-page button:focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
+.cv-page a:focus-visible, .cv-page button:focus-visible, .cv-reading-return:focus-visible { outline: 2px solid var(--cv-accent); outline-offset: 3px; border-radius: 3px; }
 .cv-header { padding-bottom: 22px; border-bottom: 2px solid #262626; }
 .cv-heading-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .cv-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: #737373; margin-bottom: 6px !important; }
@@ -28,8 +28,10 @@
 .cv-print-button, .cv-reading-return { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e5e5e5; padding: 7px 9px; border-radius: 4px; font-size: 10px; color: #525252; white-space: nowrap; }
 .cv-print-button:hover, .cv-reading-return:hover { background: #fafafa; color: #171717; }
 .cv-print-button svg, .cv-reading-return svg { width: 14px; height: 14px; }
-.cv-reading-actions { position: fixed; right: 16px; bottom: 24px; z-index: 50; }
-.cv-reading-return { background: #fff; }
+.cv-reading-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: var(--cv-reading-bar-height); display: flex; gap: 16px; justify-content: center; align-items: center; padding: 8px 16px; border-top: 1px solid #e5e5e5; background: #fff; font-family: 'Inter', sans-serif; }
+.cv-reading-context { color: #525252; font-size: 12px; }
+.cv-reading-return { min-height: 44px; font-size: 12px; padding: 7px 12px; background: #fff; border-color: var(--cv-accent); color: var(--cv-accent); text-decoration: none; }
+.cv-reading-return:hover { background: var(--cv-soft); color: var(--cv-accent); }
 .cv-reading-return:disabled { opacity: 0.6; cursor: wait; }
 .cv-section { margin-top: 28px; }
 .cv-section h2 { font-size: 13px; line-height: 1.5; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5; padding-bottom: 7px; margin-bottom: 14px; }
@@ -76,10 +78,8 @@
 .cv-art-description { font-size: 12px; margin-top: 3px !important; }
 .cv-download { text-align: center; font-size: 12px; margin-top: 24px; color: #737373; }
 .cv-download a:hover { color: var(--cv-accent); }
-@media screen and (max-width: 1024px) {
+@media screen {
   body:has(.cv-reading-actions) { --cv-reading-bar-height: 64px; padding-bottom: var(--cv-reading-bar-height); }
-  .cv-reading-actions { left: 0; right: 0; bottom: 0; height: var(--cv-reading-bar-height); display: flex; justify-content: center; align-items: center; padding: 8px 16px; border-top: 1px solid #e5e5e5; background: #fff; }
-  .cv-reading-return { min-height: 44px; font-size: 12px; padding: 7px 12px; }
 }
 @media screen and (max-width: 680px) {
   .cv-sheet { padding: 28px; }

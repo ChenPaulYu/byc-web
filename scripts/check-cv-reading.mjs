@@ -22,6 +22,7 @@ const visibleBack = async page => {
   const size = page.viewportSize();
   assert(box && box.x >= 0 && box.y >= 0 && box.x + box.width <= size.width && box.y + box.height <= size.height,
     'Back must be inside the viewport without scrolling to find it');
+  assert(box.height >= 44, 'The return control must remain easy to spot and tap');
   return box;
 };
 try {
@@ -30,7 +31,19 @@ try {
     const page = await context.newPage();
     page.setDefaultTimeout(30_000);
     page.on('pageerror', error => console.error(error.message));
-    await page.goto(url, {waitUntil:'domcontentloaded'});
+    for (const hash of ['#cv-ref-C1', '#cv-award-taichi-thesis-2026']) {
+      await page.goto(`${url}${hash}`, {waitUntil:'domcontentloaded'});
+      await page.locator('.cv-interests').waitFor();
+      const overview = page.getByRole('link', {name:'Back to CV',exact:true});
+      await overview.waitFor();
+      const box = await overview.boundingBox();
+      assert(box && box.height >= 44 && box.y + box.height <= 1180, 'Direct citation URLs must offer a visible return');
+      await overview.click();
+      await page.locator('.cv-interests').waitFor();
+      await page.waitForFunction(() => location.hash === '' && scrollY === 0);
+      assert.equal(await page.locator('.cv-reading-actions').count(), 0);
+    }
+    console.log(`PASS ${width}px: direct paper and award URLs offer Back to CV`);
     const source = page.locator('a.cv-award-ref[href="#cv-award-taichi-thesis-2026"]').nth(1);
     await page.locator('.cv-interests').waitFor();
     await source.waitFor();
