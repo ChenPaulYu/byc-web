@@ -15,14 +15,16 @@ const settle = page => page.evaluate(() => new Promise(resolve => {
   }
   requestAnimationFrame(tick);
 }));
-const visibleBack = async page => {
-  const button = page.getByRole('button', {name:'Back to reading',exact:true});
-  assert.equal(await button.count(), 1, 'The reading return must survive reload and browser Forward');
+const visibleBack = async (page, button = page.getByRole('button', {name:'Back to reading',exact:true})) => {
+  assert.equal(await button.count(), 1, 'Reference navigation must offer a return control');
   const box = await button.boundingBox();
   const size = page.viewportSize();
   assert(box && box.x >= 0 && box.y >= 0 && box.x + box.width <= size.width && box.y + box.height <= size.height,
     'Back must be inside the viewport without scrolling to find it');
-  assert(box.height >= 44, 'The return control must remain easy to spot and tap');
+  const touch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
+  assert(box.height >= (touch ? 44 : 32), 'The compact return control must remain readable and usable on touch screens');
+  const navigation = await page.locator('.cv-reading-actions').boundingBox();
+  assert(navigation.width < Math.min(280, size.width), 'Return navigation must stay compact instead of spanning the viewport');
   return box;
 };
 try {
@@ -36,8 +38,7 @@ try {
       await page.locator('.cv-interests').waitFor();
       const overview = page.getByRole('link', {name:'Back to CV',exact:true});
       await overview.waitFor();
-      const box = await overview.boundingBox();
-      assert(box && box.height >= 44 && box.y + box.height <= 1180, 'Direct citation URLs must offer a visible return');
+      await visibleBack(page, overview);
       await overview.click();
       await page.locator('.cv-interests').waitFor();
       await page.waitForFunction(() => location.hash === '' && scrollY === 0);

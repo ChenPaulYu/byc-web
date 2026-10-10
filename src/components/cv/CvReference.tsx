@@ -88,7 +88,7 @@ export function CvReferenceProvider({ entries, children }: { entries: ReadonlyMa
   return <CvReferences.Provider value={entries}><ReadingNavigation.Provider value={remember}><CvPreviewProvider>
     {children}
     {(trail.length > 0 || current) && createPortal(<nav className="cv-reading-actions" aria-label="CV reading navigation">
-      <span className="cv-reading-context" aria-live="polite">{current ? current.kind === 'award' ? 'Viewing award' : `Viewing ${current.id}` : 'Viewing reference'}</span>
+      <span className="sr-only" aria-live="polite">{current ? current.kind === 'award' ? 'Viewing award' : `Viewing ${current.id}` : 'Viewing reference'}</span>
       {trail.length > 0 ? <button type="button" className="cv-reading-return" onClick={back} disabled={returning}>
         <ReturnArrow />Back to reading
       </button> : <a className="cv-reading-return" href={window.location.pathname + window.location.search}>

@@ -28,9 +28,8 @@
 .cv-print-button, .cv-reading-return { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e5e5e5; padding: 7px 9px; border-radius: 4px; font-size: 10px; color: #525252; white-space: nowrap; }
 .cv-print-button:hover, .cv-reading-return:hover { background: #fafafa; color: #171717; }
 .cv-print-button svg, .cv-reading-return svg { width: 14px; height: 14px; }
-.cv-reading-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; height: var(--cv-reading-bar-height); display: flex; gap: 16px; justify-content: center; align-items: center; padding: 8px 16px; border-top: 1px solid #e5e5e5; background: #fff; font-family: 'Inter', sans-serif; }
-.cv-reading-context { color: #525252; font-size: 12px; }
-.cv-reading-return { min-height: 44px; font-size: 12px; padding: 7px 12px; background: #fff; border-color: var(--cv-accent); color: var(--cv-accent); text-decoration: none; }
+.cv-reading-actions { position: fixed; left: 50%; bottom: var(--cv-return-offset); transform: translateX(-50%); z-index: 50; font-family: 'Inter', sans-serif; }
+.cv-reading-return { min-height: var(--cv-return-height); font-size: 11px; padding: 5px 10px; background: #fff; border-color: var(--cv-accent); color: var(--cv-accent); text-decoration: none; }
 .cv-reading-return:hover { background: var(--cv-soft); color: var(--cv-accent); }
 .cv-reading-return:disabled { opacity: 0.6; cursor: wait; }
 .cv-section { margin-top: 28px; }
@@ -79,7 +78,10 @@
 .cv-download { text-align: center; font-size: 12px; margin-top: 24px; color: #737373; }
 .cv-download a:hover { color: var(--cv-accent); }
 @media screen {
-  body:has(.cv-reading-actions) { --cv-reading-bar-height: 64px; padding-bottom: var(--cv-reading-bar-height); }
+  body:has(.cv-reading-actions) { --cv-return-height: 32px; --cv-return-offset: 16px; padding-bottom: calc(var(--cv-return-height) + var(--cv-return-offset)); }
+}
+@media screen and (pointer: coarse) {
+  body:has(.cv-reading-actions) { --cv-return-height: 44px; }
 }
 @media screen and (max-width: 680px) {
   .cv-sheet { padding: 28px; }
