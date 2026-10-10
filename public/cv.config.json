@@ -54,7 +54,7 @@
       "location": "Taipei, Taiwan",
       "description": [
         "**Architected interactive web audio interfaces and networked performance systems**, developing a vocal sampler for Vocal Asia (Japan) [[A2]] and a p5.js/Node.js WebSocket engine bridging mobile audiences to Max/MSP stage synthesis [[A4]].",
-        "**Engineered generative audio-visual systems** in collaboration with electronic music artists, delivering responsive sound-visual synchronization pipelines for MIDEM (France). [[A3]]"
+        "**Engineered interactive audio-visual systems** in collaboration with electronic music artists, delivering responsive sound-visual synchronization pipelines for MIDEM (France). [[A3]]"
       ]
     }
   ],
@@ -136,7 +136,7 @@
       "id": "W1",
       "title": "Enhancing Automatic Chord Recognition through LLM Chain-of-Thought Reasoning",
       "authors": "Chih-Cheng Chang, **Bo-Yu Chen**, Lu-Rong Chen, Li Su",
-      "venue": "ISMIR 2025 Workshop on Large Language Models for Music (**LLM4Music**)",
+      "venue": "Large Language Models for Music & Audio (LLM4MA) — **ISMIR 2025 Workshop**",
       "year": "2025",
       "links": [
         {
@@ -311,7 +311,7 @@
     "extracurricular": true
   },
   "customSections": [],
-  "researchInterests": "Human-Computer Interaction (HCI) · Music Information Retrieval (MIR) · AI Agents · Creative Support Tools · Musical Interfaces",
+  "researchInterests": "Human-Computer Interaction (HCI) · Music Information Retrieval (MIR) · Computational Media · AI Agents · Creative Support Tools · Musical Interfaces",
   "openSource": [
     {
       "company": "OpenMIRLab",
@@ -376,11 +376,6 @@
           "kind": "demo",
           "url": "https://chenpaulyu.github.io/iridescent-vision/",
           "label": "Interactive Demo"
-        },
-        {
-          "kind": "code",
-          "url": "https://github.com/ChenPaulYu/iridescent-vision",
-          "label": "GitHub Code"
         }
       ]
     },

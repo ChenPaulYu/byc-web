@@ -109,9 +109,9 @@ async function main() {
       printBackground: true,
       displayHeaderFooter: false,
       margin: {
-        top: '10mm',
+        top: '8mm',
         right: '12mm',
-        bottom: '10mm',
+        bottom: '8mm',
         left: '12mm'
       }
     });

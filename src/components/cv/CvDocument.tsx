@@ -65,21 +65,25 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
       {visible('workExperience') && <Experiences title="Work Experience" items={config.workExperience} />}
       {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
       {visible('publications') && config.publications.length > 0 && <Section title="Publications">
-        {config.publications.map((item, i) => <div className="cv-reference-entry cv-publication" id={item.id ? `cv-ref-${item.id}` : undefined} key={item.id || i}>
-          <span className="cv-reference-label">{item.id}</span>
-          <div className="cv-reference-body">
-            <h3>{item.title}</h3>
-            <p className="cv-authors"><CvInline text={item.authors} /></p>
-            <p className="cv-venue"><CvInline text={item.venue} />{!item.venue.includes(item.year) && `, ${item.year}`}</p>
-            <div className="cv-publication-meta">
-              {item.acceptanceRate && <span className="cv-badge">Acceptance {item.acceptanceRate}</span>}
-              {item.award && <span className="cv-badge cv-badge-award">{item.award}</span>}
-              <CvLinks links={publicationLinks(item)} title={item.title} description={item.venue} />
+        {config.publications.map((item, i) => {
+          const hasBadges = Boolean(item.acceptanceRate || item.award);
+          const links = <CvLinks links={publicationLinks(item)} title={item.title} description={item.venue} />;
+          return <div className="cv-reference-entry cv-publication" id={item.id ? `cv-ref-${item.id}` : undefined} key={item.id || i}>
+            <span className="cv-reference-label">{item.id}</span>
+            <div className="cv-reference-body">
+              <h3>{item.title}</h3>
+              <p className="cv-authors"><CvInline text={item.authors} /></p>
+              <div className="cv-venue cv-publication-venue"><CvInline text={item.venue} />{!item.venue.includes(item.year) && `, ${item.year}`}{!hasBadges && links}</div>
+              {hasBadges && <div className="cv-publication-meta">
+                {item.acceptanceRate && <span className="cv-badge">Acceptance {item.acceptanceRate}</span>}
+                {item.award && <span className="cv-badge cv-badge-award">{item.award}</span>}
+                {links}
+              </div>}
             </div>
-          </div>
-        </div>)}
+          </div>;
+        })}
       </Section>}
-      {visible('art') && !!config.art?.length && <Section title="Interactive Art & Installations">
+      {visible('art') && !!config.art?.length && <Section title="Interactive Art & Installations" keepTogether>
         {config.art.map(item => <div className="cv-reference-entry cv-art-entry" id={`cv-ref-${item.id}`} key={item.id}>
           <span className="cv-reference-label">{item.id}</span>
           <div className="cv-reference-body">

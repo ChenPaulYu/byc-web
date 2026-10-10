@@ -87,7 +87,7 @@ Open-Source Software & Toolkits follows Work Experience and precedes Publication
 
 Citation links show a preview on hover or keyboard focus, using the matching visible publication/art record and its existing resource links. On touch screens, tap once to preview, then use “View in CV” to jump. Resource icons (YouTube/video, website, demo, code and paper) show contextual cards with the entry title, description and destination URL; desktop clicks open the original link directly, while touch users can preview first and choose “Open in new tab”. Escape closes the preview. CV anchor scrolling and route entry fades respect reduced-motion preferences.
 
-The current English CV fits three Letter pages with 10 mm vertical and 12 mm horizontal margins; native printing and the PDF generator share the same print layout. Additional content can change the page count.
+The current English CV fits three Letter pages with 8 mm vertical and 12 mm horizontal margins; native printing and the PDF generator share the same print layout. Additional content can change the page count.
 
 After changing content or the CV layout, run `npm run build:cvpdf` to rebuild the site and regenerate `public/cv.pdf` and `dist/cv.pdf`. The PDF renderer selects a free local port and waits for the CV data and fonts. `npm run cv:pdf` alone requires a current build. Check `/cv` on desktop/mobile and inspect the generated PDF before publishing.
 
