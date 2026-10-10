@@ -88,7 +88,7 @@ html.cv-smooth-scroll { scroll-behavior: smooth; }
 .cv-reference-popover { position: fixed; z-index: 60; width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 84px); overflow-y: auto; padding: 20px; border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; box-shadow: 0 8px 28px #17171714, 0 2px 6px #17171708; color: #525252; font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.6; opacity: 0; transform: translateY(4px); transition: opacity 160ms ease, transform 160ms ease; }
 .cv-reference-popover[data-open="true"] { opacity: 1; transform: translateY(0); }
 @starting-style { .cv-reference-popover[data-open="true"] { opacity: 0; transform: translateY(4px); } }
-.cv-reference-popover p { margin: 0; }
+.cv-reference-popover p { margin: 0; overflow-wrap: anywhere; }
 .cv-reference-popover h3 { margin: 9px 0 8px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.45; font-weight: 600; color: #171717; }
 .cv-preview-label { padding-right: 18px; font-size: 10px; color: #737373; }
 .cv-preview-label span { padding: 0 4px; color: #a3a3a3; }
@@ -114,7 +114,7 @@ html.cv-smooth-scroll { scroll-behavior: smooth; }
   .cv-page h1 { font-size: 32px; }
   .cv-tagline { margin-top: 6px !important; font-size: 12px; }
   .cv-contacts { margin-top: 7px; }
-  .cv-section { margin-top: 12px; }
+  .cv-section { margin-top: 9px; }
   .cv-section h2 { margin-bottom: 7px; padding-bottom: 4px; font-size: 12px; break-after: avoid; }
   .cv-page h3 { font-size: 13px; line-height: 1.35; }
   .cv-interests, .cv-bullets { font-size: 12px; }

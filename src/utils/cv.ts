@@ -27,14 +27,17 @@ export interface CvReferencePreview {
   links: CvLink[];
 }
 
+export function cvPreviewText(text: string): string {
+  return normalizeCvText(text).replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
+}
+
 export function visibleCvReferences(config: CvConfig): Map<string, CvReferencePreview> {
   const references = new Map<string, CvReferencePreview>();
-  const plain = (text: string) => normalizeCvText(text).replace(/\*\*([^*]+)\*\*|\*([^*]+)\*|\{\{([^{}]+)\}\}/g, '$1$2$3');
   if (config.visibility?.publications !== false) for (const item of config.publications ?? []) {
-    if (item.id) references.set(item.id, { id: item.id, kind: 'publication', title: item.title, detail: plain(item.authors), venue: plain(item.venue), year: item.year, links: publicationLinks(item) });
+    if (item.id) references.set(item.id, { id: item.id, kind: 'publication', title: item.title, detail: cvPreviewText(item.authors), venue: cvPreviewText(item.venue), year: item.year, links: publicationLinks(item) });
   }
   if (config.visibility?.art !== false) for (const item of config.art ?? []) {
-    references.set(item.id, { id: item.id, kind: 'art', title: item.title, detail: plain(item.description), venue: plain(item.venue ?? ''), year: item.year, links: item.links ?? [] });
+    references.set(item.id, { id: item.id, kind: 'art', title: item.title, detail: cvPreviewText(item.description), venue: cvPreviewText(item.venue ?? ''), year: item.year, links: item.links ?? [] });
   }
   return references;
 }

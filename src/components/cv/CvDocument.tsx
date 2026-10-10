@@ -19,7 +19,7 @@ function Experiences({ title, items }: { title: string; items?: Experience[] }) 
   if (!items?.length) return null;
   return <Section title={title}>{items.map((item, i) => <div className="cv-entry" key={i}>
     <div className="cv-entry-heading">
-      <div className="cv-linked-title"><h3><CvInline text={item.company} /></h3><CvLinks links={item.links} /></div>
+      <div className="cv-linked-title"><h3><CvInline text={item.company} /></h3><CvLinks links={item.links} title={item.company} description={item.role} /></div>
       <span className="cv-date">{item.duration}</span>
     </div>
     <div className="cv-entry-sub"><span><CvInline text={item.role} /></span>{item.location && <span className="cv-location">{item.location}</span>}</div>
@@ -62,8 +62,8 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
         {config.awards.map((item, i) => <div className="cv-compact-entry" key={i}><div><strong><CvInline text={item.title} /></strong> · <CvInline text={item.venue} />{item.detail && <> <span className="cv-badge"><CvInline text={item.detail} /></span></>}</div><span className="cv-date">{item.year}</span></div>)}
       </Section>}
       {visible('researchExperience') && <Experiences title="Research Experience" items={config.researchExperience} />}
-      {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
       {visible('workExperience') && <Experiences title="Work Experience" items={config.workExperience} />}
+      {visible('openSource') && <Experiences title="Open-Source Software & Toolkits" items={config.openSource} />}
       {visible('publications') && config.publications.length > 0 && <Section title="Publications">
         {config.publications.map((item, i) => <div className="cv-reference-entry cv-publication" id={item.id ? `cv-ref-${item.id}` : undefined} key={item.id || i}>
           <span className="cv-reference-label">{item.id}</span>
@@ -74,7 +74,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
             <div className="cv-publication-meta">
               {item.acceptanceRate && <span className="cv-badge">Acceptance {item.acceptanceRate}</span>}
               {item.award && <span className="cv-badge cv-badge-award">{item.award}</span>}
-              <CvLinks links={publicationLinks(item)} />
+              <CvLinks links={publicationLinks(item)} title={item.title} description={item.venue} />
             </div>
           </div>
         </div>)}
@@ -84,7 +84,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
           <span className="cv-reference-label">{item.id}</span>
           <div className="cv-reference-body">
             <div className="cv-art-heading">
-              <div className="cv-linked-title"><h3>{item.title}</h3><CvLinks links={item.links} /></div>
+              <div className="cv-linked-title"><h3>{item.title}</h3><CvLinks links={item.links} title={item.title} description={item.description} /></div>
               <span className="cv-date">{item.year}</span>
             </div>
             <p className="cv-art-description"><CvInline text={item.venue ? item.description.replace(/\.$/, '') : item.description} />{item.venue && <span className="cv-venue">{item.description && ' · '}<CvInline text={item.venue} /></span>}</p>

@@ -1,7 +1,8 @@
-/** Original CV resource icons, with one compact and accessible link group. */
+/** Original CV resource icons with optional contextual previews, using safe native links. */
 import React from 'react';
+import { CvPreviewLink } from './CvPreviewLink';
 import type { CvLink } from '../../types/cv';
-import { cvHref } from '../../utils/cv';
+import { cvHref, cvPreviewText } from '../../utils/cv';
 const ICONS = {
   paper: (<svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/><path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>),
   code: (<svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>),
@@ -9,12 +10,18 @@ const ICONS = {
   video: (<svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.074 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.022.26-.01.104c-.048.519-.119 1.023-.22 1.402a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.215-.01-.19-.009c-1.396-.076-2.434-.2-2.607-.248a2.007 2.007 0 0 1-1.415-1.42c-.101-.38-.172-.884-.22-1.402l-.01-.105-.022-.26-.008-.104C.076 9.387.067 8.53.067 8.344v-.076c.001-.194.01-1.107.082-2.06l.008-.105.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.904-.26l.17-.006.216-.01.189-.009C6.67 2.005 7.747 2 8.051 2Zm-1.8 3.5v5l4.5-2.5-4.5-2.5Z"/></svg>),
 };
 const LABELS = { paper: 'Paper', code: 'Code', demo: 'Demo', video: 'Video', website: 'Website' };
-export function CvLinks({ links = [] }: { links?: CvLink[] }) {
+export function CvLinks({ links = [], title, description }: { links?: CvLink[]; title?: string; description?: string }) {
   const available = links.filter(link => cvHref(link.url));
   if (!available.length) return null;
   return <div className="cv-links" role="group" aria-label="Resource links">
-    {available.map((link, i) => <a key={link.kind + i} className="cv-icon-link" href={cvHref(link.url)} title={link.label || LABELS[link.kind]} aria-label={link.label || LABELS[link.kind]} target="_blank" rel="noopener noreferrer">
-      {ICONS[link.kind === 'website' ? 'demo' : link.kind]}
-    </a>)}
+    {available.map((link, i) => {
+      const label = link.label || LABELS[link.kind];
+      const icon = ICONS[link.kind === 'website' ? 'demo' : link.kind];
+      const href = cvHref(link.url)!;
+      return title
+        ? <CvPreviewLink key={link.kind + i} href={href} className="cv-icon-link" label={label} external
+            title={cvPreviewText(title)} eyebrow={label} detail={description ? cvPreviewText(description) : undefined} meta={href}>{icon}</CvPreviewLink>
+        : <a key={link.kind + i} className="cv-icon-link" href={href} title={label} aria-label={label} target="_blank" rel="noopener noreferrer">{icon}</a>;
+    })}
   </div>;
 }
