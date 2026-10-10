@@ -83,7 +83,7 @@ Edit the CV in the admin dashboard or in `public/cv.config.json`. The public pag
 - Art entries separate `title`, `description` (a short introduction), optional `collaborators`, `venue` and `year`. Below the title/year, the page shows the introduction followed by an italic metadata line: “With … · Presented at …”. Write collaborator names/roles and venue/city/country without those prefixes; the renderer adds them. Older entries without `collaborators` remain supported.
 - Existing language files and section visibility switches remain supported. Optional additions may be omitted from older translations.
 
-Advisor profiles live in optional `people` records: a stable `id`, `name`, optional inline `label`, `url`, `relationship`, and `affiliation`. Use `[[person:profile-id]]` to link an advisor name with a hover/focus/touch card. Describe the relationship and institution at the time of collaboration, rather than current employment. The PDF keeps clickable names without the preview overlay. Generic Markdown links remain supported.
+Advisor profiles live in optional `people` records: a stable `id`, `name`, optional inline `label`, `url`, `relationship`, and `affiliation`. Use `[[person:profile-id]]` to link an advisor name with a hover/focus/touch card. Describe the relationship and institution at the time of collaboration, rather than current employment. The PDF keeps clickable names without the preview overlay. Inline Markdown resource links render as ordinary text followed by the original resource icon, with hover/focus/touch previews; GitHub destinations use the code icon and other destinations use the website icon. The icon remains clickable in the PDF.
 
 Open-Source Software & Toolkits follows Work Experience and precedes Publications.
 

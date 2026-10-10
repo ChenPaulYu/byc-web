@@ -8,7 +8,10 @@
 .cv-page h3 { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; line-height: 1.5; color: #171717; }
 .cv-page strong { color: #262626; font-weight: 600; }
 .cv-page a { text-decoration: none; }
-.cv-page a.cv-inline-link { color: var(--cv-accent); text-decoration: underline; text-underline-offset: 2px; }
+.cv-inline-resource { white-space: nowrap; }
+.cv-inline-resource .cv-links { display: inline-flex; vertical-align: middle; margin-left: 4px; }
+.cv-inline-resource .cv-icon-link { width: 18px; height: 18px; flex-basis: 18px; color: inherit; }
+.cv-inline-resource .cv-icon-link:hover, .cv-inline-resource .cv-icon-link:focus-visible { color: var(--cv-accent); }
 .cv-page a.cv-person-link { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 3px; transition: color 160ms ease, text-decoration-color 160ms ease; }
 .cv-page a.cv-person-link:hover, .cv-page a.cv-person-link:focus-visible { color: var(--cv-accent); text-decoration-color: currentColor; }
 .cv-page a:hover { color: #1d4ed8; }

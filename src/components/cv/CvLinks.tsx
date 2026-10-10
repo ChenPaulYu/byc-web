@@ -10,18 +10,19 @@ const ICONS = {
   video: (<svg aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.074 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.022.26-.01.104c-.048.519-.119 1.023-.22 1.402a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.215-.01-.19-.009c-1.396-.076-2.434-.2-2.607-.248a2.007 2.007 0 0 1-1.415-1.42c-.101-.38-.172-.884-.22-1.402l-.01-.105-.022-.26-.008-.104C.076 9.387.067 8.53.067 8.344v-.076c.001-.194.01-1.107.082-2.06l.008-.105.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.904-.26l.17-.006.216-.01.189-.009C6.67 2.005 7.747 2 8.051 2Zm-1.8 3.5v5l4.5-2.5-4.5-2.5Z"/></svg>),
 };
 const LABELS = { paper: 'Paper', code: 'Code', demo: 'Demo', video: 'Video', website: 'Website' };
-export function CvLinks({ links = [], title, description }: { links?: CvLink[]; title?: string; description?: string }) {
+export function CvLinks({ links = [], title, description, inline = false }: { links?: CvLink[]; title?: string; description?: string; inline?: boolean }) {
   const available = links.filter(link => cvHref(link.url));
   if (!available.length) return null;
-  return <div className="cv-links" role="group" aria-label="Resource links">
+  const Group = inline ? 'span' : 'div';
+  return <Group className="cv-links" role="group" aria-label="Resource links">
     {available.map((link, i) => {
       const label = link.label || LABELS[link.kind];
       const icon = ICONS[link.kind === 'website' ? 'demo' : link.kind];
       const href = cvHref(link.url)!;
       return title
         ? <CvPreviewLink key={link.kind + i} href={href} className="cv-icon-link" label={label} external
-            title={cvPreviewText(title)} eyebrow={label} detail={description ? cvPreviewText(description) : undefined} meta={href}>{icon}</CvPreviewLink>
+            title={cvPreviewText(title)} eyebrow={inline ? LABELS[link.kind] : label} detail={description ? cvPreviewText(description) : undefined} meta={href}>{icon}</CvPreviewLink>
         : <a key={link.kind + i} className="cv-icon-link" href={href} title={label} aria-label={label} target="_blank" rel="noopener noreferrer">{icon}</a>;
     })}
-  </div>;
+  </Group>;
 }

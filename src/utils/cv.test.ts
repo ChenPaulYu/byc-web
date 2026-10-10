@@ -75,10 +75,13 @@ test('citation previews use visible source metadata and original resource links'
 });
 
 
-test('inline person links preserve emphasis, reject unsafe URLs and stay readable in previews', () => {
+test('inline resource icons preserve emphasis, reject unsafe URLs and stay readable in previews', () => {
   const text = '[**Professor**](https://example.com/person) [Unsafe](javascript:alert) [Data](data:text/html,test) [[C1]]';
   const html = renderToStaticMarkup(React.createElement(CvReferences.Provider, { value: visibleCvReferences(config) }, React.createElement(CvInline, { text })));
-  assert.match(html, /href="https:\/\/example.com\/person"[^>]*><strong>Professor<\/strong><\/a>/);
+  assert.match(html, /class="cv-inline-resource"><strong>Professor<\/strong>/);
+  assert.match(html, /class="cv-icon-link" href="https:\/\/example.com\/person"/);
+  assert.match(html, /aria-haspopup="dialog"/);
+  assert.doesNotMatch(html, /cv-inline-link/);
   assert.match(html, /rel="noopener noreferrer"/);
   assert.doesNotMatch(html, /href="(?:javascript:|data:)/);
   assert.match(html, /Unsafe/);
