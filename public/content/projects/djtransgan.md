@@ -1,5 +1,5 @@
 ---
-title: "DJTransGAN"
+title: "DJtransGAN"
 date: "2022-05-01"
 year: "2022"
 category: "Research"
@@ -26,7 +26,7 @@ Professional DJs craft seamless transitions using beatmatching, EQ adjustments, 
 
 ## Method
 
-DJTransGAN uses a Generative Adversarial Network architecture with:
+DJtransGAN uses a Generative Adversarial Network architecture with:
 - Audio feature encoders trained on DJ mix datasets
 - Differentiable audio effects (EQ, crossfading, reverb)
 - A discriminator that learned to distinguish human vs. AI transitions
