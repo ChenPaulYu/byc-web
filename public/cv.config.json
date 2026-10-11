@@ -65,8 +65,8 @@
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
-        "**Designed FlueBricks**, a modular physical-computing toolkit enabling acoustic replication and customizable design of flute-like instruments as Master's thesis research. [[C1]] [[award:taichi-best-paper-2025]] [[award:taichi-thesis-2026]]",
-        "**Engineered parametric CAD assemblies in Fusion 360** for digital fabrication, and conducted user evaluations across musician skill levels to validate expressive playability."
+        "**Designed FlueBricks**, a modular construction kit bridging instrument design and play through a **designer–player loop** for **acoustic reasoning** about how structure shapes sound. [[C1]] [[award:taichi-best-paper-2025]] [[award:taichi-thesis-2026]]",
+        "**Engineered parametric CAD assemblies in Fusion 360** and conducted a **12-participant study** spanning novices to professional musicians, exploring acoustic understanding and musical expression."
       ]
     },
     {
@@ -113,7 +113,7 @@
   "publications": [
     {
       "id": "C1",
-      "title": "FlueBricks: A Construction Kit of Flute-like Instrument for Acoustic Reasoning",
+      "title": "FlueBricks: A Construction Kit of Flute-like Instruments for Acoustic Reasoning",
       "authors": "**Bo-Yu Chen**, Chiao-Wei Huang, Lung-Pan Cheng",
       "venue": "ACM Conference on Human Factors in Computing Systems (**CHI 2026**)",
       "year": "2026",
@@ -264,7 +264,7 @@
   ],
   "theses": [
     {
-      "title": "FlueBricks: A Modular Toolkit for Interactive Flute-like Instrument Systems",
+      "title": "FlueBricks: A Construction Kit of Flute-like Instruments for Acoustic Reasoning",
       "authors": "<strong>*Bo-Yu Chen*</strong>, Chiao-Wei Huang, Lung-Pan Cheng",
       "institution": "NTU",
       "year": "2025"
