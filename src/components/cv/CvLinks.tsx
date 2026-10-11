@@ -1,4 +1,4 @@
-/** Original CV resource icons with optional contextual previews, using safe native links. */
+/** Original CV resource icons with parenthesized inline groups and contextual previews, using safe native links. */
 import React from 'react';
 import { CvPreviewLink } from './CvPreviewLink';
 import type { CvLink } from '../../types/cv';
@@ -15,6 +15,7 @@ export function CvLinks({ links = [], title, description, inline = false }: { li
   if (!available.length) return null;
   const Group = inline ? 'span' : 'div';
   return <Group className="cv-links" role="group" aria-label="Resource links">
+    {inline && <span aria-hidden="true">(</span>}
     {available.map((link, i) => {
       const label = link.label || LABELS[link.kind];
       const icon = ICONS[link.kind === 'website' ? 'demo' : link.kind];
@@ -24,5 +25,6 @@ export function CvLinks({ links = [], title, description, inline = false }: { li
             title={cvPreviewText(title)} eyebrow={inline ? LABELS[link.kind] : label} detail={description ? cvPreviewText(description) : undefined} meta={href}>{icon}</CvPreviewLink>
         : <a key={link.kind + i} className="cv-icon-link" href={href} title={label} aria-label={label} target="_blank" rel="noopener noreferrer">{icon}</a>;
     })}
+    {inline && <span aria-hidden="true">)</span>}
   </Group>;
 }
