@@ -8,7 +8,7 @@ import { CvDocument } from '../components/cv/CvDocument';
 import { CvPeopleProvider } from '../components/cv/CvPerson';
 import { CvInline } from '../components/cv/CvInline';
 import { CvReferences } from '../components/cv/CvReference';
-import { cvHref, publicationLinks, visibleCvReferences, cvPreviewText } from './cv';
+import { cvHref, publicationDisplayLinks, publicationIdentifier, publicationLinks, visibleCvReferences, cvPreviewText } from './cv';
 
 const config = JSON.parse(readFileSync('public/cv.config.json', 'utf8')) as CvConfig;
 const render = (data: CvConfig) => renderToStaticMarkup(React.createElement(CvDocument, { config: data }));
@@ -42,7 +42,7 @@ test('legacy CV configs still render and legacy PDF resources remain usable', ()
 test('approved CV renders all sections in order with resolvable citations and LinkedIn', () => {
   const html = render(config);
   const headings = [...html.matchAll(/<h2>(.*?)<\/h2>/g)].map(match => match[1].replaceAll('&amp;', '&'));
-  assert.deepEqual(headings, ['Research Interests', 'Education', 'Research Experience', 'Work Experience', 'Teaching Experience', 'Publications', 'Interactive Art & Installations', 'Open-Source Software & Toolkits', 'Honors & Awards', 'Academic Service & Reviewing', 'Extracurricular Activities']);
+  assert.deepEqual(headings, ['Research Interests', 'Education', 'Research Experience', 'Work Experience', 'Publications', 'Honors & Awards', 'Teaching & Service', 'Interactive Art & Installations', 'Open-Source Software & Toolkits', 'Extracurricular Activities']);
   const targets = [...html.matchAll(/id="(cv-ref-[^"]+)"/g)].map(match => match[1]);
   assert.equal(targets.length, 14);
   assert.equal(new Set(targets).size, targets.length);
@@ -124,4 +124,35 @@ test('advisor profile references share URLs, preserve plain-link compatibility a
   const updated = render({ ...config, people });
   assert.equal((updated.match(/href="https:\/\/example.com\/updated-advisor"/g) ?? []).length, 2);
   assert.doesNotMatch(updated, /href="https:\/\/www\.lungpancheng\.tw\/"/);
+});
+
+
+test('publication identifier prefers DOI, falls back to arXiv, ignores malformed values', () => {
+  assert.deepEqual(publicationIdentifier({ doi: '10.5281/zenodo.7316614', arxiv: '2209.01751' }), { label: 'DOI', id: '10.5281/zenodo.7316614', href: 'https://doi.org/10.5281/zenodo.7316614' });
+  assert.deepEqual(publicationIdentifier({ arxiv: '2509.18700' }), { label: 'arXiv', id: '2509.18700', href: 'https://arxiv.org/abs/2509.18700' });
+  assert.equal(publicationIdentifier({}), undefined);
+  assert.equal(publicationIdentifier({ doi: 'javascript:alert(1)' }), undefined);
+  assert.equal(publicationIdentifier({ doi: 'bad', arxiv: '"><x' }), undefined);
+  assert.equal(publicationIdentifier({ doi: 'bad', arxiv: '2509.18700' })?.label, 'arXiv');
+});
+
+test('CV renders identifier lines, GPA, and Teaching & Service sub-parts by visibility', () => {
+  const html = render(config);
+  assert.equal((html.match(/class="cv-ids"/g) ?? []).length, 7);
+  const c5 = config.publications.find(item => item.id === 'C5')!;
+  assert.ok(publicationLinks(c5).some(link => link.kind === 'paper'));
+  assert.ok(!publicationDisplayLinks(c5).some(link => link.kind === 'paper'));
+  assert.deepEqual(publicationDisplayLinks({ ...c5, doi: undefined, arxiv: undefined }), publicationLinks(c5));
+  assert.doesNotMatch(html, /<p class="cv-ids"/);
+  assert.match(html, /href="https:\/\/doi\.org\/10\.1145\/3772318\.3790595"/);
+  assert.match(html, /GPA 4\.21 \/ 4\.3/);
+  assert.equal((html.match(/GPA/g) ?? []).length, 1);
+  assert.match(html, /cv-subgroup">Academic Service &amp; Reviewing/);
+  const noReviewer = render({ ...config, visibility: { ...config.visibility, reviewer: false } });
+  assert.match(noReviewer, /<h2>Teaching &amp; Service/);
+  assert.doesNotMatch(noReviewer, /cv-subgroup/);
+  const noTeaching = render({ ...config, visibility: { ...config.visibility, teachingExperience: false } });
+  assert.match(noTeaching, /cv-subgroup/);
+  const neither = render({ ...config, visibility: { ...config.visibility, teachingExperience: false, reviewer: false } });
+  assert.doesNotMatch(neither, /Teaching &amp; Service/);
 });

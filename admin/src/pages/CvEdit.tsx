@@ -189,6 +189,7 @@ const CvEdit: React.FC = () => {
             <div><label className={labelClass}>Degree</label><input type="text" value={edu.degree} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'degree', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Duration</label><input type="text" value={edu.duration} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'duration', e.target.value) })} className={inputClass} /></div>
             <div><label className={labelClass}>Location</label><input type="text" value={edu.location} onChange={(e) => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'location', e.target.value) })} className={inputClass} /></div>
+            <CvTextField label="GPA (optional, e.g. 4.21 / 4.3)" value={edu.gpa} onChange={value => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'gpa', value || undefined) })} />
           </div>
           <CvBulletFields value={edu.description} onChange={value => setActiveConfig({ ...activeConfig, education: updateField(activeConfig.education, i, 'description', value) })} />
         </div>
@@ -286,6 +287,8 @@ const CvEdit: React.FC = () => {
             <div><label className={labelClass}>Acceptance Rate</label><input type="text" value={pub.acceptanceRate || ''} onChange={(e) => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'acceptanceRate', e.target.value || undefined) })} className={inputClass} placeholder="e.g. 25%" /></div>
             <CvTextField label="Reference ID (e.g. C1 or W1)" value={pub.id} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'id', value) })} />
             <CvTextField label="Award badge" value={pub.award} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'award', value) })} />
+            <CvTextField label="DOI (e.g. 10.1145/3772318.3790595)" value={pub.doi} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'doi', value.trim() || undefined) })} />
+            <CvTextField label="arXiv ID (e.g. 2604.03636)" value={pub.arxiv} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'arxiv', value.trim() || undefined) })} />
             <CvTextField label="Legacy paper URL (used if no Paper link is set)" value={pub.pdf} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'pdf', value) })} />
           </div>
           <CvLinkFields value={pub.links} onChange={value => setActiveConfig({ ...activeConfig, publications: updateField(activeConfig.publications, i, 'links', value) })} />

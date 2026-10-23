@@ -2,9 +2,9 @@
 export type CvLinkKind = 'paper' | 'code' | 'demo' | 'video' | 'website';
 export interface CvLink { kind: CvLinkKind; url: string; label?: string; }
 export interface CvPersonProfile { id: string; name: string; label?: string; url: string; relationship: string; affiliation: string; }
-export interface Education { school: string; degree: string; duration: string; location: string; description?: string[]; }
+export interface Education { school: string; degree: string; duration: string; location: string; gpa?: string; description?: string[]; }
 export interface Experience { company: string; role: string; duration: string; location: string; description: string[]; links?: CvLink[]; }
-export interface Publication { id?: string; title: string; authors: string; venue: string; year: string; acceptanceRate?: string; pdf?: string; award?: string; links?: CvLink[]; }
+export interface Publication { id?: string; title: string; authors: string; venue: string; year: string; acceptanceRate?: string; doi?: string; arxiv?: string; pdf?: string; award?: string; links?: CvLink[]; }
 export interface Thesis { title: string; authors: string; institution: string; year: string; }
 export interface Award { id?: string; label?: string; title: string; venue: string; year: string; detail?: string; }
 export interface ReviewerEntry { venue: string; years: string; }

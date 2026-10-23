@@ -13,6 +13,7 @@
     {
       "school": "National Taiwan University (NTU)",
       "degree": "M.S. in Networking and Multimedia (Dept. of CSIE)",
+      "gpa": "4.21 / 4.3",
       "duration": "Sep 2021 – Aug 2025",
       "location": "Taipei, Taiwan",
       "description": [
@@ -86,7 +87,7 @@
       "location": "Taipei, Taiwan",
       "description": [
         "**Pioneered loop-based music AI research** spanning compatibility assessment, generation, and benchmarking. [[C3]] [[C4]] [[C5]]",
-        "**Mentored 5+ junior researchers** and **co-authored 5 papers** on music AI."
+        "**Mentored 5+ junior researchers**, guiding two to first-author ISMIR papers. [[C3]] [[C4]]"
       ]
     }
   ],
@@ -113,6 +114,8 @@
   "publications": [
     {
       "id": "C1",
+      "doi": "10.1145/3772318.3790595",
+      "arxiv": "2604.03636",
       "title": "FlueBricks: A Construction Kit of Flute-like Instruments for Acoustic Reasoning",
       "authors": "**Bo-Yu Chen**, Chiao-Wei Huang, Lung-Pan Cheng",
       "venue": "ACM Conference on Human Factors in Computing Systems (**CHI 2026**)",
@@ -134,6 +137,7 @@
     },
     {
       "id": "W1",
+      "arxiv": "2509.18700",
       "title": "Enhancing Automatic Chord Recognition through LLM Chain-of-Thought Reasoning",
       "authors": "Chih-Cheng Chang, **Bo-Yu Chen**, Lu-Rong Chen, Li Su",
       "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2025**) – LLM4Music Workshop",
@@ -148,6 +152,7 @@
     },
     {
       "id": "W2",
+      "arxiv": "2412.06617",
       "title": "AI TrackMate: Finally, Someone Who Will Give Your Music More Than Just \"Sounds Great!\"",
       "authors": "Yi-Lin Jiang, Chia-Ho Hsiung, Yen-Tung Yeh, Lu-Rong Chen, **Bo-Yu Chen**",
       "venue": "Conference on Neural Information Processing Systems (**NeurIPS 2024**) – Creative AI Track",
@@ -168,6 +173,8 @@
     },
     {
       "id": "C2",
+      "doi": "10.1109/ICASSP43922.2022.9746663",
+      "arxiv": "2110.06525",
       "title": "Automatic DJ Transitions with Differentiable Audio Effects and Generative Adversarial Networks",
       "authors": "**Bo-Yu Chen**, Wei-Han Hsu, Wei-Hsiang Liao, Marco A. Martínez Ramírez, Yuki Mitsufuji, Yi-Hsuan Yang",
       "venue": "IEEE International Conference on Acoustics, Speech, and Signal Processing (**ICASSP 2022**)",
@@ -193,6 +200,8 @@
     },
     {
       "id": "C3",
+      "doi": "10.5281/zenodo.7316614",
+      "arxiv": "2209.01751",
       "title": "Exploiting Pre-trained Feature Networks for Generative Adversarial Networks in Audio-Domain Loop Generation",
       "authors": "Yen-Tung Yeh, **Bo-Yu Chen**, Yi-Hsuan Yang",
       "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2022**)",
@@ -218,6 +227,8 @@
     },
     {
       "id": "C4",
+      "doi": "10.5281/zenodo.5624409",
+      "arxiv": "2108.01576",
       "title": "A Benchmarking Initiative for Audio-Domain Music Generation Using the Freesound Loop Dataset",
       "authors": "Tun-Min Hung, **Bo-Yu Chen**, Yen-Tung Yeh, Yi-Hsuan Yang",
       "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2021**)",
@@ -243,6 +254,8 @@
     },
     {
       "id": "C5",
+      "doi": "10.5281/zenodo.4245462",
+      "arxiv": "2008.02011",
       "title": "Neural Loop Combiner: Neural Network Models for Assessing the Compatibility of Loops",
       "authors": "**Bo-Yu Chen**, Jordan Smith, Yi-Hsuan Yang",
       "venue": "International Society for Music Information Retrieval Conference (**ISMIR 2020**)",

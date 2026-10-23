@@ -20,6 +20,24 @@ export function publicationLinks(publication: Publication): CvLink[] {
     : links;
 }
 
+// Printed identifier line under a publication: DOI wins over arXiv; malformed values are ignored (plain text only, never free-form URLs).
+const DOI_PATTERN = /^10\.\d{4,9}\/[^\s<>"]+$/;
+const ARXIV_PATTERN = /^(?:\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})(?:v\d+)?$/;
+export interface CvPublicationIdentifier { label: 'DOI' | 'arXiv'; id: string; href: string; }
+export function publicationIdentifier(publication: Pick<Publication, 'doi' | 'arxiv'>): CvPublicationIdentifier | undefined {
+  const doi = publication.doi?.trim();
+  if (doi && DOI_PATTERN.test(doi)) return { label: 'DOI', id: doi, href: `https://doi.org/${encodeURI(doi)}` };
+  const arxiv = publication.arxiv?.trim();
+  if (arxiv && ARXIV_PATTERN.test(arxiv)) return { label: 'arXiv', id: arxiv, href: `https://arxiv.org/abs/${arxiv}` };
+  return undefined;
+}
+
+// Links shown inline on the page: a DOI/arXiv identifier replaces the paper icon (previews keep publicationLinks).
+export function publicationDisplayLinks(publication: Publication): CvLink[] {
+  const links = publicationLinks(publication);
+  return publicationIdentifier(publication) ? links.filter(link => link.kind !== 'paper') : links;
+}
+
 export interface CvReferencePreview {
   id: string;
   kind: 'publication' | 'art' | 'award';
