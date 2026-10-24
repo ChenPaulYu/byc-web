@@ -67,7 +67,7 @@ export function CvDocument({ config, actions }: { config: CvConfig; actions?: Re
       </Section>}
       {visible('researchExperience') && <Experiences title="Research Experience" items={config.researchExperience} />}
       {visible('workExperience') && <Experiences title="Work Experience" items={config.workExperience} />}
-      {visible('publications') && config.publications.length > 0 && <Section title="Publications" note="C = Conference papers · W = Workshop papers">
+      {visible('publications') && config.publications.length > 0 && <Section title="Selected Publications" note="C = Conference papers · W = Workshop papers">
         {config.publications.map((item, i) => {
           const identifier = publicationIdentifier(item);
           const hasMeta = Boolean(item.acceptanceRate || item.award || identifier);

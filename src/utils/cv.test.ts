@@ -42,7 +42,7 @@ test('legacy CV configs still render and legacy PDF resources remain usable', ()
 test('approved CV renders all sections in order with resolvable citations and LinkedIn', () => {
   const html = render(config);
   const headings = [...html.matchAll(/<h2>(.*?)<\/h2>/g)].map(match => match[1].replaceAll('&amp;', '&'));
-  assert.deepEqual(headings, ['Research Interests', 'Education', 'Research Experience', 'Work Experience', 'Publications', 'Honors & Awards', 'Teaching & Service', 'Interactive Art & Installations', 'Open-Source Software & Toolkits', 'Extracurricular Activities']);
+  assert.deepEqual(headings, ['Research Interests', 'Education', 'Research Experience', 'Work Experience', 'Selected Publications', 'Honors & Awards', 'Teaching & Service', 'Interactive Art & Installations', 'Open-Source Software & Toolkits', 'Extracurricular Activities']);
   const targets = [...html.matchAll(/id="(cv-ref-[^"]+)"/g)].map(match => match[1]);
   assert.equal(targets.length, 14);
   assert.equal(new Set(targets).size, targets.length);
