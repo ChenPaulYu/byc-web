@@ -41,8 +41,9 @@ test('legacy CV configs still render and legacy PDF resources remain usable', ()
 
 test('approved CV renders all sections in order with resolvable citations and LinkedIn', () => {
   const html = render(config);
-  const headings = [...html.matchAll(/<h2>(.*?)<\/h2>/g)].map(match => match[1].replaceAll('&amp;', '&'));
+  const headings = [...html.matchAll(/<h2>(.*?)<\/h2>/g)].map(match => match[1].replace(/<svg[\s\S]*?<\/svg>/, '').replaceAll('&amp;', '&'));
   assert.deepEqual(headings, ['Research Interests', 'Education', 'Research Experience', 'Work Experience', 'Selected Publications', 'Honors & Awards', 'Teaching & Service', 'Interactive Art & Installations', 'Open-Source Software & Toolkits', 'Extracurricular Activities']);
+  assert.equal((html.match(/<h2><svg class="cv-section-icon"/g) ?? []).length, headings.length);
   const targets = [...html.matchAll(/id="(cv-ref-[^"]+)"/g)].map(match => match[1]);
   assert.equal(targets.length, 14);
   assert.equal(new Set(targets).size, targets.length);
@@ -54,7 +55,7 @@ test('approved CV renders all sections in order with resolvable citations and Li
 test('hidden sections do not leave broken citation links', () => {
   const html = render({ ...config, visibility: { ...config.visibility, publications: false, art: false } });
   assert.doesNotMatch(html, /href="#cv-ref-/);
-  assert.doesNotMatch(html, /<h2>Publications/);
+  assert.doesNotMatch(html, /Publications<\/h2>/);
 });
 
 test('resource URLs only allow web links and local absolute paths', () => {
@@ -149,7 +150,7 @@ test('CV renders identifier lines, GPA, and Teaching & Service sub-parts by visi
   assert.equal((html.match(/GPA/g) ?? []).length, 1);
   assert.match(html, /cv-subgroup">Academic Service &amp; Reviewing/);
   const noReviewer = render({ ...config, visibility: { ...config.visibility, reviewer: false } });
-  assert.match(noReviewer, /<h2>Teaching &amp; Service/);
+  assert.match(noReviewer, /<\/svg>Teaching &amp; Service<\/h2>/);
   assert.doesNotMatch(noReviewer, /cv-subgroup/);
   const noTeaching = render({ ...config, visibility: { ...config.visibility, teachingExperience: false } });
   assert.match(noTeaching, /cv-subgroup/);

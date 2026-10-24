@@ -7,9 +7,10 @@ import { CvPeopleProvider } from './CvPerson';
 import { CvInline } from './CvInline';
 import { CvReferenceProvider } from './CvReference';
 import { CvLinks } from './CvLinks';
+import { CvSectionIcon } from './CvSectionIcon';
 
 function Section({ title, children, note, keepTogether = false }: { title: string; children: React.ReactNode; note?: string; keepTogether?: boolean }) {
-  return <section className={`cv-section${keepTogether ? ' cv-section-keep' : ''}`}><h2>{title}</h2>{note && <p className="cv-section-note cv-venue">{note}</p>}{children}</section>;
+  return <section className={`cv-section${keepTogether ? ' cv-section-keep' : ''}`}><h2><CvSectionIcon title={title} />{title}</h2>{note && <p className="cv-section-note cv-venue">{note}</p>}{children}</section>;
 }
 
 function Bullets({ items }: { items?: string[] }) {

@@ -53,6 +53,8 @@
 @keyframes cv-companion-blink { 0%, 90%, 94%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.1); } }
 .cv-section { margin-top: 28px; }
 .cv-section h2 { font-size: 13px; line-height: 1.5; font-weight: 600; letter-spacing: 1.3px; text-transform: uppercase; border-bottom: 1px solid #e5e5e5; padding-bottom: 7px; margin-bottom: 14px; }
+.cv-section h2:has(.cv-section-icon) { display: flex; align-items: center; }
+.cv-section-icon { flex: none; width: 1em; height: 1em; margin-right: 7px; color: var(--cv-accent); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 .cv-section-note { margin-bottom: 12px !important; }
 .cv-interests { font-size: 13px; }
 .cv-entry + .cv-entry { margin-top: 19px; }
